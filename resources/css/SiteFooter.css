@@ -1,0 +1,160 @@
+.siteFooter {
+  background: #28292d;
+  color: rgba(255, 255, 255, 0.8);
+  width: 100%;
+  margin: 0;
+}
+
+.siteFooterContainer {
+  width: min(1280px, calc(100% - 72px));
+  margin: 0 auto;
+}
+
+.siteFooterInner {
+  padding: 24px 0 14px;
+  display: grid;
+  grid-template-columns: minmax(420px, 1fr) minmax(360px, 450px);
+  align-items: center;
+  gap: 12px 72px;
+}
+
+.siteFooterLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  justify-self: center;
+  width: min(100%, 560px);
+}
+
+.siteFooterLogo {
+  width: 74px;
+  height: 74px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.siteFooterLogo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.siteFooterText {
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.48;
+}
+
+.siteFooterText a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.38);
+}
+
+.siteFooterText a:hover {
+  border-bottom-color: rgba(255, 255, 255, 0.7);
+}
+
+.siteFooterTitle {
+  color: #fff;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.siteFooterRight {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  justify-self: center;
+}
+
+.siteFooterMapCard {
+  width: 100%;
+  height: 116px;
+  min-height: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.siteFooterMapFrame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.siteFooterCopy {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: center;
+  padding-top: 4px;
+  line-height: 1.2;
+}
+
+@media (max-width: 920px) {
+  .siteFooterContainer {
+    width: min(100% - 40px, 1280px);
+  }
+
+  .siteFooterInner {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .siteFooterLeft {
+    justify-self: stretch;
+    width: 100%;
+  }
+
+  .siteFooterRight {
+    width: 100%;
+    justify-self: stretch;
+  }
+
+  .siteFooterMapCard {
+    width: 100%;
+    max-width: none;
+    height: 128px;
+  }
+
+  .siteFooterCopy {
+    text-align: center;
+  }
+}
+
+@media (max-width: 560px) {
+  .siteFooterContainer {
+    width: min(100% - 28px, 1280px);
+  }
+
+  .siteFooterInner {
+    padding: 18px 0 12px;
+  }
+
+  .siteFooterLeft {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .siteFooterLogo {
+    width: 62px;
+    height: 62px;
+  }
+
+  .siteFooterText {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}

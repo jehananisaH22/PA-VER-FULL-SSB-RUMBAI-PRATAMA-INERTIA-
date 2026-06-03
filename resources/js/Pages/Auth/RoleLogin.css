@@ -1,0 +1,446 @@
+.roleLoginPage {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.roleChoicePage {
+  background: #ffffff;
+  color: #111827;
+}
+
+.roleChoiceShell {
+  min-height: 100vh;
+  width: min(1040px, calc(100% - 64px));
+  margin: 0 auto;
+  padding: 32px 0 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 24px;
+}
+
+.roleChoiceHero {
+  max-width: 680px;
+}
+
+.roleChoiceBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #2f5f1d;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.roleChoiceBrand img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+}
+
+.roleChoiceHero h1 {
+  margin: 28px 0 0;
+  color: #111827;
+  font-size: 48px;
+  line-height: 1.08;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.roleChoiceHero p {
+  margin: 10px 0 0;
+  max-width: 620px;
+  color: #51615c;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.roleChoiceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.roleChoiceCard {
+  min-height: 270px;
+  border: 1px solid #edf2ef;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 16px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow:
+    0 14px 30px rgba(15, 23, 42, 0.06),
+    0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.roleChoiceCard:hover {
+  transform: translateY(-3px);
+  border-color: #dce8e1;
+  box-shadow:
+    0 20px 38px rgba(15, 23, 42, 0.09),
+    0 2px 4px rgba(15, 23, 42, 0.05);
+}
+
+.roleChoiceCard:focus,
+.roleChoiceCard:focus-visible,
+.roleChoiceBackBtn:focus,
+.roleChoiceBackBtn:focus-visible {
+  outline: 3px solid rgba(110, 159, 73, 0.22);
+  outline-offset: 3px;
+}
+
+.roleChoiceImage {
+  position: relative;
+  height: 128px;
+  margin: 0 0 18px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--role-accent, #6e9f49), #e6efe1);
+  overflow: hidden;
+}
+
+.roleChoiceImage img {
+  position: absolute;
+  right: 12px;
+  bottom: 0;
+  height: 132px;
+  width: auto;
+  object-fit: contain;
+}
+
+.roleChoiceLabel {
+  color: #111827;
+  font-size: 22px;
+  line-height: 1.15;
+  font-weight: 800;
+}
+
+.roleChoiceText {
+  margin-top: 8px;
+  color: #5b6b66;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.roleChoiceBackBtn {
+  align-self: flex-start;
+  min-width: 118px;
+  height: 44px;
+  border: 1px solid #eef2f0;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #2d2d2d;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow:
+    0 18px 34px rgba(15, 23, 42, 0.14),
+    0 3px 8px rgba(15, 23, 42, 0.08);
+}
+
+.roleChoiceBackBtn:hover {
+  background: #ffffff;
+  transform: translateY(-1px);
+  box-shadow:
+    0 22px 40px rgba(15, 23, 42, 0.18),
+    0 4px 10px rgba(15, 23, 42, 0.1);
+}
+
+.roleLoginShell {
+  min-height: 100vh;
+  padding: 16px;
+}
+
+.roleLoginMain {
+  min-height: calc(100vh - 32px);
+  background: #ffffff;
+  border-radius: 18px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(300px, 40%) 1fr;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.08);
+}
+
+.roleLoginLeft {
+  position: relative;
+  min-height: 620px;
+  overflow: hidden;
+}
+
+.roleLoginShape {
+  position: absolute;
+  inset: 0;
+  background: var(--shape-color, #6e9f49);
+  clip-path: polygon(0 0, 70% 0, 100% 50%, 70% 100%, 0 100%);
+}
+
+.roleLoginLogo {
+  position: absolute;
+  top: 20px;
+  left: 22px;
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  z-index: 3;
+}
+
+.roleLoginBoy {
+  position: absolute;
+  left: 44%;
+  bottom: 0;
+  height: 96%;
+  width: auto;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.roleLoginRight {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 30px;
+}
+
+.roleLoginForm {
+  width: min(100%, 560px);
+}
+
+.roleLoginForm h1 {
+  margin: 0;
+  text-align: center;
+  color: #101010;
+  font-size: 42px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.roleLoginForm p {
+  margin: 12px auto 16px;
+  text-align: center;
+  max-width: 540px;
+  color: #626262;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.roleLoginForm label {
+  display: block;
+  margin: 12px 0 8px;
+  color: #111;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.roleLoginForm input {
+  width: 100%;
+  height: 60px;
+  border: 1.5px solid #b4b4b4;
+  border-radius: 999px;
+  background: #ffffff;
+  padding: 0 22px;
+  font-size: 15px;
+  color: #1f1f1f;
+  outline: none;
+}
+
+.roleLoginForm input::placeholder {
+  color: #9f9f9f;
+}
+
+.roleLoginForm input:focus {
+  border-color: #79a952;
+  box-shadow: 0 0 0 3px rgba(121, 169, 82, 0.2);
+}
+
+.roleLoginPasswordWrap {
+  position: relative;
+}
+
+.roleLoginPasswordWrap input {
+  padding-right: 86px;
+}
+
+.roleLoginPasswordToggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: #6f6f6f;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.roleLoginResetBtn {
+  margin: 10px 4px 0 auto;
+  border: 0;
+  background: transparent;
+  color: #4b7f2b;
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.roleLoginResetBtn:hover {
+  color: #335b1f;
+}
+
+.roleLoginActions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.roleLoginError {
+  margin: 12px 4px 0;
+  color: #c53030;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.roleLoginSuccess {
+  margin: 12px 4px 0;
+  color: #356c1f;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.roleLoginGhostBtn,
+.roleLoginSubmitBtn {
+  min-width: 126px;
+  height: 48px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.roleLoginGhostBtn {
+  border: 1px solid #edf0f2;
+  background: #ffffff;
+  color: #2d2d2d;
+  box-shadow:
+    0 18px 34px rgba(15, 23, 42, 0.16),
+    0 3px 8px rgba(15, 23, 42, 0.08);
+}
+
+.roleLoginGhostBtn:hover {
+  background: #ffffff;
+  box-shadow:
+    0 22px 40px rgba(15, 23, 42, 0.2),
+    0 4px 10px rgba(15, 23, 42, 0.1);
+}
+
+.roleLoginSubmitBtn {
+  background: var(--btn-accent, #6e9f49);
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.14);
+}
+
+.roleLoginSubmitBtn:hover {
+  filter: brightness(0.95);
+}
+
+.roleLoginSubmitBtn:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+@media (max-width: 960px) {
+  .roleChoiceShell {
+    width: min(100% - 28px, 720px);
+    padding: 28px 0;
+  }
+
+  .roleChoiceHero h1 {
+    font-size: 38px;
+  }
+
+  .roleChoiceHero p {
+    font-size: 16px;
+  }
+
+  .roleChoiceGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .roleChoiceCard {
+    min-height: 220px;
+  }
+
+  .roleChoiceImage {
+    height: 110px;
+  }
+
+  .roleChoiceImage img {
+    height: 118px;
+  }
+
+  .roleLoginShell {
+    padding: 12px;
+  }
+
+  .roleLoginMain {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .roleLoginLeft {
+    min-height: 300px;
+  }
+
+  .roleLoginShape {
+    clip-path: polygon(0 0, 100% 0, 100% 68%, 0 100%);
+  }
+
+  .roleLoginBoy {
+    left: 34%;
+    height: 105%;
+  }
+
+  .roleLoginLogo {
+    width: 44px;
+    height: 44px;
+    top: 14px;
+    left: 14px;
+  }
+
+  .roleLoginRight {
+    padding: 20px 16px 22px;
+  }
+
+  .roleLoginForm h1 {
+    font-size: 32px;
+  }
+
+  .roleLoginForm label {
+    font-size: 16px;
+  }
+
+  .roleLoginForm input {
+    height: 50px;
+    font-size: 15px;
+    padding: 0 16px;
+  }
+
+  .roleLoginActions {
+    flex-wrap: wrap;
+  }
+
+  .roleLoginGhostBtn,
+  .roleLoginSubmitBtn {
+    height: 42px;
+    min-width: 108px;
+    font-size: 14px;
+  }
+}

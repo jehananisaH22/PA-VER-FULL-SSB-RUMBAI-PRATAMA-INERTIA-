@@ -1,0 +1,377 @@
+.adminProfileFixPage {
+  min-height: 100vh;
+  background: #f6f7f5;
+  color: #18212f;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.adminProfileFixTopbar {
+  height: 72px;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid #e4e8df;
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.adminProfileFixLogo {
+  border: 0;
+  background: transparent;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: background 0.2s ease;
+}
+
+.adminProfileFixLogo:hover {
+  background: #eef4eb;
+}
+
+.adminProfileFixLogo img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.adminProfileFixTopbar div {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  font-size: 12px;
+  color: #778293;
+}
+
+.adminProfileFixTopbar strong {
+  color: #18212f;
+  font-size: 15px;
+}
+
+.adminProfileFixMain {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 32px 0 48px;
+}
+
+.adminProfileFixHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.adminProfileFixBack {
+  height: 38px;
+  border: 1px solid #d8e2d3;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #214d22;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0 14px;
+  margin-bottom: 14px;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.adminProfileFixBack:hover {
+  background: #eef7ea;
+  border-color: #a9c99c;
+  transform: translateY(-1px);
+}
+
+.adminProfileFixHead h1 {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.adminProfileFixHead p {
+  margin: 10px 0 0;
+  color: #667386;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.adminProfileFixMiniCard {
+  min-width: 240px;
+  border: 1px solid #e1e7dc;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 16px 18px;
+  display: grid;
+  gap: 7px;
+  box-shadow: 0 12px 26px rgba(24, 33, 47, 0.05);
+}
+
+.adminProfileFixMiniCard span {
+  font-size: 13px;
+  color: #667386;
+  word-break: break-word;
+}
+
+.adminProfileFixMiniCard strong {
+  width: fit-content;
+  border-radius: 999px;
+  background: #edf7e8;
+  color: #247334;
+  font-size: 16px;
+  padding: 4px 10px;
+}
+
+.adminProfileFixCard {
+  background: #ffffff;
+  border: 1px solid #e1e7dc;
+  border-radius: 8px;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 248px 1fr;
+  gap: 30px;
+  box-shadow: 0 18px 42px rgba(24, 33, 47, 0.07);
+}
+
+.adminProfileFixPhotoPanel {
+  border-right: 1px solid #edf1e9;
+  padding: 8px 28px 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.adminProfileFixPhoto {
+  width: 172px;
+  height: 172px;
+  border-radius: 999px;
+  border: 6px solid #f0f4ed;
+  background: #f5f7f3;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 0 0 1px #d8e0d3;
+}
+
+.adminProfileFixPhoto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.adminProfileFixUpload {
+  min-height: 42px;
+  border-radius: 8px;
+  background: #2f7d3b;
+  color: #ffffff;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.adminProfileFixUpload:hover {
+  background: #276d33;
+  transform: translateY(-1px);
+}
+
+.adminProfileFixUpload input {
+  display: none;
+}
+
+.adminProfileFixFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 18px;
+  row-gap: 18px;
+}
+
+.adminProfileFixGroupTitle {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0 2px;
+}
+
+.adminProfileFixGroupTitle::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: #e2e8dd;
+}
+
+.adminProfileFixGroupTitle span {
+  color: #2d6f35;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.adminProfileFixFields label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #253145;
+}
+
+.adminProfileFixFull {
+  grid-column: 1 / -1;
+}
+
+.adminProfileFixFields input,
+.adminProfileFixFields textarea {
+  width: 100%;
+  border: 1px solid #d9e2d3;
+  border-radius: 8px;
+  background: #fbfcfa;
+  color: #18212f;
+  padding: 12px 13px;
+  font-size: 14px;
+  font: inherit;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.adminProfileFixFields textarea {
+  resize: vertical;
+  min-height: 92px;
+  line-height: 1.5;
+}
+
+.adminProfileFixFields input:focus,
+.adminProfileFixFields textarea:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: #6fa15d;
+  box-shadow: 0 0 0 3px rgba(111, 161, 93, 0.14);
+}
+
+.adminProfileFixFields small,
+.adminProfileFixError {
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.adminProfileFixMessage {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 13px 14px;
+  border-radius: 8px;
+  background: #edf8e8;
+  color: #246b25;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.adminProfileFixMessage.isError {
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
+.adminProfileFixActions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid #edf1e9;
+  padding-top: 18px;
+  margin-top: 2px;
+}
+
+.adminProfileFixActions button {
+  min-width: 116px;
+  height: 44px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0 20px;
+  background: #2f7d3b;
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.adminProfileFixActions button:hover {
+  background: #276d33;
+  transform: translateY(-1px);
+}
+
+.adminProfileFixActions button.secondary {
+  border-color: #d8e0d3;
+  background: #ffffff;
+  color: #253145;
+}
+
+.adminProfileFixActions button.secondary:hover {
+  background: #f2f5f0;
+  border-color: #c8d4c2;
+}
+
+.adminProfileFixActions button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+@media (max-width: 760px) {
+  .adminProfileFixTopbar {
+    height: 64px;
+    padding: 0 18px;
+  }
+
+  .adminProfileFixMain {
+    width: min(100% - 28px, 1120px);
+    padding: 22px 0 34px;
+  }
+
+  .adminProfileFixHead,
+  .adminProfileFixCard {
+    grid-template-columns: 1fr;
+  }
+
+  .adminProfileFixHead {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .adminProfileFixMiniCard {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .adminProfileFixCard {
+    padding: 18px;
+    gap: 22px;
+  }
+
+  .adminProfileFixPhotoPanel {
+    border-right: 0;
+    border-bottom: 1px solid #edf1e9;
+    padding-right: 0;
+    padding-bottom: 20px;
+  }
+
+  .adminProfileFixFields {
+    grid-template-columns: 1fr;
+  }
+
+  .adminProfileFixActions {
+    flex-direction: column-reverse;
+  }
+
+  .adminProfileFixActions button {
+    width: 100%;
+  }
+}

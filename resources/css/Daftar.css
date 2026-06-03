@@ -1,0 +1,297 @@
+.registerPage {
+  min-height: 100vh;
+  background: #e9e9e9;
+}
+
+.registerShell {
+  min-height: 100vh;
+  padding: 16px;
+}
+
+.registerMain {
+  min-height: calc(100vh - 32px);
+  background: #f4f4f4;
+  border-radius: 18px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(300px, 40%) 1fr;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.08);
+}
+
+.registerLeft {
+  position: relative;
+  min-height: 620px;
+  overflow: hidden;
+}
+
+.registerShape {
+  position: absolute;
+  inset: 0;
+  background: #76a74f;
+  clip-path: polygon(0 0, 70% 0, 100% 50%, 70% 100%, 0 100%);
+}
+
+.registerLogo {
+  position: absolute;
+  top: 20px;
+  left: 22px;
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  z-index: 3;
+}
+
+.registerBoy {
+  position: absolute;
+  left: 48%;
+  bottom: 0;
+  height: 98%;
+  width: auto;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.registerRight {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 30px;
+}
+
+.registerForm {
+  width: min(100%, 650px);
+}
+
+.registerForm h1 {
+  margin: 0 0 20px;
+  text-align: center;
+  color: #101010;
+  font-size: 42px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.registerForm label {
+  display: block;
+  margin: 12px 0 8px;
+  color: #111;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.registerForm input {
+  width: 100%;
+  height: 60px;
+  border: 1.5px solid #b4b4b4;
+  border-radius: 999px;
+  background: #f4f4f4;
+  padding: 0 22px;
+  font-size: 15px;
+  font-weight: 400;
+  color: #1f1f1f;
+  outline: none;
+}
+
+.registerForm input::placeholder {
+  color: #9f9f9f;
+}
+
+.registerForm input:focus {
+  border-color: #79a952;
+  box-shadow: 0 0 0 3px rgba(121, 169, 82, 0.2);
+}
+
+.passwordWrap {
+  position: relative;
+}
+
+.passwordWrap input {
+  padding-right: 88px;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: #6e6e6e;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.phoneHint,
+.phoneError,
+.passwordHint,
+.passwordError {
+  margin: 8px 6px 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.phoneHint,
+.passwordHint {
+  color: #6b7280;
+}
+
+.phoneError,
+.passwordError {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.formActions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.backBtn,
+.submitBtn {
+  min-width: 150px;
+  height: 50px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.backBtn {
+  background: #d0d0d0;
+  color: #2f2f2f;
+}
+
+.backBtn:hover {
+  background: #c5c5c5;
+}
+
+.submitBtn {
+  background: #76a74f;
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.14);
+}
+
+.submitBtn:hover {
+  background: #6a9846;
+}
+
+.submitBtn:disabled {
+  background: #b8c7aa;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.submitBtn:disabled:hover {
+  background: #b8c7aa;
+}
+
+@media (max-width: 1200px) {
+  .registerMain {
+    grid-template-columns: minmax(280px, 38%) 1fr;
+  }
+
+  .registerForm {
+    width: min(100%, 560px);
+  }
+
+  .registerForm h1 {
+    font-size: 36px;
+  }
+
+  .registerForm input {
+    height: 56px;
+    font-size: 15px;
+  }
+
+  .passwordToggle {
+    font-size: 14px;
+  }
+
+  .backBtn,
+  .submitBtn {
+    min-width: 138px;
+    height: 46px;
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 960px) {
+  .registerShell {
+    padding: 12px;
+  }
+
+  .registerMain {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .registerLeft {
+    min-height: 300px;
+  }
+
+  .registerShape {
+    clip-path: polygon(0 0, 100% 0, 100% 68%, 0 100%);
+  }
+
+  .registerBoy {
+    left: 34%;
+    height: 105%;
+  }
+
+  .registerLogo {
+    width: 44px;
+    height: 44px;
+    top: 14px;
+    left: 14px;
+  }
+
+  .registerRight {
+    padding: 20px 16px 22px;
+  }
+
+  .registerForm {
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .registerForm h1 {
+    font-size: 42px;
+  }
+
+  .registerForm label {
+    font-size: 16px;
+  }
+
+  .registerForm input {
+    height: 50px;
+    font-size: 15px;
+    padding: 0 16px;
+  }
+
+  .passwordWrap input {
+    padding-right: 84px;
+  }
+
+  .passwordToggle {
+    font-size: 14px;
+  }
+
+  .formActions {
+    margin-top: 18px;
+  }
+
+  .backBtn,
+  .submitBtn {
+    min-width: 110px;
+    height: 40px;
+    font-size: 15px;
+  }
+}
+

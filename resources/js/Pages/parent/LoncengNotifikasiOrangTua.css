@@ -1,0 +1,129 @@
+.parentNotifWrap {
+  position: relative;
+}
+
+.parentNotifBtn {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #dedede;
+  border-radius: 999px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.parentNotifBtn img {
+  width: 14px;
+  height: 14px;
+  filter: brightness(0);
+}
+
+.parentNotifBadge {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  border: 1px solid #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.parentNotifMenu {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  width: 260px;
+  padding: 8px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #e2e2e2;
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.08);
+  z-index: 50;
+}
+
+.parentNotifList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.parentNotifItem {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #1f2937;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #f3f4f6;
+}
+
+.parentNotifItem + .parentNotifItem {
+  margin-top: 6px;
+}
+
+.parentNotifItem.isRead {
+  background: #f8fafc;
+  color: #475569;
+}
+
+.parentNotifItemDot {
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  border-radius: 999px;
+  background: #ef4444;
+  flex: 0 0 auto;
+  opacity: 0;
+}
+
+.parentNotifItem.isUnread .parentNotifItemDot {
+  opacity: 1;
+}
+
+.parentNotifItemText {
+  flex: 1;
+}
+
+.parentNotifEmpty {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+  padding: 8px 10px;
+}
+
+.parentNotifClearBtn {
+  width: 100%;
+  margin-top: 8px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: #eef2f7;
+  color: #111827;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.parentNotifClearBtn:hover {
+  background: #e2e8f0;
+}
+
+.parentNotifClearBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

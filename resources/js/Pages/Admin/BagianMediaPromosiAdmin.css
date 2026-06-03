@@ -1,0 +1,464 @@
+.adminMediaSection {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.adminMediaHeader,
+.adminMediaPanel,
+.adminMediaLibrary {
+  border: 1px solid #dfe8dd;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 20px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.adminMediaHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.adminMediaEyebrow {
+  display: inline-flex;
+  margin-bottom: 8px;
+  color: #4f7f35;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.adminMediaHeader h2,
+.adminMediaLibraryHeader h3 {
+  margin: 0;
+  color: #102033;
+  line-height: 1.2;
+}
+
+.adminMediaHeader h2 {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.adminMediaHeader p {
+  max-width: 620px;
+  margin: 8px 0 0;
+  color: #617064;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.adminMediaTabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.adminMediaTabs button,
+.adminMediaPrimaryButton,
+.adminMediaGhostButton,
+.adminMediaDangerButton,
+.adminMediaUploadButton {
+  min-height: 40px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adminMediaTabs button {
+  border: 1px solid #d6e4d0;
+  background: #ffffff;
+  color: #31502f;
+  padding: 0 14px;
+}
+
+.adminMediaTabs button.isActive {
+  border-color: #438b2a;
+  background: #edf7e8;
+  color: #2f6b20;
+}
+
+.adminMediaFormGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.adminMediaFormGrid.compact {
+  grid-template-columns: minmax(260px, 0.8fr) minmax(320px, 1fr);
+}
+
+.adminMediaFields,
+.adminMediaFields label,
+.adminMediaTitleField {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.adminMediaFields {
+  gap: 16px;
+}
+
+.adminMediaFields span,
+.adminMediaTitleField span {
+  color: #263b2a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.adminMediaFields input,
+.adminMediaFields textarea,
+.adminMediaTitleField input {
+  width: 100%;
+  border: 1px solid #d6e4d0;
+  border-radius: 8px;
+  background: #fbfef9;
+  color: #15251b;
+  font-size: 14px;
+  outline: none;
+}
+
+.adminMediaFields input,
+.adminMediaTitleField input {
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.adminMediaFields textarea {
+  min-height: 150px;
+  padding: 12px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.adminMediaFields input:focus,
+.adminMediaFields textarea:focus,
+.adminMediaTitleField input:focus {
+  border-color: #78ad5e;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(120, 173, 94, 0.12);
+}
+
+.adminMediaUploadBox {
+  border: 1px dashed #c7d8c1;
+  border-radius: 8px;
+  background: #f8fbf6;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.adminMediaUploadBox img,
+.adminMediaUploadEmpty {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #eef5ea;
+}
+
+.adminMediaUploadEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #657467;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.adminMediaUploadButton {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  background: #438b2a;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+}
+
+.adminMediaUploadButton input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.adminMediaUploadBox small {
+  color: #667467;
+  font-size: 12px;
+}
+
+.adminMediaActions,
+.adminMediaCardActions,
+.adminMediaLibraryHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adminMediaActions {
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.adminMediaPrimaryButton,
+.adminMediaGhostButton,
+.adminMediaDangerButton {
+  border: 1px solid transparent;
+  padding: 0 16px;
+}
+
+.adminMediaPrimaryButton {
+  background: #438b2a;
+  color: #ffffff;
+}
+
+.adminMediaPrimaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.adminMediaGhostButton {
+  border-color: #d6e4d0;
+  background: #ffffff;
+  color: #294a2f;
+}
+
+.adminMediaDangerButton {
+  border-color: #f0c8c0;
+  background: #fff5f3;
+  color: #bd3d2d;
+}
+
+.adminMediaStatusMessage {
+  margin: 0;
+  border: 1px solid #d6e8cf;
+  border-radius: 8px;
+  background: #f5fbf1;
+  color: #386c2a;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.adminMediaToast {
+  position: fixed;
+  top: 96px;
+  right: 24px;
+  z-index: 140;
+  width: min(360px, calc(100vw - 32px));
+  border: 1px solid #cfe4c6;
+  border-left: 6px solid #438b2a;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.16);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.adminMediaToast strong {
+  color: #234d22;
+  font-size: 14px;
+}
+
+.adminMediaToast span {
+  color: #4d5f52;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.adminMediaToast.isError {
+  border-color: #f0c8c0;
+  border-left-color: #d93025;
+}
+
+.adminMediaToast.isSuccess {
+  border-left-color: #438b2a;
+}
+
+.adminMediaToast.isError strong {
+  color: #bd3d2d;
+}
+
+.adminMediaConfirmBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: rgba(15, 23, 42, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.adminMediaConfirmDialog {
+  width: min(420px, 100%);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 22px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+}
+
+.adminMediaConfirmDialog h3 {
+  margin: 0;
+  color: #102033;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.adminMediaConfirmDialog p {
+  margin: 10px 0 0;
+  color: #5c6d61;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.adminMediaConfirmActions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.adminMediaLibraryHeader {
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.adminMediaLibraryHeader h3 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.adminMediaLibraryHeader span {
+  color: #617064;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.adminMediaLibraryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.adminMediaCard {
+  border: 1px solid #dfe8dd;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.adminMediaThumb {
+  height: 180px;
+  background: #eef5ea;
+}
+
+.adminMediaThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.adminMediaThumb span {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #657467;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.adminMediaCardBody {
+  padding: 14px;
+}
+
+.adminMediaCardBody small {
+  color: #648056;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.adminMediaCardBody h4 {
+  margin: 6px 0 8px;
+  color: #102033;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.adminMediaCardBody p {
+  margin: 0 0 14px;
+  color: #5f6f63;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.adminMediaCardActions {
+  justify-content: flex-end;
+}
+
+.adminMediaEmpty {
+  grid-column: 1 / -1;
+  border: 1px dashed #c7d8c1;
+  border-radius: 8px;
+  color: #617064;
+  padding: 22px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (max-width: 980px) {
+  .adminMediaHeader,
+  .adminMediaFormGrid,
+  .adminMediaFormGrid.compact {
+    grid-template-columns: 1fr;
+  }
+
+  .adminMediaHeader {
+    flex-direction: column;
+  }
+
+  .adminMediaTabs {
+    justify-content: flex-start;
+  }
+
+  .adminMediaLibraryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .adminMediaHeader,
+  .adminMediaPanel,
+  .adminMediaLibrary {
+    padding: 16px;
+  }
+
+  .adminMediaLibraryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .adminMediaActions,
+  .adminMediaCardActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

@@ -1,0 +1,116 @@
+.roleSelectorPage {
+  min-height: 100vh;
+  background: #ececec;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.roleSelectorShell {
+  width: min(980px, 100%);
+  background: #f7f7f7;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.1);
+}
+
+.roleSelectorHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.roleSelectorHeader img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+}
+
+.roleSelectorHeader h1 {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1;
+  color: #111827;
+}
+
+.roleSelectorGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.roleCard {
+  text-align: left;
+  border: 1px solid #dddddd;
+  border-radius: 16px;
+  background: #fff;
+  padding: 20px;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.roleCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.12);
+  border-color: #7ca457;
+}
+
+.roleCard h2 {
+  margin: 0 0 10px;
+  font-size: 23px;
+  color: #101010;
+}
+
+.roleCard p {
+  margin: 0 0 16px;
+  color: #555;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 63px;
+}
+
+.roleCard span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #6d9d46;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.roleSelectorActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.roleBackBtn {
+  height: 44px;
+  min-width: 130px;
+  border: 0;
+  border-radius: 999px;
+  background: #d2d2d2;
+  color: #262626;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.roleBackBtn:hover {
+  background: #c8c8c8;
+}
+
+@media (max-width: 860px) {
+  .roleSelectorGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .roleSelectorHeader h1 {
+    font-size: 28px;
+  }
+}

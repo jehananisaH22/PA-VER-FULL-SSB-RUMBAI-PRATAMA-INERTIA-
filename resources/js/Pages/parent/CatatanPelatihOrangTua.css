@@ -1,0 +1,583 @@
+.coachNotesPage {
+  min-height: 100vh;
+  background: #ececec;
+  color: #111827;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.coachNotesTopbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: #fff;
+  border-bottom: 1px solid #dedede;
+}
+
+.coachNotesTopInner {
+  width: 1180px;
+  max-width: calc(100% - 24px);
+  margin: 0 auto;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.coachNotesLogoBtn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.coachNotesLogoBtn img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.coachNotesLogoBtn:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.coachNotesNavLinks {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.coachNotesNavLinks button {
+  border: 0;
+  background: transparent;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+}
+
+.coachNotesNavLinks button:hover {
+  background: #f3f4f6;
+}
+
+.coachNotesNavLinks button.is-active {
+  background: #eef2f7;
+}
+
+.coachNotesNavRight {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.coachNotesIconBtn {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #dedede;
+  border-radius: 999px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+}
+
+.coachNotesIconBtn img {
+  width: 14px;
+  height: 14px;
+  filter: brightness(0);
+}
+
+.coachNotesNotifBadge {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  border: 1px solid #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+}
+
+.coachNotesProfileWrap {
+  position: relative;
+}
+
+.coachNotesProfileBtn {
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.coachNotesProfileBtn img {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid #cfd4dc;
+  object-fit: contain;
+  background: #ffffff;
+  padding: 3px;
+}
+
+.coachNotesProfileBtn span {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.coachNotesProfileMenu {
+  position: absolute;
+  top: 38px;
+  right: 0;
+  width: 120px;
+  padding: 6px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #e2e2e2;
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.08);
+}
+
+.coachNotesProfileMenu button {
+  width: 100%;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.coachNotesProfileMenu button:hover {
+  background: #f3f4f6;
+}
+
+.coachNotesMain {
+  padding: 14px 0 0;
+}
+
+.coachNotesContainer {
+  width: 1180px;
+  max-width: calc(100% - 24px);
+  margin: 0 auto;
+}
+
+.coachNotesCard {
+  min-height: 620px;
+  background: #ffffff;
+  border: 1px solid #dfdfdf;
+  border-radius: 14px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+  padding: 22px 18px 26px;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: coachNotesReveal 0.5s ease forwards;
+}
+
+.coachNotesHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.coachNotesTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.coachNotesTitleWrap h1 {
+  margin: 0;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.coachNotesTitleIcon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.coachNotesMonthPicker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 300px;
+  height: 42px;
+  padding: 0 14px 0 12px;
+  border: 1px solid #dde2e8;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.05);
+  margin-right: 8px;
+}
+
+.coachNotesMonthPickerFields {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 26px;
+}
+
+.coachNotesPickerBtn {
+  position: relative;
+  border: 0;
+  background: transparent;
+  color: #475467;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px 0 0;
+}
+
+.coachNotesPickerBtn::before,
+.coachNotesPickerBtn::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  width: 5px;
+  height: 1.5px;
+  background: #8a94a2;
+  transition: transform 0.2s ease;
+}
+
+.coachNotesPickerBtn::before {
+  transform: translate(-1px, -50%) rotate(45deg);
+}
+
+.coachNotesPickerBtn::after {
+  transform: translate(2px, -50%) rotate(-45deg);
+}
+
+.coachNotesPickerBtn.is-open::before {
+  transform: translate(-1px, -50%) rotate(-45deg);
+}
+
+.coachNotesPickerBtn.is-open::after {
+  transform: translate(2px, -50%) rotate(45deg);
+}
+
+.coachNotesPickerBtn:first-of-type {
+  min-width: 120px;
+}
+
+.coachNotesPickerDivider {
+  width: 1px;
+  height: 16px;
+  background: #d5dae1;
+  flex: 0 0 auto;
+}
+
+.coachNotesPickerBtn:last-of-type {
+  max-width: 84px;
+  min-width: 78px;
+}
+
+.coachNotesPickerMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.1);
+  padding: 6px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.coachNotesMonthMenu {
+  left: 26px;
+  width: 150px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.coachNotesYearMenu {
+  left: 170px;
+  width: 90px;
+}
+
+.coachNotesPickerMenu button {
+  border: 0;
+  background: transparent;
+  height: 32px;
+  border-radius: 8px;
+  text-align: left;
+  padding: 0 10px;
+  font-size: 14px;
+  color: #334155;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.coachNotesPickerMenu button:hover {
+  background: #f1f5f9;
+}
+
+.coachNotesPickerMenu button.is-active {
+  background: #e2e8f0;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.coachNotesMonthPickerEndIcon {
+  position: absolute;
+  left: 12px;
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid #a0a8b3;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.coachNotesMonthPickerEndIcon::before,
+.coachNotesMonthPickerEndIcon::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  width: 2px;
+  height: 4px;
+  border-radius: 2px;
+  background: #a0a8b3;
+}
+
+.coachNotesMonthPickerEndIcon::before {
+  left: 2.5px;
+}
+
+.coachNotesMonthPickerEndIcon::after {
+  right: 2.5px;
+}
+
+.coachNotesList {
+  margin: 30px 0 0;
+  padding: 0 0 0 2px;
+  list-style: none;
+  counter-reset: coach-note-item;
+  max-width: 1240px;
+}
+
+.coachNotesRow {
+  counter-increment: coach-note-item;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 640px) 188px 182px;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 6px;
+  border-bottom: 1px solid #e8eaee;
+}
+
+.coachNotesRow::before {
+  content: counter(coach-note-item) ".";
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
+  line-height: 1;
+}
+
+.coachNotesText {
+  font-size: 17px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.coachNotesCoach {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #3f4654;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.coachNotesCoachIcon {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #d5d5d5;
+  position: relative;
+}
+
+.coachNotesCoachIcon::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #f7f7f7;
+}
+
+.coachNotesCoachIcon::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  bottom: 3px;
+  width: 12px;
+  height: 6px;
+  border-radius: 8px 8px 0 0;
+  background: #f7f7f7;
+}
+
+.coachNotesRow time {
+  color: #667085;
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.coachNotesEmpty,
+.coachNotesLocked {
+  margin-top: 24px;
+  min-height: 180px;
+  border: 1px dashed #cfd4dc;
+  border-radius: 12px;
+  background: #f1f3f6;
+  color: #6b7280;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 14px;
+}
+
+.coachNotesLocked {
+  flex-direction: column;
+  gap: 10px;
+}
+
+.coachNotesLocked p {
+  margin: 0;
+}
+
+.coachNotesLocked button {
+  height: 36px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 16px;
+  background: #3d9442;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.coachNotesLocked button:hover {
+  background: #337f37;
+}
+
+.coachNotesFooter {
+  margin-top: 16px;
+  background: #2c2d30;
+  color: #fff;
+}
+
+.coachNotesFooterInner {
+  width: 1180px;
+  max-width: calc(100% - 24px);
+  margin: 0 auto;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.coachNotesFooterInner img {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+}
+
+.coachNotesFooterInner strong {
+  font-size: 14px;
+}
+
+.coachNotesFooterInner p {
+  margin: 2px 0;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.coachNotesFooterBottom {
+  text-align: center;
+  font-size: 11px;
+  padding: 0 0 12px;
+  opacity: 0.85;
+}
+
+@keyframes coachNotesReveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 980px) {
+  .coachNotesNavLinks {
+    display: none;
+  }
+
+  .coachNotesHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .coachNotesTitleWrap h1 {
+    font-size: 28px;
+  }
+
+  .coachNotesMonthPicker {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .coachNotesRow {
+    grid-template-columns: 26px 1fr;
+    gap: 10px;
+  }
+
+  .coachNotesText {
+    font-size: 16px;
+  }
+
+  .coachNotesCoach,
+  .coachNotesRow time {
+    grid-column: 2;
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coachNotesCard {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
