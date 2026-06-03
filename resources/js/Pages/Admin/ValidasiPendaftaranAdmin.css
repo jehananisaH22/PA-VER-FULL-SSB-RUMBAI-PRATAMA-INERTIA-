@@ -1,0 +1,2050 @@
+.adminRegPage {
+  margin-top: 24px;
+  position: relative;
+}
+
+.adminRegToast {
+  position: fixed;
+  top: 88px;
+  right: 22px;
+  z-index: 90;
+  min-width: 280px;
+  max-width: 420px;
+  min-height: 46px;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid #dbe4ef;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.18);
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  animation: adminRegToastIn 0.22s ease;
+}
+
+.adminRegToast.isSuccess {
+  background: #eef9f0;
+  border-color: #9fd5a7;
+  color: #166534;
+}
+
+@keyframes adminRegToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.adminRegTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 14px;
+}
+
+.adminRegBackBtn {
+  min-height: 34px;
+  border: 1px solid #d8e3d3;
+  border-radius: 10px;
+  background: #f6fbf3;
+  color: #2b4d1c;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.adminRegListCard {
+  min-height: calc(100vh - 190px);
+  padding: 20px 24px 24px;
+}
+
+.adminRegListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #edf1f6;
+}
+
+.adminRegListHeader h2 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.25;
+  color: #0f172a;
+  letter-spacing: 0;
+}
+
+.adminRegToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.adminRegToolbar label {
+  font-size: 13px;
+  color: #475569;
+  font-weight: 600;
+}
+
+.adminRegSortSelect {
+  position: relative;
+  width: 110px;
+  flex: 0 0 auto;
+}
+
+.adminRegSortTrigger {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid #d7dfd1;
+  border-radius: 10px;
+  background: #f7faf5;
+  color: #16314f;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 10px 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.adminRegSortTrigger:hover {
+  border-color: #b8d5aa;
+  background: #f2faee;
+}
+
+.adminRegSortSelect.isOpen .adminRegSortTrigger,
+.adminRegSortTrigger:focus-visible {
+  outline: none;
+  border-color: #a7ce91;
+  background: #f3faef;
+  box-shadow: 0 0 0 4px rgba(127, 179, 96, 0.14);
+}
+
+.adminRegSortIcon {
+  width: 16px;
+  height: 16px;
+  color: #355f25;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 180ms ease;
+}
+
+.adminRegSortIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.adminRegSortSelect.isOpen .adminRegSortIcon {
+  transform: rotate(180deg);
+}
+
+.adminRegSortMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  padding: 6px;
+  border: 1px solid #cfe5c3;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+}
+
+.adminRegSortOption {
+  width: 100%;
+  min-height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #16314f;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  padding: 0 12px;
+  cursor: pointer;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.adminRegSortOption:hover,
+.adminRegSortOption:focus-visible {
+  outline: none;
+  background: #f0f8eb;
+  color: #25571c;
+}
+
+.adminRegSortOption.isSelected {
+  background: #dff2d6;
+  color: #214d17;
+}
+
+.adminRegTableWrap {
+  height: 100%;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #c3cad3 transparent;
+}
+
+.adminRegTableWrap table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.adminRegTableWrap th,
+.adminRegTableWrap td {
+  padding: 13px 10px;
+  text-align: left;
+  border-bottom: 1px solid #edf1f6;
+  font-size: 13px;
+}
+
+.adminRegTableWrap th {
+  font-weight: 700;
+  color: #111827;
+  font-size: 13px;
+}
+
+.adminRegTableWrap td {
+  color: #334155;
+}
+
+.adminRegTableWrap td a {
+  color: #334155;
+  text-decoration: underline;
+}
+
+.adminRegReviewLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0fr);
+  gap: 0;
+  align-items: start;
+  transition: grid-template-columns 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    gap 280ms ease;
+}
+
+.adminRegReviewLayout.hasAction {
+  grid-template-columns: minmax(390px, 1fr) minmax(380px, 0.95fr);
+  gap: 18px;
+}
+
+.adminRegNamePanel {
+  min-width: 0;
+  border: 1px solid #edf1f6;
+  border-radius: 14px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.adminRegNameTableWrap {
+  max-height: calc(100vh - 292px);
+}
+
+.adminRegNameTable {
+  table-layout: fixed;
+}
+
+.adminRegNameTable th:first-child,
+.adminRegNameTable td:first-child {
+  width: 58px;
+}
+
+.adminRegNameTable th:last-child,
+.adminRegNameTable td:last-child {
+  width: 178px;
+  text-align: center;
+}
+
+.adminRegNameTable td:last-child {
+  padding-right: 18px;
+}
+
+.adminRegNameTable .adminChip {
+  min-height: 24px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 12px;
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+.adminRegNameTable tbody tr {
+  transition: background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.adminRegNameTable tbody tr:hover {
+  background: #fafcf9;
+}
+
+.adminRegNameTable tbody tr.isSelected {
+  background: #f3faef;
+  box-shadow: inset 4px 0 0 #4f9d25;
+}
+
+.adminRegNameBtn {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  text-align: left;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.adminRegNameBtn strong {
+  font-size: 14px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.adminRegNameBtn span {
+  max-width: 100%;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adminRegActionPane {
+  min-width: 0;
+  min-height: 0;
+  border: 0 solid transparent;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdfb 100%);
+  padding: 0;
+  box-shadow: none;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateX(22px) scale(0.985);
+  visibility: hidden;
+  transition: opacity 240ms ease, transform 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    padding 320ms cubic-bezier(0.22, 1, 0.36, 1), border-color 240ms ease,
+    box-shadow 240ms ease, min-height 320ms ease, visibility 0s linear 260ms;
+}
+
+.adminRegActionPane.isOpen {
+  min-height: 430px;
+  border-width: 1px;
+  border-color: #e3ebf3;
+  padding: 18px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0) scale(1);
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.adminRegActionInner {
+  min-width: 360px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 220ms ease, transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.adminRegActionPane.isOpen .adminRegActionInner {
+  opacity: 1;
+  transform: translateY(0);
+  animation: adminRegDetailSwapIn 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition-delay: 100ms;
+}
+
+@keyframes adminRegDetailSwapIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.adminRegActionHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #edf1f6;
+}
+
+.adminRegActionHead span,
+.adminRegStatusCopy > span,
+.adminRegActionBox > span {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.adminRegActionHead h3 {
+  margin: 4px 0 0;
+  color: #0f172a;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.adminRegCloseDetailBtn {
+  min-height: 32px;
+  border: 1px solid #d8e3d3;
+  border-radius: 10px;
+  background: #f7faf5;
+  color: #315423;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adminRegActionStatus {
+  min-height: 66px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 12px 14px 12px 16px;
+  border: 1px solid #e3ebf3;
+  border-radius: 14px;
+  background: #f8fafc;
+  box-shadow: inset 4px 0 0 #94a3b8, 0 8px 16px rgba(15, 23, 42, 0.04);
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.adminRegActionStatus.isValid {
+  border-color: #d7eacb;
+  background: #f6fbf3;
+  box-shadow: inset 4px 0 0 #5ba930, 0 8px 16px rgba(63, 125, 34, 0.07);
+}
+
+.adminRegActionStatus.isInvalid {
+  border-color: #f0c4c4;
+  background: #fff7f7;
+  box-shadow: inset 4px 0 0 #b91c1c, 0 8px 16px rgba(185, 28, 28, 0.07);
+}
+
+.adminRegActionStatus.isNeedsFix {
+  border-color: #f3d6aa;
+  background: #fffaf0;
+  box-shadow: inset 4px 0 0 #b45309, 0 8px 16px rgba(180, 83, 9, 0.07);
+}
+
+.adminRegActionStatus.isPending {
+  border-color: #d9e0ea;
+  background: #f8fafc;
+}
+
+.adminRegStatusCopy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.adminRegStatusCopy small {
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.adminRegStatusBadge {
+  min-width: 112px;
+  min-height: 32px;
+  border-radius: 999px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.1);
+}
+
+.adminRegStatusBadge.isPaid {
+  background: #5ba930;
+}
+
+.adminRegStatusBadge.isUnpaid {
+  background: #b91c1c;
+}
+
+.adminRegStatusBadge.isNeedsFix {
+  background: #b45309;
+}
+
+.adminRegStatusBadge.isPending {
+  background: #6b7280;
+}
+
+.adminRegDataSection {
+  margin-top: 16px;
+}
+
+.adminRegDataSection h4 {
+  margin: 0 0 10px;
+  color: #111827;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.adminRegInfoGrid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.adminRegInfoGrid div {
+  min-width: 0;
+  border: 1px solid #edf1f6;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 10px 12px;
+}
+
+.adminRegInfoGrid div.isMarked {
+  border-color: #f2b8b5;
+  background: #fff6f5;
+}
+
+.adminRegInfoGrid dt {
+  margin: 0 0 4px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.adminRegInfoGrid dd {
+  margin: 0;
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.adminRegFileGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.adminRegFileTile {
+  min-height: 74px;
+  border: 1px solid #d8e3d3;
+  border-radius: 12px;
+  background: #f7faf5;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.adminRegFileTile:hover {
+  border-color: #9fcb87;
+  background: #f0f8eb;
+}
+
+.adminRegFileTile.isMarked {
+  border-color: #f2b8b5;
+  background: #fff6f5;
+}
+
+.adminRegFileTile span {
+  color: #1f2937;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.adminRegFileTile small {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.adminRegActionBox {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #edf1f6;
+}
+
+.adminRegActionButtons {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.adminRegChipAction {
+  border: 0;
+  background: #8d8d8d;
+  color: #ffffff;
+  cursor: pointer;
+  gap: 8px;
+}
+
+.adminRegChipAction span {
+  opacity: 0.88;
+  font-size: 10px;
+}
+
+.adminRegDetailCard {
+  min-height: calc(100vh - 190px);
+  padding: 16px 16px 18px;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 16px;
+}
+
+.adminRegSide {
+  border-right: 1px solid #e5ebf1;
+  padding-right: 14px;
+}
+
+.adminRegSide h3 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.adminRegSide p {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.adminRegMain h2 {
+  margin: 0;
+  font-size: 28px;
+  color: #111827;
+}
+
+.adminRegFormList {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.adminRegFormRow {
+  display: block;
+}
+
+.adminRegInputWrap {
+  min-width: 0;
+}
+
+.adminRegInputWrap label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: #111827;
+  font-weight: 700;
+}
+
+.adminRegInputWrap label small {
+  font-weight: 500;
+  color: #475569;
+}
+
+.adminRegInputWrap input {
+  width: 100%;
+  min-height: 32px;
+  border: 1px solid #cfd8e3;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #334155;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.adminRegFileBtn {
+  min-height: 24px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(63, 125, 34, 0.92);
+  color: #ffffff;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adminRegSubmitWrap {
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid #e8edf3;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+.adminRegDecisionBtn {
+  min-height: 40px;
+  border: 0;
+  border-radius: 999px;
+  color: #ffffff;
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adminRegDecisionBtn.isValid {
+  background: #3f7d22;
+}
+
+.adminRegDecisionBtn.isInvalid {
+  background: #b91c1c;
+}
+
+.adminRegDecisionBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.adminRegRepairOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 75;
+  background: rgba(15, 23, 42, 0.3);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.adminRegRepairCard {
+  width: min(520px, 92vw);
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #dbe4ef;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.18);
+  padding: 18px;
+}
+
+.adminRegRepairHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.adminRegRepairHead h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.adminRegRepairClose,
+.adminRegRepairGhostBtn {
+  min-height: 34px;
+  border: 1px solid #d8e3d3;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #475569;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.adminRegRepairCard > p {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: #334155;
+}
+
+.adminRegRepairBody {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.adminRegRepairSection + .adminRegRepairSection {
+  margin-top: 14px;
+}
+
+.adminRegRepairSection h4 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.adminRegRepairChecklist {
+  display: grid;
+  gap: 8px;
+}
+
+.adminRegRepairOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #334155;
+}
+
+.adminRegRepairOption input {
+  width: 16px;
+  height: 16px;
+  accent-color: #3f7d22;
+}
+
+.adminRegRepairBody > span {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.adminRegRepairBody ul {
+  margin: 10px 0 0 18px;
+  padding: 0;
+}
+
+.adminRegRepairBody li,
+.adminRegRepairBody p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #334155;
+}
+
+.adminRegRepairActions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.adminRegRepairSubmitBtn {
+  min-height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: #3f7d22;
+  color: #ffffff;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adminRegRepairSubmitBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.adminRegPreviewOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(15, 23, 42, 0.26);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.adminRegPreviewCard {
+  width: min(560px, 92vw);
+  border-radius: 14px;
+  border: 1px solid #dbe4d6;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(3px);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.18);
+  padding: 14px;
+}
+
+.adminRegPreviewHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.adminRegPreviewHead h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.adminRegPreviewClose {
+  min-height: 30px;
+  border: 1px solid #d5e3cc;
+  border-radius: 9px;
+  background: rgba(246, 251, 243, 0.9);
+  color: #315423;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.adminRegPreviewList {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adminRegPreviewItem {
+  min-height: 40px;
+  border: 1px solid rgba(181, 197, 174, 0.8);
+  border-radius: 10px;
+  background: rgba(243, 250, 239, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px;
+}
+
+.adminRegPreviewItem span {
+  font-size: 13px;
+  color: #334155;
+}
+
+.adminRegPreviewItem button {
+  min-height: 26px;
+  border: 0;
+  border-radius: 999px;
+  background: #3f7d22;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.adminRegPreviewEmpty {
+  min-height: 40px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (max-width: 1100px) {
+  .adminRegReviewLayout {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .adminRegReviewLayout.hasAction {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .adminRegNameTableWrap {
+    max-height: 360px;
+  }
+
+  .adminRegDetailCard {
+    grid-template-columns: 1fr;
+  }
+
+  .adminRegSide {
+    border-right: 0;
+    border-bottom: 1px solid #e5ebf1;
+    padding-right: 0;
+    padding-bottom: 10px;
+  }
+}
+
+@media (max-width: 700px) {
+  .adminRegPage {
+    margin-top: 18px;
+  }
+
+  .adminRegListCard {
+    padding: 16px;
+  }
+
+  .adminRegListHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .adminRegToolbar {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .adminRegSortSelect {
+    width: 140px;
+  }
+
+  .adminRegNameTableWrap {
+    max-height: none;
+  }
+
+  .adminRegNameTable {
+    min-width: 520px;
+  }
+
+  .adminRegActionPane {
+    min-height: 360px;
+    padding: 14px;
+  }
+
+  .adminRegActionPane:not(.isOpen) {
+    min-height: 0;
+    padding: 0;
+  }
+
+  .adminRegActionInner {
+    min-width: 0;
+  }
+
+  .adminRegActionHead,
+  .adminRegActionButtons {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .adminRegActionStatus {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .adminRegStatusBadge {
+    width: 100%;
+  }
+
+  .adminRegInfoGrid,
+  .adminRegFileGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .adminRegDecisionBtn {
+    width: 100%;
+  }
+}
+
+/* Clean admin registration view: visual polish only. */
+.adminRegPage {
+  margin-top: 6px;
+}
+
+.adminRegListCard,
+.adminRegDetailCard,
+.adminRegNamePanel,
+.adminRegActionPane.isOpen,
+.adminRegRepairCard,
+.adminRegPreviewCard {
+  border-radius: 8px;
+  border-color: #dfe8dd;
+  background: #ffffff;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.045);
+}
+
+.adminRegListCard {
+  min-height: calc(100vh - 170px);
+  padding: 20px;
+}
+
+.adminRegListHeader {
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom-color: #e7eee4;
+}
+
+.adminRegListHeader h2,
+.adminRegMain h2 {
+  color: #102033;
+  font-weight: 750;
+  letter-spacing: 0;
+}
+
+.adminRegListHeader h2 {
+  font-size: 24px;
+}
+
+.adminRegToolbar label,
+.adminRegActionHead span,
+.adminRegStatusCopy > span,
+.adminRegActionBox > span {
+  color: #607264;
+}
+
+.adminRegSortTrigger,
+.adminRegBackBtn,
+.adminRegCloseDetailBtn,
+.adminRegRepairClose,
+.adminRegRepairGhostBtn {
+  border-color: #dce8d8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2f4d25;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
+.adminRegSortTrigger:hover,
+.adminRegBackBtn:hover,
+.adminRegCloseDetailBtn:hover,
+.adminRegRepairClose:hover,
+.adminRegRepairGhostBtn:hover {
+  border-color: #c7ddbf;
+  background: #f8fbf6;
+}
+
+.adminRegTableWrap,
+.adminRegNameTableWrap {
+  border: 1px solid #e6ece4;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.adminRegTableWrap table,
+.adminRegNameTable {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.adminRegTableWrap th,
+.adminRegTableWrap td {
+  padding: 14px;
+  border-bottom-color: #edf2eb;
+  line-height: 1.45;
+}
+
+.adminRegTableWrap th {
+  background: #f7faf6;
+  color: #334155;
+  font-size: 12px;
+}
+
+.adminRegTableWrap tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.adminRegNameTable tbody tr:hover {
+  background: #f7faf6;
+}
+
+.adminRegNameTable tbody tr.isSelected {
+  background: #eef7ea;
+  box-shadow: inset 3px 0 0 #3f7d22;
+}
+
+.adminRegNameBtn strong {
+  color: #102033;
+  font-size: 13px;
+}
+
+.adminRegNameBtn span,
+.adminRegSide p,
+.adminRegRepairCard > p {
+  color: #5f6f63;
+}
+
+.adminRegActionPane.isOpen {
+  padding: 20px;
+}
+
+.adminRegActionHead {
+  border-bottom-color: #e7eee4;
+}
+
+.adminRegActionHead h3 {
+  color: #102033;
+  font-size: 20px;
+}
+
+.adminRegActionBox,
+.adminRegSubmitWrap {
+  border-top-color: #e7eee4;
+}
+
+.adminRegDetailCard {
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 18px;
+  padding: 20px;
+}
+
+.adminRegSide {
+  border-right-color: #e7eee4;
+}
+
+.adminRegInputWrap input {
+  min-height: 36px;
+  border-color: #dce5dc;
+  border-radius: 8px;
+  background: #fbfdfb;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.adminRegDecisionBtn,
+.adminRegFileBtn,
+.adminRegChipAction {
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+@media (max-width: 920px) {
+  .adminRegDetailCard {
+    grid-template-columns: 1fr;
+  }
+
+  .adminRegSide {
+    border-right: 0;
+    border-bottom: 1px solid #e7eee4;
+    padding-right: 0;
+    padding-bottom: 14px;
+  }
+}
+
+/* Reference registration layout */
+.adminRegPage {
+  margin-top: 10px;
+}
+
+.adminRegListCard,
+.adminRegDetailCard,
+.adminRegNamePanel,
+.adminRegActionPane.isOpen,
+.adminRegRepairCard,
+.adminRegPreviewCard {
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055);
+}
+
+.adminRegListCard {
+  min-height: 640px;
+  padding: 30px;
+}
+
+.adminRegListHeader {
+  margin-bottom: 20px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #e9eef4;
+}
+
+.adminRegListHeader h2 {
+  font-size: 28px;
+  color: #111827;
+  font-weight: 800;
+}
+
+.adminRegToolbar label {
+  color: #55657b;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.adminRegSortSelect {
+  width: 136px;
+}
+
+.adminRegSortTrigger {
+  min-height: 44px;
+  border: 1px solid #cfe4c6;
+  border-radius: 12px;
+  background: #fbfff8;
+  color: #0b1f3b;
+  font-size: 14px;
+  box-shadow: none;
+}
+
+.adminRegTableWrap,
+.adminRegNameTableWrap {
+  border: 1px solid #e4ebf2;
+  border-radius: 16px;
+  overflow: auto;
+}
+
+.adminRegTableWrap th,
+.adminRegTableWrap td {
+  padding: 18px 14px;
+  border-bottom: 1px solid #e9eef4;
+  font-size: 15px;
+}
+
+.adminRegTableWrap th {
+  background: #ffffff;
+  color: #111827;
+  font-weight: 800;
+}
+
+.adminRegNameTableWrap {
+  max-height: 506px;
+}
+
+.adminRegNameTable th:first-child,
+.adminRegNameTable td:first-child {
+  width: 72px;
+}
+
+.adminRegNameTable th:last-child,
+.adminRegNameTable td:last-child {
+  width: 210px;
+}
+
+.adminRegNameTable tbody tr {
+  min-height: 78px;
+}
+
+.adminRegNameBtn {
+  gap: 6px;
+}
+
+.adminRegNameBtn strong {
+  color: #111827;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.adminRegNameBtn span {
+  color: #5a6b82;
+  font-size: 14px;
+}
+
+.adminRegDetailCard {
+  min-height: 640px;
+  grid-template-columns: 1fr;
+  padding: 24px;
+}
+
+.adminRegSide {
+  border-right: 0;
+  border-bottom: 1px solid #e9eef4;
+  padding: 0 0 18px;
+}
+
+.adminRegSide h3 {
+  color: #5a6b82;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.adminRegSide p {
+  color: #111827;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.adminRegMain h2 {
+  font-size: 18px;
+  color: #111827;
+}
+
+.adminRegFormList {
+  gap: 16px;
+}
+
+.adminRegInfoGrid,
+.adminRegFileGrid {
+  gap: 14px;
+}
+
+.adminRegInputWrap input,
+.adminRegFileTile {
+  min-height: 58px;
+  border: 1px solid #e4ebf2;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.adminRegFileTile {
+  background: #fbfff8;
+  border-color: #cfe4c6;
+  padding: 16px;
+}
+
+.adminRegActionStatus {
+  min-height: 64px;
+  border-radius: 14px;
+  border-color: #cfe4c6;
+  background: #f8fff5;
+  box-shadow: 0 14px 28px rgba(79, 148, 38, 0.08);
+}
+
+.adminRegDecisionBtn {
+  min-height: 42px;
+  min-width: 116px;
+  border-radius: 999px;
+  font-size: 15px;
+}
+
+.adminRegDecisionBtn.isValid {
+  background: #55a92f;
+}
+
+.adminRegDecisionBtn.isInvalid {
+  background: #d71920;
+}
+
+.adminRegCloseDetailBtn,
+.adminRegBackBtn {
+  min-height: 40px;
+  border-radius: 10px;
+  border-color: #cfe4c6;
+  background: #fbfff8;
+  box-shadow: none;
+}
+
+/* Moderate font weight tuning to keep the page clean. */
+.adminRegListHeader h2,
+.adminRegSide p,
+.adminRegNameBtn strong {
+  font-weight: 650;
+}
+
+.adminRegToolbar label,
+.adminRegTableWrap th,
+.adminRegActionHead h3,
+.adminRegSide h3,
+.adminRegDecisionBtn,
+.adminRegSortTrigger,
+.adminRegBackBtn,
+.adminRegCloseDetailBtn {
+  font-weight: 600;
+}
+
+.adminRegTableWrap td,
+.adminRegNameBtn span,
+.adminRegInputWrap input,
+.adminRegFileTile {
+  font-weight: 400;
+}
+
+.adminRegRepairCard > p {
+  font-weight: 600;
+}
+
+/* Compact admin scale */
+.adminRegListCard {
+  min-height: 560px;
+  padding: 24px;
+}
+
+.adminRegListHeader {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+}
+
+.adminRegListHeader h2 {
+  font-size: 24px;
+}
+
+.adminRegSortTrigger {
+  min-height: 38px;
+  font-size: 13px;
+}
+
+.adminRegTableWrap th,
+.adminRegTableWrap td {
+  padding: 14px 12px;
+  font-size: 14px;
+}
+
+.adminRegNameTableWrap {
+  max-height: 450px;
+}
+
+.adminRegNameBtn strong {
+  font-size: 16px;
+}
+
+.adminRegNameBtn span {
+  font-size: 13px;
+}
+
+.adminRegDetailCard {
+  min-height: 560px;
+  padding: 20px;
+}
+
+.adminRegSide p {
+  font-size: 22px;
+}
+
+.adminRegInputWrap input,
+.adminRegFileTile {
+  min-height: 52px;
+}
+
+.adminRegActionStatus {
+  min-height: 58px;
+}
+
+.adminRegDecisionBtn {
+  min-height: 38px;
+  min-width: 104px;
+  font-size: 14px;
+}
+
+.adminRegCloseDetailBtn,
+.adminRegBackBtn {
+  min-height: 36px;
+}
+
+/* Balanced admin scale */
+.adminRegListCard {
+  min-height: 585px;
+  padding: 26px;
+}
+
+.adminRegListHeader h2 {
+  font-size: 25px;
+}
+
+.adminRegTableWrap th,
+.adminRegTableWrap td {
+  padding: 15px 12px;
+}
+
+.adminRegNameTableWrap {
+  max-height: 470px;
+}
+
+.adminRegDetailCard {
+  min-height: 585px;
+  padding: 22px;
+}
+
+.adminRegInputWrap input,
+.adminRegFileTile {
+  min-height: 54px;
+}
+
+/* Match reference screenshot: two-column validation recap. */
+.adminRegPage {
+  margin-top: 12px;
+}
+
+.adminRegListCard {
+  min-height: calc(100vh - 132px);
+  padding: 24px 30px 28px;
+  border: 1px solid #e1e8f0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.045);
+}
+
+.adminRegListHeader {
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e9eef4;
+}
+
+.adminRegListHeader h2 {
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 650;
+  color: #111827;
+}
+
+.adminRegToolbar {
+  gap: 12px;
+}
+
+.adminRegToolbar label {
+  color: #56657a;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.adminRegSortSelect {
+  width: 136px;
+}
+
+.adminRegSortTrigger {
+  min-height: 42px;
+  border: 1px solid #d5e4d0;
+  border-radius: 12px;
+  background: #fbfff8;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.adminRegReviewLayout {
+  grid-template-columns: minmax(0, 1fr) 0;
+  gap: 0;
+}
+
+.adminRegReviewLayout.hasAction {
+  grid-template-columns: minmax(430px, 1.06fr) minmax(420px, 1fr);
+  gap: 20px;
+}
+
+.adminRegNamePanel {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.adminRegNameTableWrap {
+  max-height: calc(100vh - 280px);
+  border: 1px solid #e4ebf2;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.adminRegNameTable {
+  min-width: 100%;
+  table-layout: fixed;
+}
+
+.adminRegNameTable th:first-child,
+.adminRegNameTable td:first-child {
+  width: 72px;
+}
+
+.adminRegNameTable th:last-child,
+.adminRegNameTable td:last-child {
+  width: 210px;
+  text-align: center;
+}
+
+.adminRegTableWrap th,
+.adminRegTableWrap td {
+  padding: 16px 14px;
+  border-bottom: 1px solid #e9eef4;
+  font-size: 14px;
+}
+
+.adminRegTableWrap th {
+  background: #ffffff;
+  color: #111827;
+  font-weight: 650;
+}
+
+.adminRegNameTable tbody tr {
+  height: 78px;
+}
+
+.adminRegNameTable tbody tr:hover {
+  background: #fbfdfb;
+}
+
+.adminRegNameTable tbody tr.isSelected {
+  background: #f0f8ec;
+  box-shadow: inset 4px 0 0 #4faa2f;
+}
+
+.adminRegNameBtn strong {
+  color: #111827;
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 650;
+}
+
+.adminRegNameBtn span {
+  color: #61718a;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.adminRegNameTable .adminChip,
+.adminRegStatusBadge {
+  min-height: 30px;
+  min-width: 62px;
+  border-radius: 999px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.adminRegActionPane {
+  transform: translateX(10px);
+}
+
+.adminRegActionPane.isOpen {
+  min-height: calc(100vh - 280px);
+  padding: 24px;
+  border: 1px solid #e4ebf2;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.adminRegActionInner {
+  min-width: 0;
+}
+
+.adminRegActionHead {
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e9eef4;
+}
+
+.adminRegActionHead span {
+  color: #65758c;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.adminRegActionHead h3 {
+  margin-top: 6px;
+  color: #111827;
+  font-size: 27px;
+  line-height: 1.1;
+  font-weight: 650;
+}
+
+.adminRegCloseDetailBtn {
+  min-height: 40px;
+  border: 1px solid #d5e4d0;
+  border-radius: 10px;
+  background: #fbfff8;
+  color: #274d1d;
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.adminRegActionStatus {
+  min-height: 80px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid #cfe6c6;
+  border-left: 4px solid #55af31;
+  border-radius: 16px;
+  background: #fbfff8;
+  box-shadow: 0 14px 28px rgba(79, 148, 38, 0.08);
+}
+
+.adminRegStatusCopy > span {
+  color: #667891;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.adminRegStatusCopy small {
+  color: #40516a;
+  font-size: 14px;
+}
+
+.adminRegDataSection {
+  margin-top: 20px;
+}
+
+.adminRegDataSection h4 {
+  margin-bottom: 12px;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.adminRegInfoGrid,
+.adminRegFileGrid {
+  gap: 12px;
+}
+
+.adminRegInfoGrid div {
+  min-height: 70px;
+  border: 1px solid #e4ebf2;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 13px 14px;
+}
+
+.adminRegInfoGrid dt {
+  color: #687891;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.adminRegInfoGrid dd {
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.adminRegFileTile {
+  min-height: 74px;
+  border: 1px solid #d2e5cb;
+  border-radius: 10px;
+  background: #fbfff8;
+  padding: 14px;
+}
+
+.adminRegFileTile span {
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.adminRegFileTile small {
+  color: #667891;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.adminRegActionBox {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid #e9eef4;
+}
+
+.adminRegActionBox > span {
+  color: #667891;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.adminRegActionButtons {
+  margin-top: 12px;
+  gap: 10px;
+}
+
+.adminRegDecisionBtn {
+  min-height: 42px;
+  min-width: 98px;
+  border-radius: 999px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.adminRegDecisionBtn.isInvalid {
+  background: #d71920;
+}
+
+.adminRegDecisionBtn.isValid,
+.adminRegStatusBadge.isValid,
+.adminRegNameTable .adminChip.isValid {
+  background: #55aa31;
+}
+
+@media (max-width: 1180px) {
+  .adminRegReviewLayout.hasAction {
+    grid-template-columns: 1fr;
+  }
+
+  .adminRegActionPane.isOpen {
+    min-height: auto;
+  }
+}
+
+/* Match latest Rekap Validasi screenshot: full-width list focus. */
+.adminRegPage {
+  margin-top: 12px;
+}
+
+.adminRegListCard {
+  min-height: 490px;
+  padding: 20px;
+  border: 1px solid #e1e8f0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055);
+}
+
+.adminRegListHeader {
+  margin-bottom: 13px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid #e9eef4;
+}
+
+.adminRegListHeader h2 {
+  color: #111827;
+  font-size: 21px;
+  line-height: 1.18;
+  font-weight: 650;
+}
+
+.adminRegToolbar {
+  gap: 12px;
+}
+
+.adminRegToolbar label {
+  color: #56657a;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.adminRegSortSelect {
+  width: 118px;
+}
+
+.adminRegSortTrigger {
+  min-height: 34px;
+  border: 1px solid #d6e6d0;
+  border-radius: 12px;
+  background: #fbfff8;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.adminRegReviewLayout {
+  grid-template-columns: minmax(0, 1fr) 0;
+  gap: 0;
+}
+
+.adminRegNamePanel {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.adminRegNameTableWrap {
+  max-height: 372px;
+  border: 1px solid #e4ebf2;
+  border-radius: 16px;
+  background: #ffffff;
+  overflow: auto;
+}
+
+.adminRegNameTable {
+  width: 100%;
+  min-width: 100%;
+  table-layout: fixed;
+}
+
+.adminRegNameTable th:first-child,
+.adminRegNameTable td:first-child {
+  width: 60px;
+}
+
+.adminRegNameTable th:last-child,
+.adminRegNameTable td:last-child {
+  width: 172px;
+  text-align: center;
+}
+
+.adminRegNameTable td:last-child {
+  padding-right: 14px;
+}
+
+.adminRegTableWrap th {
+  padding: 12px 11px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.adminRegTableWrap td {
+  height: 54px;
+  padding: 0 11px;
+  border-bottom: 1px solid #e9eef4;
+  color: #334155;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.adminRegNameTable tbody tr:hover {
+  background: transparent;
+}
+
+.adminRegNameTable tbody tr.isSelected {
+  background: #f0f8ec;
+  box-shadow: inset 4px 0 0 #4faa2f;
+}
+
+.adminRegNameBtn {
+  gap: 6px;
+}
+
+.adminRegNameBtn strong {
+  color: #111827;
+  font-size: 14px;
+  line-height: 1.22;
+  font-weight: 650;
+}
+
+.adminRegNameBtn span {
+  color: #61718a;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.adminRegNameTable .adminChip {
+  min-height: 24px;
+  min-width: 62px;
+  border-radius: 999px;
+  padding: 0 11px;
+  font-size: 11px;
+  font-weight: 650;
+  box-shadow: none;
+}
+
+.adminRegNameTable .adminChip.isPending {
+  min-width: 108px;
+}
+
+.adminRegActionPane.isOpen {
+  min-height: 372px;
+}
+
+@media (max-width: 1180px) {
+  .adminRegActionPane.isOpen {
+    margin-top: 18px;
+  }
+}
+
+@media (max-width: 700px) {
+  .adminRegPage {
+    margin-top: 18px;
+  }
+
+  .adminRegListCard {
+    min-height: auto;
+    padding: 16px;
+  }
+
+  .adminRegListHeader h2 {
+    font-size: 22px;
+  }
+
+  .adminRegNameTable {
+    min-width: 620px;
+  }
+}

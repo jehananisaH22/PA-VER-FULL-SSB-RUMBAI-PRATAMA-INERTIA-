@@ -1,0 +1,69 @@
+.yearSelect {
+  position: relative;
+  min-width: 140px;
+}
+
+.yearSelectTrigger {
+  width: 100%;
+  height: 38px;
+  border: 1px solid #d7dde5;
+  border-radius: 999px;
+  padding: 0 36px 0 14px;
+  background: #fff;
+  color: #111827;
+  font-size: 13px;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  cursor: pointer;
+}
+
+.yearSelectArrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #6b7280;
+  border-bottom: 2px solid #6b7280;
+  transform: translateY(-60%) rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.yearSelectArrow.open {
+  transform: translateY(-35%) rotate(-135deg);
+}
+
+.yearSelectMenu {
+  position: absolute;
+  top: 42px;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #d7dde5;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+  padding: 6px;
+  z-index: 20;
+}
+
+.yearSelectOption {
+  width: 100%;
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #111827;
+  font-size: 13px;
+  text-align: left;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.yearSelectOption:hover {
+  background: #f3f4f6;
+}
+
+.yearSelectOption.active {
+  background: #e9f2ff;
+  color: #0f4fb9;
+}

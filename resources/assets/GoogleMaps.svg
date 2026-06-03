@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Google Maps Icon">
+  <defs>
+    <linearGradient id="gBlue" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#4285F4"/>
+      <stop offset="1" stop-color="#1A73E8"/>
+    </linearGradient>
+    <linearGradient id="gGreen" x1="0" x2="1" y1="1" y2="0">
+      <stop offset="0" stop-color="#34A853"/>
+      <stop offset="1" stop-color="#188038"/>
+    </linearGradient>
+    <linearGradient id="gYellow" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#FBBC04"/>
+      <stop offset="1" stop-color="#F29900"/>
+    </linearGradient>
+    <linearGradient id="gRed" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#EA4335"/>
+      <stop offset="1" stop-color="#D93025"/>
+    </linearGradient>
+  </defs>
+
+  <path fill="url(#gBlue)" d="M32 5c9.4 0 17 7.6 17 17 0 12.2-17 37-17 37S15 34.2 15 22c0-9.4 7.6-17 17-17z"/>
+  <path fill="url(#gGreen)" d="M32 5c-9.4 0-17 7.6-17 17 0 7.8 6.9 20.6 12 27.8L49 27.8C49 15.4 41.4 5 32 5z" opacity="0.95"/>
+  <circle cx="32" cy="22" r="8.2" fill="#fff"/>
+  <circle cx="32" cy="22" r="4.2" fill="url(#gRed)"/>
+  <path fill="url(#gYellow)" d="M21 45.5l9.7-9.7a2 2 0 0 1 2.8 0l9.7 9.7-11.1 13.5z" opacity="0.95"/>
+</svg>

@@ -1,0 +1,310 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+
+class WebPageController extends Controller
+{
+    public function register()
+    {
+        return Inertia::render('Daftar');
+    }
+
+    public function verifyNotice(Request $request)
+    {
+        $account = $request->session()->get('registration.account');
+        $email = strtolower(trim((string) ($account['email'] ?? '')));
+        $verificationLink = $account['verificationLink'] ?? '';
+
+        if (! $verificationLink && $email !== '') {
+            $user = User::query()
+                ->whereRaw('LOWER(email) = ?', [$email])
+                ->whereNotNull('verification_token')
+                ->first();
+
+            if ($user) {
+                $verificationLink = url('/api/verify-email?token=' . $user->verification_token . '&email=' . urlencode($user->email));
+            }
+        }
+
+        return Inertia::render('Auth/VerifikasiEmail', [
+            'email' => $email,
+            'verificationLink' => $verificationLink,
+        ]);
+    }
+
+    public function registrationForm(Request $request)
+    {
+        return Inertia::render('HalamanFormPendaftaran', [
+            'registrationAccount' => $request->session()->get('registration.account'),
+            'registrationFormDraft' => $request->session()->get('registration.form'),
+        ]);
+    }
+
+    public function paymentProof(Request $request)
+    {
+        $account = $request->session()->get('registration.account');
+        $form = $request->session()->get('registration.form');
+
+        return Inertia::render('HalamanBuktiPembayaranPendaftaran', [
+            'paymentDraft' => [
+                'childName' => $form['childName'] ?? $form['formValues']['childName'] ?? '',
+                'parentName' => $account['name'] ?? '',
+                'email' => $account['email'] ?? '',
+                'registrationYear' => $form['registrationYear'] ?? now()->year,
+                'studentId' => $form['studentId'] ?? null,
+                'registrationId' => $form['registrationId'] ?? null,
+            ],
+        ]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $email = strtolower(trim((string) $request->query('email', '')));
+        $token = trim((string) $request->query('token', ''));
+
+        if ($email !== '' && $token !== '') {
+            $request->session()->put('password_reset_context', [
+                'email' => $email,
+                'token' => $token,
+                'opened_at' => now()->timestamp,
+            ]);
+        }
+
+        return Inertia::render('Auth/ResetPassword', [
+            'initialEmail' => $email,
+            'token' => $token,
+        ]);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        return Inertia::render('Auth/ResetPassword', [
+            'initialEmail' => $request->query('email', ''),
+            'token' => '',
+            'mode' => 'forgot',
+        ]);
+    }
+
+    public function login(?string $role = null)
+    {
+        $allowedRoles = ['orangtua', 'pelatih', 'admin'];
+
+        abort_if($role !== null && ! in_array($role, $allowedRoles, true), 404);
+
+        return Inertia::render('Auth/RoleLogin', [
+            'role' => $role,
+        ]);
+    }
+
+    public function profile(?string $role = null)
+    {
+        $role = $role ?: 'orangtua';
+
+        $roleAliases = [
+            'orangtua' => ['orangtua', 'orang_tua'],
+            'pelatih' => ['pelatih'],
+            'admin' => ['admin'],
+        ];
+
+        abort_unless(array_key_exists($role, $roleAliases), 404);
+
+        $user = Auth::user();
+        if (! $user || ! in_array($user->role, $roleAliases[$role], true)) {
+            $user = User::query()->whereIn('role', $roleAliases[$role])->first();
+        }
+
+        $parent = $role === 'orangtua' && $user
+            ? DB::table('orang_tua')->where('user_id', $user->id)->orWhere('email', $user->email)->first()
+            : null;
+        $children = $parent
+            ? DB::table('siswa')
+                ->leftJoin('profil_siswa', 'siswa.id_siswa', '=', 'profil_siswa.id_siswa')
+                ->where('siswa.id_ortu', $parent->id_ortu)
+                ->orderBy('siswa.nama_siswa')
+                ->select(
+                    'siswa.nama_siswa',
+                    'siswa.id_siswa',
+                    'siswa.nik',
+                    'siswa.no_kk',
+                    'siswa.nisn',
+                    'siswa.tempat_lahir',
+                    'siswa.tanggal_lahir',
+                    'siswa.umur',
+                    'profil_siswa.alamat',
+                    'profil_siswa.tinggi_badan',
+                    'profil_siswa.berat_badan'
+                )
+                ->get()
+            : collect();
+        $coach = $role === 'pelatih' && $user
+            ? DB::table('pelatih')->where('user_id', $user->id)->orWhere('email', $user->email)->first()
+            : null;
+
+        return Inertia::render('Auth/ProfilPengguna', [
+            'profile' => match ($role) {
+                'admin' => $this->adminProfile($user),
+                'pelatih' => $this->coachProfile($user, $coach),
+                default => $this->parentProfile($user, $parent, $children),
+            },
+        ]);
+    }
+
+    private function adminProfile(?User $user): array
+    {
+        return [
+            'roleKey' => 'admin',
+            'roleLabel' => 'Admin',
+            'name' => $user->name ?? 'Admin',
+            'email' => $user->email ?? '-',
+            'phone' => '-',
+            'accountStatus' => $user ? 'Aktif' : 'Tidak Aktif',
+            'dashboardUrl' => '/admin/dashboard',
+            'accessSummary' => 'Akun admin dapat mengelola pendaftaran, siswa, pelatih, pembayaran, jadwal latihan, media promosi, dan prestasi.',
+            'details' => [
+                ['label' => 'Nama Admin', 'value' => $user->name ?? '-'],
+                ['label' => 'Email', 'value' => $user->email ?? '-'],
+                ['label' => 'Level Akses', 'value' => 'Administrator'],
+            ],
+            'sections' => [[
+                'title' => 'Data Database',
+                'items' => [
+                    ['label' => 'Siswa', 'value' => DB::table('siswa')->count() . ' data'],
+                    ['label' => 'Pelatih', 'value' => DB::table('pelatih')->count() . ' data'],
+                    ['label' => 'Pendaftaran', 'value' => DB::table('pendaftaran')->count() . ' data'],
+                    ['label' => 'Pembayaran', 'value' => DB::table('pembayaran')->count() . ' data'],
+                ],
+            ]],
+        ];
+    }
+
+    private function coachProfile(?User $user, ?object $coach): array
+    {
+        return [
+            'roleKey' => 'pelatih',
+            'roleLabel' => 'Pelatih',
+            'name' => $coach->nama_pelatih ?? $user->name ?? 'Pelatih',
+            'email' => $coach->email ?? $user->email ?? '-',
+            'phone' => $coach->no_hp ?? '-',
+            'accountStatus' => $user ? 'Aktif' : 'Tidak Aktif',
+            'dashboardUrl' => '/pelatih/dashboard',
+            'accessSummary' => 'Akun pelatih dapat mengelola kehadiran, performa latihan, catatan pelatih, dan bukti pembayaran.',
+            'details' => [
+                ['label' => 'Nama Pelatih', 'value' => $coach->nama_pelatih ?? $user->name ?? '-'],
+                ['label' => 'Email', 'value' => $coach->email ?? $user->email ?? '-'],
+                ['label' => 'No HP', 'value' => $coach->no_hp ?? '-'],
+            ],
+            'sections' => [[
+                'title' => 'Akses Pelatih',
+                'items' => [
+                    ['label' => 'Jadwal Latihan', 'value' => DB::table('jadwal_latihan')->count() . ' data'],
+                    ['label' => 'Presensi', 'value' => DB::table('presensi')->count() . ' data'],
+                    ['label' => 'Performa', 'value' => DB::table('performa_siswa')->count() . ' data'],
+                    ['label' => 'Catatan', 'value' => DB::table('catatan_pelatih')->count() . ' data'],
+                ],
+            ]],
+        ];
+    }
+
+    private function parentProfile(?User $user, ?object $parent, $children): array
+    {
+        $childRows = collect($children);
+        $childNames = $childRows
+            ->map(fn ($child) => is_object($child) ? $child->nama_siswa : $child)
+            ->filter()
+            ->values()
+            ->all();
+        $childDetailItems = $childRows
+            ->flatMap(function ($child) {
+                if (! is_object($child)) {
+                    return [['label' => 'Nama Anak', 'value' => $child]];
+                }
+
+                $birthDate = $child->tanggal_lahir
+                    ? Carbon::parse($child->tanggal_lahir)->format('d/m/Y')
+                    : '-';
+
+                return [
+                    ['label' => 'Nama Anak', 'value' => $child->nama_siswa],
+                    ['label' => 'NIK', 'value' => $child->nik ?: '-'],
+                    ['label' => 'No KK', 'value' => $child->no_kk ?: '-'],
+                    ['label' => 'NISN', 'value' => $child->nisn ?: '-'],
+                    ['label' => 'Tempat Lahir', 'value' => $child->tempat_lahir ?: '-'],
+                    ['label' => 'Tanggal Lahir', 'value' => $birthDate],
+                    ['label' => 'Umur', 'value' => $child->umur ?: '-'],
+                    ['label' => 'Alamat', 'value' => $child->alamat ?: '-'],
+                    ['label' => 'Tinggi Badan', 'value' => $child->tinggi_badan ? $child->tinggi_badan . ' cm' : '-'],
+                    ['label' => 'Berat Badan', 'value' => $child->berat_badan ? $child->berat_badan . ' kg' : '-'],
+                ];
+            })
+            ->values()
+            ->all();
+        $childDetails = $childRows
+            ->map(function ($child) {
+                if (! is_object($child)) {
+                    return [
+                        'name' => $child,
+                        'items' => [],
+                    ];
+                }
+
+                $birthDate = $child->tanggal_lahir
+                    ? Carbon::parse($child->tanggal_lahir)->format('d/m/Y')
+                    : '-';
+
+                return [
+                    'id' => $child->id_siswa,
+                    'name' => $child->nama_siswa,
+                    'editableProfile' => [
+                        'alamat' => $child->alamat ?: '',
+                        'tinggi_badan' => $child->tinggi_badan ?: '',
+                        'berat_badan' => $child->berat_badan ?: '',
+                    ],
+                    'items' => [
+                        ['label' => 'NIK', 'value' => $child->nik ?: '-'],
+                        ['label' => 'No KK', 'value' => $child->no_kk ?: '-'],
+                        ['label' => 'NISN', 'value' => $child->nisn ?: '-'],
+                        ['label' => 'Tempat Lahir', 'value' => $child->tempat_lahir ?: '-'],
+                        ['label' => 'Tanggal Lahir', 'value' => $birthDate],
+                        ['label' => 'Umur', 'value' => $child->umur ?: '-'],
+                        ['label' => 'Alamat', 'value' => $child->alamat ?: '-'],
+                        ['label' => 'Tinggi Badan', 'value' => $child->tinggi_badan ? $child->tinggi_badan . ' cm' : '-'],
+                        ['label' => 'Berat Badan', 'value' => $child->berat_badan ? $child->berat_badan . ' kg' : '-'],
+                    ],
+                ];
+            })
+            ->values()
+            ->all();
+
+        return [
+            'roleKey' => 'orangtua',
+            'roleLabel' => 'Orang Tua',
+            'name' => $parent->nama_ortu ?? $user->name ?? 'Orang Tua',
+            'email' => $parent->email ?? $user->email ?? '-',
+            'phone' => $parent->no_hp ?? '-',
+            'accountStatus' => $parent ? 'Aktif' : 'Tidak Aktif',
+            'children' => $childNames,
+            'childDetails' => $childDetails,
+            'paymentStatus' => 'paid',
+            'paymentProofStatus' => 'valid',
+            'validationStatus' => 'valid',
+            'dashboardUrl' => '/orang-tua/dashboard',
+            'accessSummary' => 'Akun orang tua dapat memantau data anak, kehadiran, performa latihan, prestasi, catatan pelatih, dan pembayaran.',
+            'details' => [
+                ['label' => 'Nama Wali', 'value' => $parent->nama_ortu ?? $user->name ?? '-'],
+                ['label' => 'Email', 'value' => $parent->email ?? $user->email ?? '-'],
+                ['label' => 'Jumlah Anak', 'value' => count($childNames) . ' siswa'],
+            ],
+            'sections' => [[
+                'title' => 'Data Anak',
+                'items' => $childDetailItems,
+            ]],
+        ];
+    }
+}
