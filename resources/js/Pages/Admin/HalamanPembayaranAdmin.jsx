@@ -22,25 +22,13 @@ const validationStatusOptions = [
   "Belum Dibayar",
 ];
 
+const paymentTypeOptions = [
+  { value: "all", label: "Semua Pembayaran" },
+  { value: "pendaftaran", label: "Pendaftaran" },
+  { value: "harian", label: "Harian" },
+];
+
 const dummyPaymentRows = [
-  {
-    id: "dummy-payment-1",
-    source: "dummy",
-    sourceLabel: "Pelatih",
-    studentName: "Rafa Mahendra",
-    category: "u10",
-    categoryLabel: "U-10",
-    paymentType: "bulanan",
-    paymentTypeLabel: "Bulanan",
-    paidDate: "2026-05-10",
-    paidDateLabel: "10/05/2026",
-    amount: 100000,
-    proofFile: null,
-    proofFileName: "dummy-bukti-bulanan.jpg",
-    proofFileType: "image/jpeg",
-    status: "Menunggu Verifikasi",
-    createdAt: 1778374800000,
-  },
   {
     id: "dummy-payment-2",
     source: "dummy",
@@ -211,6 +199,18 @@ function normalizeCategoryValue(value) {
 function getCategoryLabel(value) {
   const normalized = normalizeCategoryValue(value);
   return ageOptions.find((option) => option.value === normalized)?.label || value || "-";
+}
+
+function normalizePaymentTypeValue(value) {
+  const normalized = String(value || "").trim().toLowerCase().replace(/\s+/g, "");
+  if (["pendaftaran", "uangpendaftaran"].includes(normalized)) return "pendaftaran";
+  if (["harian", "pembayaranharian"].includes(normalized)) return "harian";
+  return normalized || "";
+}
+
+function getPaymentTypeLabel(value) {
+  const normalized = normalizePaymentTypeValue(value);
+  return paymentTypeOptions.find((option) => option.value === normalized)?.label || value || "-";
 }
 
 function normalizeNotificationStudent(student) {
@@ -395,8 +395,8 @@ function buildPaymentRows(registrationPaymentSubmissions, coachPaymentSubmission
     studentName: item.childName || item.parentName || "-",
     category: item.category || "",
     categoryLabel: item.categoryLabel || "-",
-    paymentType: item.paymentType || "Pendaftaran",
-    paymentTypeLabel: item.paymentType === "Bulanan" ? "Uang Bulanan" : item.paymentType || "-",
+    paymentType: normalizePaymentTypeValue(item.paymentType || "Pendaftaran"),
+    paymentTypeLabel: getPaymentTypeLabel(item.paymentType || "Pendaftaran"),
     paidDate: item.paidDate || item.createdAt,
     paidDateLabel: formatTableDate(item.paidDate || item.createdAt),
     amount: Number(item.amount) || 0,
@@ -414,8 +414,8 @@ function buildPaymentRows(registrationPaymentSubmissions, coachPaymentSubmission
     studentName: item.studentName || "-",
     category: item.category || "",
     categoryLabel: item.categoryLabel || "-",
-    paymentType: item.paymentType || "-",
-    paymentTypeLabel: item.paymentTypeLabel || item.paymentType || "-",
+    paymentType: normalizePaymentTypeValue(item.paymentTypeLabel || item.paymentType),
+    paymentTypeLabel: getPaymentTypeLabel(item.paymentTypeLabel || item.paymentType),
     paidDate: item.paidDate || item.createdAt,
     paidDateLabel: formatTableDate(item.paidDate || item.createdAt),
     amount: Number(item.amount) || 0,
@@ -427,7 +427,7 @@ function buildPaymentRows(registrationPaymentSubmissions, coachPaymentSubmission
   }));
 
   const rows = [...coachRows, ...registrationRows].sort((a, b) => b.createdAt - a.createdAt);
-  return rows;
+  return rows.filter((row) => row.paymentType !== "bulanan");
 }
 
 export default function HalamanPembayaranAdmin({
@@ -442,6 +442,7 @@ export default function HalamanPembayaranAdmin({
   const notificationStudentSearchRef = useRef(null);
   const [localActiveTab, setLocalActiveTab] = useState("validation");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedPaymentType, setSelectedPaymentType] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [notificationCategory, setNotificationCategory] = useState("all");
   const [notificationStudentName, setNotificationStudentName] = useState("");
@@ -473,10 +474,11 @@ export default function HalamanPembayaranAdmin({
     const normalizedQuery = searchQuery.trim().toLowerCase();
     return paymentRows.filter((row) => {
       const categoryMatch = selectedCategory === "all" || row.category === selectedCategory;
+      const typeMatch = selectedPaymentType === "all" || normalizePaymentTypeValue(row.paymentType) === selectedPaymentType;
       const nameMatch = !normalizedQuery || row.studentName.toLowerCase().includes(normalizedQuery);
-      return categoryMatch && nameMatch;
+      return categoryMatch && typeMatch && nameMatch;
     });
-  }, [paymentRows, searchQuery, selectedCategory]);
+  }, [paymentRows, searchQuery, selectedCategory, selectedPaymentType]);
 
   const notificationStudentOptions = useMemo(() => {
     const normalizedQuery = notificationStudentName.trim().toLowerCase();
@@ -825,6 +827,13 @@ export default function HalamanPembayaranAdmin({
               onChange={setSelectedCategory}
               options={ageOptions}
               ariaLabel="Filter kategori pembayaran"
+            />
+            <AdminPaymentSelect
+              value={selectedPaymentType}
+              onChange={setSelectedPaymentType}
+              options={paymentTypeOptions}
+              ariaLabel="Filter jenis pembayaran"
+              className="adminPaymentFilterSelectWide"
             />
           </div>
 

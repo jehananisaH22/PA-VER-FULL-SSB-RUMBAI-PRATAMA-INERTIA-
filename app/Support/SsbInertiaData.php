@@ -612,7 +612,7 @@ class SsbInertiaData
                         : '-',
                     'type' => $row->jenis === 'Pendaftaran'
                         ? 'Uang Pendaftaran'
-                        : ($row->jenis === 'Harian' ? 'Pembayaran Harian' : 'Iuran Bulanan'),
+                        : ($row->jenis === 'Harian' ? 'Pembayaran Harian' : 'Pembayaran'),
                     'status' => match (true) {
                         $row->status === 'Lunas' => 'Lunas',
                         $proofStatus === 'menunggu validasi' => 'Menunggu Validasi',

@@ -697,7 +697,7 @@ public function FormUploadBuktiPembayaran(Request $request)
         ],
         'data' => [
             'kategori_umur' => $kategoriUmur,
-            'jenis_pembayaran' => ['Harian', 'Bulanan'],
+            'jenis_pembayaran' => ['Pendaftaran', 'Harian'],
             'siswa' => $siswa,
         ],
     ]);
@@ -716,7 +716,7 @@ public function Store_Bukti_Pembayaran_Pelatih(Request $request)
 
     $validated = $request->validate([
         'id_siswa' => 'required|exists:siswa,id_siswa',
-        'jenis' => 'required|in:Harian,Bulanan,Pendaftaran',
+        'jenis' => 'required|in:Harian,Pendaftaran',
         'tanggal_bukti_bayar' => 'required|date',
         'bukti_bayar' => 'required|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
     ]);
@@ -740,7 +740,6 @@ public function Store_Bukti_Pembayaran_Pelatih(Request $request)
             : $tanggal->format('Y-m');
         $jumlah = match ($validated['jenis']) {
             'Pendaftaran' => 280000,
-            'Bulanan' => 100000,
             'Harian' => 35000,
             default => 0,
         };
@@ -908,7 +907,7 @@ public function History_Bukti_Pembayaran_Pelatih(Request $request)
         ],
         'options' => [
             'kategori_umur' => $kategoriUmur,
-            'jenis_pembayaran' => ['Harian', 'Bulanan'],
+            'jenis_pembayaran' => ['Pendaftaran', 'Harian'],
         ],
         'data' => $history,
     ]);

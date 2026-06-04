@@ -41,6 +41,8 @@ const monthNames = [
   "Desember",
 ];
 
+const shortMonthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+
 const currentYear = String(new Date().getFullYear());
 const currentMonthName = monthNames[new Date().getMonth()];
 
@@ -294,9 +296,30 @@ const buildAdminMenuUrl = (menuKey) => {
 
 const paymentCategoryOptions = [
   { value: "Semua", label: "Semua" },
-  { value: "Pembayaran Bulanan", label: "Pembayaran Bulanan" },
   { value: "Pendaftaran", label: "Pendaftaran" },
+  { value: "Pembayaran Harian", label: "Pembayaran Harian" },
 ];
+
+function normalizeAdminPaymentType(value) {
+  const normalized = String(value || "").trim().toLowerCase().replace(/\s+/g, "");
+  if (["pendaftaran", "uangpendaftaran"].includes(normalized)) return "pendaftaran";
+  if (["bulanan", "uangbulanan", "iuranbulanan", "pembayaranbulanan"].includes(normalized)) return "bulanan";
+  if (["harian", "pembayaranharian"].includes(normalized)) return "harian";
+  return normalized || "";
+}
+
+function adminPaymentCategoryFromType(value) {
+  const type = normalizeAdminPaymentType(value);
+  if (type === "harian") return "Pembayaran Harian";
+  return "Pendaftaran";
+}
+
+function adminPaymentTypeLabel(value) {
+  const type = normalizeAdminPaymentType(value);
+  if (type === "harian") return "Harian";
+  if (type === "pendaftaran") return "Pendaftaran";
+  return value || "-";
+}
 
 const performanceCategoryOptions = [
   { value: "all", label: "Semua Kategori" },
@@ -814,7 +837,7 @@ function HalamanPembayaranAdmin({
       <div className="adminSectionHead">
         <div>
           <h2>Validasi Pembayaran</h2>
-          <p>Periksa bukti pembayaran pendaftaran dan pembayaran bulanan.</p>
+          <p>Periksa bukti pembayaran pendaftaran dan pembayaran harian.</p>
         </div>
         <div className="adminTabGroup">
           <button
@@ -1723,7 +1746,7 @@ export default function DasborAdmin({
     const registrationRows = registrationPaymentSubmissions.map((item) => ({
       id: item.id,
       name: item.childName || item.parentName || "-",
-      type: item.paymentType === "Bulanan" ? "Uang Bulanan" : item.paymentType || "Pendaftaran",
+      type: adminPaymentTypeLabel(item.paymentType || "Pendaftaran"),
       date: item.paidDate
         ? new Date(item.paidDate).toLocaleDateString("id-ID")
         : item.createdAt
@@ -1732,14 +1755,14 @@ export default function DasborAdmin({
       amount: `Rp${Number(item.amount || 0).toLocaleString("id-ID")},00`,
       status: item.status || "Menunggu Verifikasi",
       proofFileName: item.proofFileName || "-",
-      category: item.paymentType === "Bulanan" ? "Pembayaran Bulanan" : "Pendaftaran",
+      category: adminPaymentCategoryFromType(item.paymentType || "Pendaftaran"),
       createdAt: Number(item.createdAt || 0),
     }));
 
     const coachRows = coachPaymentSubmissions.map((item) => ({
       id: item.id,
       name: item.studentName || "-",
-      type: item.paymentTypeLabel || item.paymentType || "-",
+      type: adminPaymentTypeLabel(item.paymentTypeLabel || item.paymentType),
       date: item.paidDate
         ? new Date(item.paidDate).toLocaleDateString("id-ID")
         : item.createdAt
@@ -1748,11 +1771,13 @@ export default function DasborAdmin({
       amount: `Rp${Number(item.amount || 0).toLocaleString("id-ID")},00`,
       status: item.status || "Menunggu Verifikasi",
       proofFileName: item.proofFileName || "-",
-      category: item.paymentType === "bulanan" ? "Pembayaran Bulanan" : "Pendaftaran",
+      category: adminPaymentCategoryFromType(item.paymentTypeLabel || item.paymentType),
       createdAt: Number(item.createdAt || 0),
     }));
 
-    return [...coachRows, ...registrationRows].sort((a, b) => b.createdAt - a.createdAt);
+    return [...coachRows, ...registrationRows]
+      .filter((item) => normalizeAdminPaymentType(item.type) !== "bulanan")
+      .sort((a, b) => b.createdAt - a.createdAt);
   }, [coachPaymentSubmissions, registrationPaymentSubmissions]);
   const pendingPaymentRows = useMemo(
     () => allPaymentRows.filter((item) => item.status === "Menunggu Verifikasi"),
@@ -2502,7 +2527,7 @@ export default function DasborAdmin({
                         }}
                       />
                     </div>
-                    <small>{item.month}</small>
+                    <small>{shortMonthNames[index] || item.month}</small>
                   </div>
                 </button>
               ))}

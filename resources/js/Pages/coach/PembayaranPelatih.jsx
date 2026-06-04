@@ -13,7 +13,6 @@ const categoryOptions = [
 const paymentTypeOptions = [
   { value: "", label: "Pilih Jenis Pembayaran" },
   { value: "pendaftaran", label: "Pendaftaran" },
-  { value: "bulanan", label: "Bulanan" },
   { value: "harian", label: "Harian" },
 ];
 
@@ -25,13 +24,11 @@ const categoryLabel = {
 
 const paymentAmounts = {
   pendaftaran: 280000,
-  bulanan: 100000,
   harian: 35000,
 };
 
 const backendPaymentType = {
   pendaftaran: "Pendaftaran",
-  bulanan: "Bulanan",
   harian: "Harian",
 };
 const ACCEPTED_UPLOAD_TYPES = ".jpg,.jpeg,.png,.webp,.pdf";
