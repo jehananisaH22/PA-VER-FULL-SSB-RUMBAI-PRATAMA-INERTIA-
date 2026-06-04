@@ -859,9 +859,10 @@
 }
 
 .adminPanelChart {
-  min-height: 536px;
+  min-height: 420px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .adminPanelWide h2,
@@ -1112,7 +1113,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 18px;
 }
 
 .adminPanelYearPicker {
@@ -1218,15 +1219,20 @@
 }
 
 .adminBarChart {
-  margin-top: 20px;
+  margin-top: 4px;
   flex: 1;
-  min-height: 330px;
+  min-height: 280px;
   display: flex;
   align-items: flex-end;
-  gap: 12px;
+  gap: 10px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 18px 22px 0;
+  padding: 18px 14px 14px;
+  border: 1px solid #edf2e9;
+  border-radius: 14px;
+  background:
+    linear-gradient(to top, rgba(148, 163, 184, 0.14) 1px, transparent 1px) 0 0 / 100% 25%,
+    linear-gradient(180deg, #ffffff 0%, #fbfdf9 100%);
   scrollbar-width: thin;
   scrollbar-color: #b6bec9 transparent;
 }
@@ -1267,26 +1273,27 @@
 }
 
 .adminBarCol {
-  min-width: 92px;
+  min-width: 78px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
 }
 
 .adminBarValue {
-  min-width: 44px;
-  min-height: 24px;
+  min-width: 42px;
+  min-height: 22px;
   border: 1px solid #dde3ea;
-  border-radius: 10px;
-  background: #fafbfd;
+  border-radius: 999px;
+  background: #ffffff;
   color: #334155;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   display: grid;
   place-items: center;
   padding: 0 7px;
   line-height: 1;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
 }
 
 .adminBarValue.isZero {
@@ -1294,10 +1301,10 @@
 }
 
 .adminBarTrack {
-  width: 32px;
-  height: 230px;
+  width: 34px;
+  height: 190px;
   border-radius: 999px;
-  background: #eef5ec;
+  background: #eaf3e8;
   position: relative;
   overflow: hidden;
 }
@@ -1323,9 +1330,15 @@
 .adminBarCol small {
   margin-top: 0;
   display: block;
-  font-size: 12px;
-  color: #6b7280;
-  font-weight: 600;
+  width: 100%;
+  min-height: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: #475569;
+  font-weight: 700;
+  text-align: center;
 }
 
 .adminDonut {
