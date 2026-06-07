@@ -27,6 +27,7 @@ export default function PembayaranOrangTua({
   childrenOptions = [],
   selectedChildId = null,
   paymentHistory = [],
+     studentProfile, // 👈 TAMBAH INI
 }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { activeChildName, openChildPicker, childPickerModal } = useParentChildSwitcher(
@@ -36,6 +37,8 @@ export default function PembayaranOrangTua({
     selectedChildId
   );
   const displayUserName = activeChildName || userName;
+    const profilePhoto = studentProfile?.photo || ProfileIcon;
+  
   const showChildPickerAction = canSwitchChild || childrenOptions.length > 0;
   const openSelectChild = () => {
     if (onSelectChild) {
@@ -79,7 +82,7 @@ export default function PembayaranOrangTua({
                 className="paymentProfileBtn"
                 onClick={() => setIsProfileOpen((prev) => !prev)}
               >
-                <img src={ProfileIcon} alt="" />
+               <img src={profilePhoto} alt="Profil" />
                 <span>{displayUserName}</span>
               </button>
               {isProfileOpen && (

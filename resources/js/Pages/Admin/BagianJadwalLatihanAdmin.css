@@ -3,6 +3,7 @@
   opacity: 0;
   transform: translateY(18px) scale(0.985);
   animation: trainingScheduleSectionReveal 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  padding-bottom: 54px;
 }
 
 .trainingScheduleToast {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import Pagination from "../../components/Pagination";
 import { createPortal } from "react-dom";
 import { router } from "@inertiajs/react";
 import "./HalamanSiswaAdmin.css";
@@ -225,6 +226,14 @@ export default function HalamanSiswaAdmin({
 
   const tableMotionKey = `${selectedCategory}-${searchQuery.trim().toLowerCase()}`;
   const chartMotionKey = `${safeSelectedStudentId ?? "none"}-${selectedMonth}-${selectedYear}`;
+  const [studentsPage, setStudentsPage] = useState(1);
+  const [studentsPageSize, setStudentsPageSize] = useState(10);
+
+  const totalStudents = filteredStudents.length;
+  const pagedStudents = useMemo(() => {
+    const start = (studentsPage - 1) * studentsPageSize;
+    return filteredStudents.slice(start, start + studentsPageSize);
+  }, [filteredStudents, studentsPage, studentsPageSize]);
 
   const handleDelete = async (studentId) => {
     setIsDeletingStudent(true);
@@ -401,9 +410,9 @@ export default function HalamanSiswaAdmin({
             </thead>
             <tbody>
               {filteredStudents.length > 0 ? (
-                filteredStudents.map((student, index) => (
+                pagedStudents.map((student, index) => (
                   <tr key={student.id} style={{ "--row-index": index }}>
-                    <td>{index + 1}</td>
+                    <td>{(studentsPage - 1) * studentsPageSize + index + 1}</td>
                     <td>
                       <button
                         type="button"
@@ -450,6 +459,19 @@ export default function HalamanSiswaAdmin({
           </p>
         )}
       </article>
+
+      <div className="adminTablePagination">
+        <Pagination
+          total={totalStudents}
+          page={studentsPage}
+          pageSize={studentsPageSize}
+          onPageChange={(p) => setStudentsPage(p)}
+          onPageSizeChange={(s) => {
+            setStudentsPageSize(s);
+            setStudentsPage(1);
+          }}
+        />
+      </div>
 
       {selectedStudent && (
         <section

@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-
 use App\Models\OrangTua;
 use App\Models\Siswa;
 use App\Models\Performa_Siswa;
@@ -165,10 +164,10 @@ public function daftar_siswa(Request $request)
             'id_ortu'    => $ortu->id_ortu,
             'user_id'    => $user->id,
 
-            'akta_kelahiran' => basename($akta),
-            'kartu_keluarga' => basename($kk),
-            'rapor'          => basename($rapor),
-            'pas_photo_3x4'  => basename($foto),
+            'akta_kelahiran' => $akta,
+            'kartu_keluarga' => $kk,
+            'rapor'          => $rapor,
+            'pas_photo_3x4'  => $foto,
 
             'status' => 'Inactive',
         ]);
@@ -302,7 +301,7 @@ public function setAnak(Request $request)
         ], 422);
     }
 
-    $siswa = $siswaQuery->orderBy('id_siswa')->first(['id_siswa', 'nama_siswa']);
+    $siswa = $siswaQuery->orderBy('id_siswa')->first(['id_siswa', 'nama_siswa', 'id_ortu', 'user_id']);
 
     if (! $siswa && ($idSiswa > 0 || $namaSiswa !== '')) {
         $fallbackQuery = \App\Models\Siswa::query();
@@ -788,20 +787,27 @@ public function Store_Bukti_Pendaftaran(Request $request)
 
         DB::commit();
 
+        $request->session()->forget([
+            'registration.form',
+            'registration.account',
+        ]);
+        $request->session()->put('id_siswa', $siswa->id_siswa);
+        $request->session()->put('show_child_picker_after_login', true);
+
         $this->notifyAdmins(
             'Bukti Pembayaran Pendaftaran',
             "Orang tua mengirim bukti pembayaran pendaftaran untuk {$siswa->nama_siswa}. Data masuk ke validasi pembayaran."
         );
 
         if ($request->header('X-Inertia')) {
-            return back()
-                ->with('success', 'Bukti pembayaran berhasil dikirim.')
-                ->with('registrationPaymentSuccess', true);
+            return redirect('/orang-tua/dashboard')
+                ->with('success', 'Bukti pembayaran berhasil dikirim. Silakan pilih data anak.');
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Bukti pembayaran berhasil dikirim',
+            'next_url' => '/orang-tua/dashboard',
         ]);
     } catch (\Throwable $e) {
         DB::rollBack();
@@ -1119,6 +1125,10 @@ public function performaSiswa(Request $request)
 
     session(['id_siswa' => $siswa->id_siswa]);
 
+    $profil = DB::table('profil_siswa')
+    ->where('id_siswa', $siswa->id_siswa)
+    ->first();
+
     $performanceYearExpression = $this->datePartExpression('year', 'tanggal_penilaian');
     $performanceMonthExpression = $this->datePartExpression('month', 'tanggal_penilaian');
 
@@ -1206,24 +1216,33 @@ public function performaSiswa(Request $request)
         })
         ->values();
 
-    return response()->json([
-        'status' => true,
-        'message' => 'Data performa siswa berhasil diambil',
-        'siswa' => [
-            'id_siswa' => $siswa->id_siswa,
-            'nama_siswa' => $siswa->nama_siswa,
-            'umur' => 'U-' . $siswa->umur,
-        ],
-        'filter' => [
-            'tahun' => $tahunDipilih,
-            'tahun_options' => $tahunOptions->isNotEmpty()
-                ? $tahunOptions
-                : collect([(int) now()->year]),
-        ],
-        'grafik_performa' => $grafikBatang,
-        'catatan_pelatih' => $catatanPelatih,
-        'performa_per_bulan' => $performaPerBulan,
-    ]);
+   return response()->json([
+    'status' => true,
+    'message' => 'Data performa siswa berhasil diambil',
+
+    'siswa' => [
+        'id_siswa' => $siswa->id_siswa,
+        'nama_siswa' => $siswa->nama_siswa,
+        'umur' => 'U-' . $siswa->umur,
+    ],
+
+    'profil_siswa' => [
+        'foto' => $profil?->foto
+            ? asset('storage/' . ltrim($profil->foto, '/'))
+            : null,
+    ],
+
+    'filter' => [
+        'tahun' => $tahunDipilih,
+        'tahun_options' => $tahunOptions->isNotEmpty()
+            ? $tahunOptions
+            : collect([(int) now()->year]),
+    ],
+
+    'grafik_performa' => $grafikBatang,
+    'catatan_pelatih' => $catatanPelatih,
+    'performa_per_bulan' => $performaPerBulan,
+]);
 }
 
 private function tentukanKeteranganPerforma(float $rataRata): string

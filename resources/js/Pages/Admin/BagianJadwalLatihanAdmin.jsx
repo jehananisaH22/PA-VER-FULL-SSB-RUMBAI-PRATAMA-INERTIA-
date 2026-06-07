@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import Pagination from "../../components/Pagination";
 import "./BagianJadwalLatihanAdmin.css";
 
 const scheduleCategoryOptions = [
@@ -447,116 +448,122 @@ export default function BagianJadwalLatihanAdmin({
               </tr>
             </thead>
             <tbody>
-              {scheduleRows.map((item, index) => {
-                const categoryMenuKey = `${item.id}-category`;
-                const isRowMenuOpen =
-                  openMenuKey === categoryMenuKey || studentModalRowId === item.id;
-                const menuPosition = index >= scheduleRows.length - 1 ? "top" : "bottom";
-                const allStudentLabel =
-                  item.category === "all" ? "Semua Siswa" : `Semua ${item.categoryLabel}`;
+              {scheduleRows.length > 0 ? (
+                scheduleRows.map((item, index) => {
+                  const categoryMenuKey = `${item.id}-category`;
+                  const isRowMenuOpen =
+                    openMenuKey === categoryMenuKey || studentModalRowId === item.id;
+                  const menuPosition = index >= scheduleRows.length - 1 ? "top" : "bottom";
+                  const allStudentLabel =
+                    item.category === "all" ? "Semua Siswa" : `Semua ${item.categoryLabel}`;
 
-                return (
-                  <tr key={item.id} className={isRowMenuOpen ? "isRowMenuOpen" : ""}>
-                    <td data-label="Hari">
-                      <input
-                        className="trainingScheduleInput trainingScheduleInputSmall"
-                        type="text"
-                        value={item.day}
-                        onChange={(event) =>
-                          onUpdateTrainingSchedule?.({
-                            id: item.id,
-                            field: "day",
-                            value: event.target.value,
-                          })
-                        }
-                        aria-label={`Hari jadwal ${index + 1}`}
-                      />
-                    </td>
-                    <td data-label="Waktu">
-                      <input
-                        className="trainingScheduleInput trainingScheduleInputSmall"
-                        type="text"
-                        value={item.time}
-                        onChange={(event) =>
-                          onUpdateTrainingSchedule?.({
-                            id: item.id,
-                            field: "time",
-                            value: event.target.value,
-                          })
-                        }
-                        aria-label={`Waktu jadwal ${index + 1}`}
-                      />
-                    </td>
-                    <td data-label="Tempat">
-                      <textarea
-                        className="trainingScheduleInput trainingScheduleTextarea"
-                        value={item.place}
-                        onChange={(event) =>
-                          onUpdateTrainingSchedule?.({
-                            id: item.id,
-                            field: "place",
-                            value: event.target.value,
-                          })
-                        }
-                        aria-label={`Tempat jadwal ${index + 1}`}
-                      />
-                    </td>
-                    <td data-label="Kategori">
-                      <div className="trainingScheduleField" data-training-schedule-dropdown="true">
-                        <ScheduleSelect
-                          value={item.category}
-                          options={scheduleCategoryOptions}
-                          isOpen={openMenuKey === categoryMenuKey}
-                          onToggle={() =>
-                            setOpenMenuKey((prev) =>
-                              prev === categoryMenuKey ? null : categoryMenuKey
-                            )
-                          }
-                          onSelect={(nextValue) => {
-                            setOpenMenuKey(null);
+                  return (
+                    <tr key={item.id} className={isRowMenuOpen ? "isRowMenuOpen" : ""}>
+                      <td data-label="Hari">
+                        <input
+                          className="trainingScheduleInput trainingScheduleInputSmall"
+                          type="text"
+                          value={item.day}
+                          onChange={(event) =>
                             onUpdateTrainingSchedule?.({
                               id: item.id,
-                              field: "category",
-                              value: nextValue,
-                            });
-                          }}
-                          menuPosition={menuPosition}
+                              field: "day",
+                              value: event.target.value,
+                            })
+                          }
+                          aria-label={`Hari jadwal ${index + 1}`}
                         />
-                      </div>
-                    </td>
-                    <td data-label="Siswa">
-                      <div className="trainingScheduleField">
-                        <StudentSelectButton
-                          selectedNames={item.selectedStudentNames}
-                          allLabel={allStudentLabel}
-                          onOpen={() => {
-                            setOpenMenuKey(null);
-                            setStudentModalRowId(item.id);
-                          }}
+                      </td>
+                      <td data-label="Waktu">
+                        <input
+                          className="trainingScheduleInput trainingScheduleInputSmall"
+                          type="text"
+                          value={item.time}
+                          onChange={(event) =>
+                            onUpdateTrainingSchedule?.({
+                              id: item.id,
+                              field: "time",
+                              value: event.target.value,
+                            })
+                          }
+                          aria-label={`Waktu jadwal ${index + 1}`}
                         />
-                      </div>
-                    </td>
-                    <td data-label="Aksi">
-                      <div className="trainingScheduleActions">
-                        <button
-                          type="button"
-                          className="trainingScheduleActionButton isSave"
-                          onClick={() => openSaveModal(item.id)}
-                        >
-                          Simpan
-                        </button>
-                        <button
-                          type="button"
-                          className="trainingScheduleActionButton isDelete"
-                          onClick={() => openDeleteModal(item.id)}
-                        >
-                          Hapus
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                      <td data-label="Tempat">
+                        <textarea
+                          className="trainingScheduleInput trainingScheduleTextarea"
+                          value={item.place}
+                          onChange={(event) =>
+                            onUpdateTrainingSchedule?.({
+                              id: item.id,
+                              field: "place",
+                              value: event.target.value,
+                            })
+                          }
+                          aria-label={`Tempat jadwal ${index + 1}`}
+                        />
+                      </td>
+                      <td data-label="Kategori">
+                        <div className="trainingScheduleField" data-training-schedule-dropdown="true">
+                          <ScheduleSelect
+                            value={item.category}
+                            options={scheduleCategoryOptions}
+                            isOpen={openMenuKey === categoryMenuKey}
+                            onToggle={() =>
+                              setOpenMenuKey((prev) =>
+                                prev === categoryMenuKey ? null : categoryMenuKey
+                              )
+                            }
+                            onSelect={(nextValue) => {
+                              setOpenMenuKey(null);
+                              onUpdateTrainingSchedule?.({
+                                id: item.id,
+                                field: "category",
+                                value: nextValue,
+                              });
+                            }}
+                            menuPosition={menuPosition}
+                          />
+                        </div>
+                      </td>
+                      <td data-label="Siswa">
+                        <div className="trainingScheduleField">
+                          <StudentSelectButton
+                            selectedNames={item.selectedStudentNames}
+                            allLabel={allStudentLabel}
+                            onOpen={() => {
+                              setOpenMenuKey(null);
+                              setStudentModalRowId(item.id);
+                            }}
+                          />
+                        </div>
+                      </td>
+                      <td data-label="Aksi">
+                        <div className="trainingScheduleActions">
+                          <button
+                            type="button"
+                            className="trainingScheduleActionButton isSave"
+                            onClick={() => openSaveModal(item.id)}
+                          >
+                            Simpan
+                          </button>
+                          <button
+                            type="button"
+                            className="trainingScheduleActionButton isDelete"
+                            onClick={() => openDeleteModal(item.id)}
+                          >
+                            Hapus
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={6} className="trainingScheduleEmpty">Belum ada jadwal.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -685,6 +692,15 @@ export default function BagianJadwalLatihanAdmin({
           })}
         </div>
       </article>
+
+      <div className="adminTablePagination">
+        <Pagination
+          total={scheduleRows.length}
+          page={1}
+          pageSize={10}
+          onPageChange={() => {}}
+        />
+      </div>
 
       {activeStudentModalRow && (
         <StudentSelectionModal

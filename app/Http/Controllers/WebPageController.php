@@ -41,6 +41,41 @@ class WebPageController extends Controller
 
     public function registrationForm(Request $request)
     {
+        $user = Auth::user();
+
+        if ($user && $user->role === 'orang_tua') {
+            $parentIds = DB::table('orang_tua')
+                ->where(function ($query) use ($user) {
+                    $query->where('user_id', $user->id)
+                        ->orWhereRaw('LOWER(email) = ?', [strtolower($user->email)]);
+                })
+                ->pluck('id_ortu')
+                ->filter()
+                ->unique()
+                ->values();
+
+            $hasChild = DB::table('siswa')
+                ->where(function ($query) use ($user, $parentIds) {
+                    $query->where('user_id', $user->id);
+
+                    if ($parentIds->isNotEmpty()) {
+                        $query->orWhereIn('id_ortu', $parentIds);
+                    }
+                })
+                ->exists();
+
+            if ($hasChild) {
+                $request->session()->forget([
+                    'registration.form',
+                    'registration.account',
+                    'id_siswa',
+                ]);
+                $request->session()->put('show_child_picker_after_login', true);
+
+                return redirect('/orang-tua/dashboard');
+            }
+        }
+
         return Inertia::render('HalamanFormPendaftaran', [
             'registrationAccount' => $request->session()->get('registration.account'),
             'registrationFormDraft' => $request->session()->get('registration.form'),
@@ -51,6 +86,31 @@ class WebPageController extends Controller
     {
         $account = $request->session()->get('registration.account');
         $form = $request->session()->get('registration.form');
+        $studentId = $form['studentId'] ?? null;
+
+        if (Auth::check() && Auth::user()->role === 'orang_tua') {
+            if (! $studentId) {
+                return redirect('/orang-tua/dashboard');
+            }
+
+            $hasSubmittedProof = DB::table('bukti_pembayaran')
+                ->join('pembayaran', 'bukti_pembayaran.id_pembayaran', '=', 'pembayaran.id_pembayaran')
+                ->where('bukti_pembayaran.id_siswa', $studentId)
+                ->where('pembayaran.jenis', 'Pendaftaran')
+                ->whereIn('bukti_pembayaran.status', ['Menunggu validasi', 'diterima'])
+                ->exists();
+
+            if ($hasSubmittedProof) {
+                $request->session()->forget([
+                    'registration.form',
+                    'registration.account',
+                ]);
+                $request->session()->put('id_siswa', $studentId);
+                $request->session()->put('show_child_picker_after_login', true);
+
+                return redirect('/orang-tua/dashboard');
+            }
+        }
 
         return Inertia::render('HalamanBuktiPembayaranPendaftaran', [
             'paymentDraft' => [

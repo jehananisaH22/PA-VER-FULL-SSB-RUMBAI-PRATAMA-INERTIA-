@@ -1,5 +1,6 @@
 import React from "react";
 import { router, usePage } from "@inertiajs/react";
+import Pagination from "../../components/Pagination";
 import "./ValidasiPendaftaranAdmin.css";
 
 const validationSortOptions = [
@@ -282,19 +283,20 @@ export default function ValidasiPendaftaranAdmin({
     []
   );
 
-  const handleOpenPreviewFile = (fileItem) => {
-    if (!fileItem?.file) {
-      window.alert("File belum tersedia untuk dibuka.");
-      return;
-    }
-    if (typeof fileItem.file === "string") {
-      window.open(fileItem.file, "_blank", "noopener,noreferrer");
-      return;
-    }
-    const objectUrl = URL.createObjectURL(fileItem.file);
-    window.open(objectUrl, "_blank", "noopener,noreferrer");
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
-  };
+const handleOpenPreviewFile = (fileItem) => {
+  console.log("CLICK FILE:", fileItem);
+
+  if (!fileItem) {
+    console.error("fileItem kosong");
+    return;
+  }
+
+  const url = `http://127.0.0.1:8000/api/file-pendaftaran-siswa/${fileItem.jenis}/${fileItem.filename}`;
+
+  console.log("OPEN URL:", url);
+
+  window.open(url, "_blank");
+};
 
   const getIdentityValue = (field, document) => {
     if (!document) return "-";
@@ -424,6 +426,14 @@ export default function ValidasiPendaftaranAdmin({
     }
   };
 
+  const [validationPage, setValidationPage] = React.useState(1);
+  const [validationPageSize, setValidationPageSize] = React.useState(10);
+  const totalValidation = sortedValidationRows.length;
+  const pagedValidationRows = React.useMemo(() => {
+    const start = (validationPage - 1) * validationPageSize;
+    return sortedValidationRows.slice(start, start + validationPageSize);
+  }, [sortedValidationRows, validationPage, validationPageSize]);
+
   return (
     <section className="adminRegPage">
       {actionToast && (
@@ -464,38 +474,44 @@ export default function ValidasiPendaftaranAdmin({
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedValidationRows.map((item, index) => {
-                    const childName = item.childName || item.name;
-                    const isSelected = item.no === selectedValidationDocNo && isValidationDetailOpen;
+                  {pagedValidationRows.length > 0 ? (
+                    pagedValidationRows.map((item, index) => {
+                      const childName = item.childName || item.name;
+                      const isSelected = item.no === selectedValidationDocNo && isValidationDetailOpen;
 
-                    return (
-                      <tr key={item.no} className={isSelected ? "isSelected" : ""}>
-                        <td>{index + 1}</td>
-                        <td>
-                          <button
-                            type="button"
-                            className="adminRegNameBtn"
-                            onClick={() => {
-                              if (isSelected) {
-                                closeValidationDetail();
-                                return;
-                              }
-                              openValidationDetail(item.no);
-                            }}
-                            aria-pressed={isSelected}
-                          >
-                            <strong>{childName}</strong>
-                            <span>{item.email}</span>
-                          </button>
-                        </td>
-                        <td>
-                          <span className={`adminChip ${getValidationChipClass(item.status)}`}>
-                            {item.status}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                      return (
+                        <tr key={item.no} className={isSelected ? "isSelected" : ""}>
+                          <td>{index + 1}</td>
+                          <td>
+                            <button
+                              type="button"
+                              className="adminRegNameBtn"
+                              onClick={() => {
+                                if (isSelected) {
+                                  closeValidationDetail();
+                                  return;
+                                }
+                                openValidationDetail(item.no);
+                              }}
+                              aria-pressed={isSelected}
+                            >
+                              <strong>{childName}</strong>
+                              <span>{item.email}</span>
+                            </button>
+                          </td>
+                          <td>
+                            <span className={`adminChip ${getValidationChipClass(item.status)}`}>
+                              {item.status}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={3} className="adminRegEmpty">Belum ada data.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -610,7 +626,21 @@ export default function ValidasiPendaftaranAdmin({
             ) : null}
           </aside>
         </div>
+
       </article>
+
+      <div className="adminTablePagination">
+        <Pagination
+          total={totalValidation}
+          page={validationPage}
+          pageSize={validationPageSize}
+          onPageChange={(p) => setValidationPage(p)}
+          onPageSizeChange={(s) => {
+            setValidationPageSize(s);
+            setValidationPage(1);
+          }}
+        />
+      </div>
 
       {selectedValidationDoc && isRepairNoticeOpen && (
         <div

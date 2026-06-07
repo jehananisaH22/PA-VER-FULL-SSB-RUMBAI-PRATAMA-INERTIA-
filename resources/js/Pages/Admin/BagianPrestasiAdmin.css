@@ -3,11 +3,13 @@
   opacity: 0;
   transform: translateY(18px) scale(0.985);
   animation: adminAchievementsSectionReveal 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  padding-bottom: 54px;
 }
 
 .adminAchievementsPanel {
   padding: 24px 28px;
   border: 1px solid #dbe8d4;
+  margin-bottom: 24px;
   border-radius: 24px;
   background: #ffffff;
   box-shadow: 0 16px 36px rgba(42, 84, 31, 0.08);
