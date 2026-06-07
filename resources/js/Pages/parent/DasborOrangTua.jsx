@@ -214,7 +214,7 @@ export default function DasborOrangTua({
                 className="parentProfileBtn"
                 onClick={() => setIsProfileOpen((prev) => !prev)}
               >
-                <img src={ProfileIcon} alt="" />
+                 <img src={profilePhoto} alt="Anak" />
                 <span>{displayUserName}</span>
               </button>
               {isProfileOpen && (

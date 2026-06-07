@@ -3056,6 +3056,7 @@ export default function App() {
         onClearNotifications={clearParentNotifications}
         onMarkAsPaid={handleMarkParentAsPaid}
         canSwitchChild={activeParentChildren.length > 1 && !hasActiveParentReupload}
+        userAvatar={activeParentStudentRecord?.avatar || activeParentProfile?.avatar || null}
       />
     );
   }
@@ -3363,6 +3364,7 @@ export default function App() {
       notifications={[]}
       onClearNotifications={() => {}}
       onLogout={requestLogout}
+      userAvatar={activeParentStudentRecord?.avatar || activeParentProfile?.avatar || null}
     />
   );
 }

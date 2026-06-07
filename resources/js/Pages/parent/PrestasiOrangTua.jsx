@@ -58,6 +58,7 @@ export default function PrestasiOrangTua({
   canSwitchChild = false,
   childrenOptions = [],
   selectedChildId = null,
+     studentProfile, // 👈 TAMBAH INI
 }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState(DEFAULT_ACHIEVEMENT_YEAR);
@@ -71,6 +72,8 @@ export default function PrestasiOrangTua({
     selectedChildId
   );
   const displayUserName = activeChildName || userName;
+    const profilePhoto = studentProfile?.photo || ProfileIcon;
+
   const showChildPickerAction = canSwitchChild || childrenOptions.length > 0;
   const openSelectChild = () => {
     if (onSelectChild) {
@@ -157,7 +160,7 @@ export default function PrestasiOrangTua({
                 className="achievementProfileBtn"
                 onClick={() => setIsProfileOpen((prev) => !prev)}
               >
-                <img src={ProfileIcon} alt="" />
+                <img src={profilePhoto} alt="Profil" />
                 <span>{displayUserName}</span>
               </button>
               {isProfileOpen && (

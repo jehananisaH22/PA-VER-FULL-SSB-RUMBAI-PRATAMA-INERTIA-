@@ -10,6 +10,8 @@ use App\Http\Controllers\SiswaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+
+
 Route::middleware('web')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
@@ -30,8 +32,6 @@ Route::middleware('web')->group(function () {
             Route::get('/registrasi-siswa', [SiswaController::class, 'registrasi_siswa']);
             Route::post('/daftar-siswa', [SiswaController::class, 'daftar_siswa']);
         });
-        Route::get('/file-pendaftaran-siswa/{folder}/{filename}', [AdminController::class, 'lihatfilePendaftaran'])
-            ->middleware('role:admin');
 
         Route::prefix('anak')->middleware('role:orang_tua')->group(function () {
             Route::get('/', [SiswaController::class, 'getanak']);
@@ -59,6 +59,7 @@ Route::middleware('web')->group(function () {
             Route::post('/activity-history', [AdminController::class, 'StoreAktivitasAdmin']);
 
             Route::get('/pendaftaran-siswa', [AdminController::class, 'Admin_Pendaftaran_siswa']);
+            Route::get('/file-pendaftaran-siswa/{folder}/{filename}', [AdminController::class, 'lihatfilePendaftaran']);
             Route::get('/pendaftaran/{id}', [AdminController::class, 'Admin_validasi_Pendaftaran_siswa']);
             Route::post('/pendaftaran/{id}/validasi', [AdminController::class, 'submitValidasi']);
             Route::get('/pembayaran-admin', [AdminController::class, 'pembayaran_admin']);
