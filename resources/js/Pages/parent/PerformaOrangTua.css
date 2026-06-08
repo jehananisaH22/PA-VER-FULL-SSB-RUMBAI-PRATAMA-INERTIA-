@@ -5,6 +5,10 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.performancePage > .siteFooter {
+  margin-top: 32px;
+}
+
 .performanceTopbar {
   position: sticky;
   top: 0;

@@ -5,6 +5,10 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.achievementPage > .siteFooter {
+  margin-top: 32px;
+}
+
 .achievementTopbar {
   position: sticky;
   top: 0;

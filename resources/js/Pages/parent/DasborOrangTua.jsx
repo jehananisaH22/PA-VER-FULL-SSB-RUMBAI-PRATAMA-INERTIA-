@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./DasborOrangTua.css";
 import { parentRoutes, visitOrCall } from "./parentNavigation";
 import SiteFooter from "../SiteFooter";
@@ -9,6 +9,48 @@ import CoachNoteIcon from "../../../assets/CatatanP_.png";
 import PilihTahun from "./PilihTahun";
 import LoncengNotifikasiOrangTua from "./LoncengNotifikasiOrangTua";
 import useParentChildSwitcher from "./useParentChildSwitcher";
+
+const performanceMonthLabels = [
+  { key: "januari", number: "01", label: "Jan" },
+  { key: "februari", number: "02", label: "Feb" },
+  { key: "maret", number: "03", label: "Mar" },
+  { key: "april", number: "04", label: "Apr" },
+  { key: "mei", number: "05", label: "Mei" },
+  { key: "juni", number: "06", label: "Jun" },
+  { key: "juli", number: "07", label: "Jul" },
+  { key: "agustus", number: "08", label: "Agu" },
+  { key: "september", number: "09", label: "Sep" },
+  { key: "oktober", number: "10", label: "Okt" },
+  { key: "november", number: "11", label: "Nov" },
+  { key: "desember", number: "12", label: "Des" },
+];
+
+const performanceMonthLookup = performanceMonthLabels.reduce((lookup, month, index) => {
+  const numeric = String(index + 1);
+  lookup[month.key] = month.key;
+  lookup[month.number] = month.key;
+  lookup[numeric] = month.key;
+  return lookup;
+}, {});
+
+const normalizePerformanceMonth = (month) => {
+  const rawMonth = String(month || "").trim().toLowerCase();
+  if (!rawMonth) return "";
+  return performanceMonthLookup[rawMonth] || performanceMonthLookup[rawMonth.padStart(2, "0")] || rawMonth;
+};
+
+const getPerformanceAverage = (item) => {
+  const directAverage = Number(item.rata_rata ?? item.average ?? item.rataRata);
+  if (Number.isFinite(directAverage) && directAverage > 0) {
+    return directAverage;
+  }
+
+  const scores = [Number(item.dribbling), Number(item.passing), Number(item.shooting)].filter(
+    (score) => Number.isFinite(score)
+  );
+  if (scores.length === 0) return null;
+  return scores.reduce((sum, score) => sum + score, 0) / scores.length;
+};
 
 function InfoIcon() {
   return (
@@ -57,6 +99,7 @@ export default function DasborOrangTua({
 }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [activeDonutItem, setActiveDonutItem] = useState(null);
+  const [selectedPerformanceYear, setSelectedPerformanceYear] = useState("");
   const { activeChildName, openChildPicker, childPickerModal } = useParentChildSwitcher(
     userName,
     childrenOptions,
@@ -130,47 +173,54 @@ export default function DasborOrangTua({
   );
 
   const performanceYears = useMemo(() => {
-    const years = Array.from(new Set(performanceHistory.map((item) => Number(item.year)))).sort(
+    const years = Array.from(
+      new Set(
+        performanceHistory
+          .map((item) => Number(item.year))
+          .filter((year) => Number.isFinite(year) && year > 0)
+      )
+    ).sort(
       (leftItem, rightItem) => rightItem - leftItem
     );
     return years.length > 0 ? years : [new Date().getFullYear()];
   }, [performanceHistory]);
-  const latestPerformanceYear = String(performanceYears[0]);
+
+  useEffect(() => {
+    const defaultYear = String(performanceYears[0] || new Date().getFullYear());
+    if (!selectedPerformanceYear || !performanceYears.map(String).includes(selectedPerformanceYear)) {
+      setSelectedPerformanceYear(defaultYear);
+    }
+  }, [performanceYears, selectedPerformanceYear]);
+
+  const activePerformanceYear = selectedPerformanceYear || String(performanceYears[0]);
 
   const perfMonths = useMemo(() => {
-    const monthShortLabels = [
-      { key: "januari", label: "Jan" },
-      { key: "februari", label: "Feb" },
-      { key: "maret", label: "Mar" },
-      { key: "april", label: "Apr" },
-      { key: "mei", label: "Mei" },
-      { key: "juni", label: "Jun" },
-      { key: "juli", label: "Jul" },
-      { key: "agustus", label: "Agu" },
-      { key: "september", label: "Sep" },
-      { key: "oktober", label: "Okt" },
-      { key: "november", label: "Nov" },
-      { key: "desember", label: "Des" },
-    ];
-
     const performanceMap = new Map();
     performanceHistory.forEach((item) => {
-      const key = `${item.year}-${item.month}`;
-      if (!performanceMap.has(key)) {
-        performanceMap.set(
-          key,
-          Math.round(
-            (Number(item.dribbling) + Number(item.passing) + Number(item.shooting)) / 3
-          )
-        );
+      const monthKey = normalizePerformanceMonth(item.month);
+      const yearKey = String(item.year || "");
+      const average = getPerformanceAverage(item);
+      if (!monthKey || !yearKey || average === null) {
+        return;
       }
+
+      const mapKey = `${yearKey}-${monthKey}`;
+      const bucket = performanceMap.get(mapKey) || { total: 0, count: 0 };
+      bucket.total += average;
+      bucket.count += 1;
+      performanceMap.set(mapKey, bucket);
     });
 
-    return monthShortLabels.map((month) => ({
+    return performanceMonthLabels.map((month) => {
+      const bucket = performanceMap.get(`${activePerformanceYear}-${month.key}`);
+      const value = bucket ? Math.round(bucket.total / bucket.count) : 0;
+      return {
       label: month.label,
-      value: performanceMap.get(`${latestPerformanceYear}-${month.key}`) || 0,
-    }));
-  }, [latestPerformanceYear, performanceHistory]);
+      value,
+      hasData: Boolean(bucket),
+      };
+    });
+  }, [activePerformanceYear, performanceHistory]);
 
   return (
     <div className="parentPage">
@@ -419,16 +469,23 @@ export default function DasborOrangTua({
           <section className="parentCard parentPanel parentTall parentPerformanceSection">
             <div className="parentPanelHead">
               <h3>Performa Latihan</h3>
-              <PilihTahun options={performanceYears} />
+              <PilihTahun
+                options={performanceYears}
+                value={activePerformanceYear}
+                onChange={setSelectedPerformanceYear}
+              />
             </div>
             {isActive ? (
               performanceHistory.length > 0 ? (
                 <div className="parentBars">
                   {perfMonths.map((month, idx) => (
                     <div className="barWrap" key={month.label}>
+                      <span className={`barValue ${month.hasData ? "hasData" : ""}`}>
+                        {month.hasData ? month.value : "-"}
+                      </span>
                       <span
                         className={`bar ${idx % 2 === 0 ? "barPrimary" : "barAccent"}`}
-                        style={{ height: `${month.value}%` }}
+                        style={{ height: `${Math.max(month.value, month.hasData ? 10 : 4)}%` }}
                       />
                       <small>{month.label}</small>
                     </div>
@@ -449,11 +506,13 @@ export default function DasborOrangTua({
               <h3>Prestasi</h3>
               {isActive ? (
                 achievements.length > 0 ? (
-                  <ul className="parentAchievements">
-                    {achievements.map((item) => (
-                      <li key={item.id}>{item.title}</li>
-                    ))}
-                  </ul>
+                  <div className="parentScrollableCardBody">
+                    <ul className="parentAchievements">
+                      {achievements.map((item) => (
+                        <li key={item.id}>{item.title}</li>
+                      ))}
+                    </ul>
+                  </div>
                 ) : (
                   <div className="parentEmptyState">
                     Belum ada data prestasi untuk anak ini.
@@ -467,7 +526,7 @@ export default function DasborOrangTua({
               <h3>Catatan Pelatih</h3>
               {isActive ? (
                 coachNotes.length > 0 ? (
-                  <div className="parentCoachNoteList">
+                  <div className="parentScrollableCardBody parentCoachNoteList">
                     {coachNotes.map((note, idx) => (
                       <article className="parentCoachNote" key={`${note.id || note.date}-${idx}`}>
                         <img src={CoachNoteIcon} alt="" className="parentCoachNoteIcon" />
@@ -490,10 +549,10 @@ export default function DasborOrangTua({
         </div>
       </main>
 
-      <SiteFooter />
+      <div className="parentFooterWrap">
+        <SiteFooter />
+      </div>
       {childPickerModal}
     </div>
   );
 }
-
-

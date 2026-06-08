@@ -365,10 +365,7 @@ export default function UploadUlangBerkasOrangTua({
             <p>Akun sudah bisa login. Jika belum bayar, status tetap nonaktif.</p>
             <button
               type="button"
-              onClick={() => {
-                setIsSubmitSuccessOpen(false);
-                openDashboard();
-              }}
+              onClick={() => setIsSubmitSuccessOpen(false)}
             >
               Oke
             </button>

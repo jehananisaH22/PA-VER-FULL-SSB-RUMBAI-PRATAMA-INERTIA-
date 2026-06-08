@@ -5,6 +5,10 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.coachNotesPage > .siteFooter {
+  margin-top: 32px;
+}
+
 .coachNotesTopbar {
   position: sticky;
   top: 0;

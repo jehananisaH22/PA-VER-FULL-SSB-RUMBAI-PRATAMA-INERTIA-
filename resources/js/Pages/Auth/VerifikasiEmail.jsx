@@ -37,23 +37,26 @@ export default function VerifikasiEmail({ email = "", verificationLink = "" }) {
 
   const openEmailInbox = () => {
     const domain = email.split("@")[1]?.toLowerCase() || "";
+    const goToInbox = (url) => {
+      window.open(url, "_blank", "noopener,noreferrer");
+    };
 
     if (domain === "gmail.com" || domain === "googlemail.com") {
-      window.open("https://mail.google.com/", "_blank", "noopener,noreferrer");
+      goToInbox("https://mail.google.com/mail/u/0/#search/Verifikasi%20Email%20SSB%20System");
       return;
     }
 
     if (["outlook.com", "hotmail.com", "live.com"].includes(domain)) {
-      window.open("https://outlook.live.com/mail/", "_blank", "noopener,noreferrer");
+      goToInbox("https://outlook.live.com/mail/0/inbox");
       return;
     }
 
     if (domain === "yahoo.com" || domain === "ymail.com") {
-      window.open("https://mail.yahoo.com/", "_blank", "noopener,noreferrer");
+      goToInbox("https://mail.yahoo.com/");
       return;
     }
 
-    window.open(`mailto:${email}`, "_blank", "noopener,noreferrer");
+    goToInbox(`mailto:${email}`);
   };
 
   return (

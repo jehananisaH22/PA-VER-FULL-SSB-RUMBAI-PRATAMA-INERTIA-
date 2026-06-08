@@ -45,6 +45,91 @@ class RegistrationFlowTest extends TestCase
         ]);
     }
 
+    public function test_email_verification_web_link_redirects_to_registration_form(): void
+    {
+        $user = User::factory()->unverified()->create([
+            'email' => 'parent-web-verify@example.com',
+            'role' => 'orang_tua',
+            'verification_token' => 'web-valid-token',
+        ]);
+
+        OrangTua::create([
+            'user_id' => $user->id,
+            'nama_ortu' => $user->name,
+            'email' => $user->email,
+            'password' => $user->password,
+            'no_hp' => '081234567899',
+        ]);
+
+        $this->get('/verify-email?email=parent-web-verify@example.com&token=web-valid-token')
+            ->assertRedirect('/register/form');
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'verification_token' => null,
+        ]);
+    }
+
+    public function test_used_verification_link_keeps_verified_parent_on_registration_form(): void
+    {
+        $user = User::factory()->unverified()->create([
+            'email' => 'parent-used-link@example.com',
+            'role' => 'orang_tua',
+            'verification_token' => 'used-valid-token',
+        ]);
+
+        OrangTua::create([
+            'user_id' => $user->id,
+            'nama_ortu' => $user->name,
+            'email' => $user->email,
+            'password' => $user->password,
+            'no_hp' => '081234567898',
+        ]);
+
+        $this->get('/verify-email?email=parent-used-link@example.com&token=used-valid-token')
+            ->assertRedirect('/register/form');
+
+        $this->get('/verify-email?email=parent-used-link@example.com&token=used-valid-token')
+            ->assertRedirect('/register/form');
+
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_stale_verification_link_uses_current_registration_session(): void
+    {
+        $user = User::factory()->unverified()->create([
+            'email' => 'parent-current-session@example.com',
+            'role' => 'orang_tua',
+            'verification_token' => 'current-session-token',
+        ]);
+
+        OrangTua::create([
+            'user_id' => $user->id,
+            'nama_ortu' => $user->name,
+            'email' => $user->email,
+            'password' => $user->password,
+            'no_hp' => '081234567797',
+        ]);
+
+        $this->withSession([
+            'registration.account' => [
+                'userId' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => '081234567797',
+            ],
+        ])
+            ->get('/verify-email?email=parent-current-session@example.com&token=stale-email-token')
+            ->assertRedirect('/register/form');
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'verification_token' => null,
+        ]);
+    }
+
     public function test_admin_registration_detail_accepts_registration_id_and_student_id(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
@@ -127,6 +212,55 @@ class RegistrationFlowTest extends TestCase
             'id_siswa' => $siswa->id_siswa,
             'status' => 'Menunggu validasi',
         ]);
+    }
+
+    public function test_registration_payment_upload_shows_success_modal_then_requires_login(): void
+    {
+        Storage::fake('public');
+
+        $parent = User::factory()->create(['role' => 'orang_tua']);
+        $ortu = OrangTua::create([
+            'user_id' => $parent->id,
+            'nama_ortu' => 'Parent Modal',
+            'email' => $parent->email,
+            'password' => $parent->password,
+            'no_hp' => '081234567796',
+        ]);
+        $siswa = Siswa::create([
+            'user_id' => $parent->id,
+            'id_ortu' => $ortu->id_ortu,
+            'nama_siswa' => 'Anak Modal',
+            'nama_ayah' => 'Ayah',
+            'nama_ibu' => 'Ibu',
+            'umur' => 11,
+            'status' => 'Inactive',
+        ]);
+
+        $this->actingAs($parent)
+            ->withSession([
+                'registration.form' => [
+                    'studentId' => $siswa->id_siswa,
+                ],
+                'registration.account' => [
+                    'userId' => $parent->id,
+                    'name' => $parent->name,
+                    'email' => $parent->email,
+                    'phone' => '081234567796',
+                ],
+            ])
+            ->from('/register/payment-proof')
+            ->post('/api/siswa/upload-bukti-pendaftaran', [
+                'student_name' => 'Anak Modal',
+                'periode' => '2026',
+                'jumlah' => 280000,
+                'tanggal_bukti_bayar' => '2026-05-30',
+                'bukti_bayar' => UploadedFile::fake()->create('bukti-modal.pdf', 10, 'application/pdf'),
+            ], ['X-Inertia' => 'true'])
+            ->assertRedirect('/register/payment-proof')
+            ->assertSessionHas('registrationPaymentSuccess', true);
+
+        $this->assertGuest();
+        $this->assertFalse((bool) session('show_child_picker_after_login'));
     }
 
     public function test_student_registration_is_visible_to_admin_and_parent_child_picker(): void

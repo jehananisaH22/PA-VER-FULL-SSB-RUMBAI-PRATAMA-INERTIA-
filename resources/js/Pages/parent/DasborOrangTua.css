@@ -538,6 +538,13 @@
   padding: 18px 20px;
 }
 
+.parentGridTwo .parentPanel {
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  max-height: 300px;
+}
+
 .parentAttendancePanel {
   display: flex;
   flex-direction: column;
@@ -765,11 +772,11 @@
 
 .parentBars {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   justify-content: space-between;
   gap: 8px;
   margin-top: 24px;
-  height: 180px;
+  height: 220px;
   width: 100%;
   overflow-x: auto;
   padding-bottom: 4px;
@@ -779,13 +786,37 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 7px;
   flex: 1;
+  height: 100%;
   min-width: 56px;
 }
 
+.barValue {
+  min-width: 34px;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid #dce7d6;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #9ca3af;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.barValue.hasData {
+  color: #163f18;
+  border-color: #b7dda4;
+}
+
 .bar {
-  width: 18px;
+  width: 22px;
   border-radius: 999px;
   background: #d1d5db;
   min-height: 8px;
@@ -823,18 +854,54 @@
 }
 
 .parentAchievements {
-  margin: 24px 0 0;
-  padding: 0 0 0 22px;
+  margin: 0;
+  padding: 0 0 0 20px;
 }
 
 .parentAchievements li {
-  font-size: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 15px;
   font-weight: 500;
   line-height: 1.45;
 }
 
+.parentAchievements li:first-child {
+  padding-top: 0;
+}
+
+.parentAchievements li:last-child {
+  border-bottom: 0;
+}
+
 .parentAchievements li::marker {
   color: #5daf2f;
+}
+
+.parentScrollableCardBody {
+  margin-top: 14px;
+  flex: 1;
+  min-height: 0;
+  max-height: 228px;
+  overflow-y: scroll;
+  overscroll-behavior: contain;
+  padding-right: 8px;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #b8c4d3 transparent;
+}
+
+.parentScrollableCardBody::-webkit-scrollbar {
+  width: 7px;
+}
+
+.parentScrollableCardBody::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.parentScrollableCardBody::-webkit-scrollbar-thumb {
+  background: #b8c4d3;
+  border-radius: 999px;
 }
 
 .parentCoachNote {
@@ -848,10 +915,7 @@
 }
 
 .parentCoachNoteList {
-  margin-top: 12px;
-  max-height: 220px;
-  overflow-y: auto;
-  padding-right: 6px;
+  margin-top: 14px;
 }
 
 .parentCoachNoteIcon {
@@ -882,6 +946,55 @@
   font-size: 12px;
   color: #6b7280;
   grid-column: 2;
+}
+
+.parentFooterWrap {
+  width: 100%;
+  margin-top: 28px;
+  background: #28292d;
+}
+
+.parentFooterWrap .siteFooter {
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.parentFooterWrap .siteFooterContainer {
+  width: min(1180px, calc(100% - 56px));
+}
+
+.parentFooterWrap .siteFooterInner {
+  min-height: 154px;
+  padding: 18px 0 10px;
+  grid-template-columns: minmax(360px, 1fr) minmax(340px, 470px);
+  gap: 10px 64px;
+}
+
+.parentFooterWrap .siteFooterLeft {
+  justify-self: start;
+  width: 100%;
+  gap: 14px;
+}
+
+.parentFooterWrap .siteFooterLogo {
+  width: 66px;
+  height: 66px;
+}
+
+.parentFooterWrap .siteFooterText {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.parentFooterWrap .siteFooterMapCard {
+  height: 96px;
+  border-radius: 8px;
+}
+
+.parentFooterWrap .siteFooterCopy {
+  padding-top: 0;
+  font-size: 11px;
 }
 
 .parentFooter {

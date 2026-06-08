@@ -667,26 +667,37 @@
 
 .adminHomeOverviewGrid {
   grid-template-columns: minmax(560px, 1.45fr) minmax(360px, 0.9fr);
-  grid-auto-rows: minmax(250px, auto);
+  grid-auto-rows: auto;
   align-items: stretch;
 }
 
 .adminHomeOverviewGrid .adminPanelChart {
-  grid-row: span 2;
+  grid-column: 1;
+  grid-row: 1;
+  height: auto;
 }
 
-.adminHomeOverviewGrid .adminPanelChart,
+.adminHomeOverviewGrid .adminPanelAttendance {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.adminHomeOverviewGrid .adminPerformanceAverageCard {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
 .adminHomeOverviewGrid .adminPerformanceAverageCard,
 .adminHomeOverviewGrid .adminPanelAttendance {
   height: 100%;
 }
 
 .adminContentGridPaymentFocus {
-  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
 }
 
 .adminContentGridCoachDocs {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  grid-template-columns: minmax(300px, 0.75fr) minmax(0, 1.25fr);
 }
 
 .adminCard {
@@ -866,10 +877,11 @@
 .adminPanelWide,
 .adminPanelNarrow {
   padding: 18px 20px;
+  min-width: 0;
 }
 
 .adminPanelChart {
-  min-height: 420px;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -892,14 +904,14 @@
 }
 
 .adminPanelAttendance {
-  min-height: 250px;
+  min-height: 260px;
   padding-bottom: 16px;
   display: flex;
   flex-direction: column;
 }
 
 .adminPerformanceAverageCard {
-  min-height: 250px;
+  min-height: 260px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -1123,7 +1135,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .adminPanelYearPicker {
@@ -1229,15 +1241,17 @@
 }
 
 .adminBarChart {
-  margin-top: 4px;
-  flex: 1;
-  min-height: 280px;
+  margin-top: 2px;
+  flex: 0 0 auto;
+  height: 250px;
+  min-height: 0;
   display: flex;
   align-items: flex-end;
-  gap: 10px;
-  overflow-x: auto;
+  justify-content: space-between;
+  gap: clamp(6px, 0.75vw, 12px);
+  overflow-x: hidden;
   overflow-y: hidden;
-  padding: 18px 14px 14px;
+  padding: 14px 16px 16px;
   border: 1px solid #edf2e9;
   border-radius: 14px;
   background:
@@ -1272,6 +1286,8 @@
   padding: 0;
   cursor: pointer;
   transition: opacity 220ms ease, transform 220ms ease;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .adminBarColButton.isDimmed {
@@ -1283,11 +1299,12 @@
 }
 
 .adminBarCol {
-  min-width: 78px;
+  width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
 }
 
 .adminBarValue {
@@ -1311,8 +1328,8 @@
 }
 
 .adminBarTrack {
-  width: 34px;
-  height: 190px;
+  width: clamp(24px, 3.2vw, 34px);
+  height: 150px;
   border-radius: 999px;
   background: #eaf3e8;
   position: relative;
@@ -1511,13 +1528,13 @@
 }
 
 .adminPaymentValidationCard {
-  min-height: 340px;
+  min-height: 300px;
   display: flex;
   flex-direction: column;
 }
 
 .adminActivityHistoryCard {
-  min-height: 340px;
+  min-height: 300px;
   display: flex;
   flex-direction: column;
 }
@@ -1567,7 +1584,7 @@
   margin-top: 14px;
   flex: 1;
   min-height: 0;
-  max-height: 255px;
+  max-height: 220px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -1626,7 +1643,7 @@
 }
 
 .adminActivityHistoryEmpty {
-  min-height: 190px;
+  min-height: 150px;
   border: 1px dashed #cfe0c4;
   border-radius: 12px;
   color: #647464;
@@ -1641,7 +1658,7 @@
 .adminPaymentValidationCard .adminListSimple {
   flex: 1;
   min-height: 0;
-  max-height: 235px;
+  max-height: 205px;
   overflow-y: auto;
   padding-right: 6px;
   scrollbar-gutter: stable;
@@ -1659,7 +1676,7 @@
 }
 
 .adminFilesCard {
-  min-height: 340px;
+  min-height: 300px;
   display: flex;
   flex-direction: column;
 }
@@ -1667,7 +1684,7 @@
 .adminFilesCard .adminTableWrap {
   flex: 1;
   min-height: 0;
-  max-height: 320px;
+  max-height: 260px;
   overflow-y: auto;
   padding-right: 2px;
   scrollbar-width: thin;
@@ -1917,8 +1934,8 @@
 
 .adminCoachCard {
   align-self: stretch;
-  min-height: 420px;
-  max-height: 520px;
+  min-height: 300px;
+  max-height: 420px;
   display: flex;
   flex-direction: column;
 }
@@ -1926,7 +1943,7 @@
 .adminCoachCard .adminCoachList {
   flex: 1;
   min-height: 0;
-  max-height: 320px;
+  max-height: 250px;
   overflow-y: auto;
   padding-right: 4px;
   scrollbar-width: thin;
@@ -2227,11 +2244,70 @@
 
 .adminSiteFooterWrap {
   margin-top: auto;
+  margin-bottom: -28px;
   position: relative;
+  left: calc(-1 * (var(--admin-main-offset) + var(--admin-main-pad-x)));
   width: 100vw;
-  left: 50%;
-  transform: translateX(-50%);
   z-index: 1;
+  overflow: hidden;
+  border-radius: 0;
+  box-shadow: 0 -6px 24px rgba(15, 23, 42, 0.08);
+}
+
+.adminSiteFooterWrap .siteFooter {
+  width: 100%;
+  background: #27282c;
+}
+
+.adminSiteFooterWrap .siteFooterContainer {
+  width: auto;
+  margin-left: calc(var(--admin-main-offset) + var(--admin-main-pad-x));
+  margin-right: var(--admin-main-pad-x);
+}
+
+.adminSiteFooterWrap .siteFooterInner {
+  min-height: 118px;
+  padding: 12px 0 10px;
+  grid-template-columns: minmax(360px, 0.95fr) minmax(300px, 420px);
+  gap: 8px 34px;
+  align-items: center;
+}
+
+.adminSiteFooterWrap .siteFooterLeft {
+  justify-self: start;
+  width: 100%;
+  max-width: 560px;
+  gap: 14px;
+}
+
+.adminSiteFooterWrap .siteFooterLogo {
+  width: 58px;
+  height: 58px;
+  border-radius: 8px;
+}
+
+.adminSiteFooterWrap .siteFooterText {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.adminSiteFooterWrap .siteFooterTitle {
+  margin-bottom: 3px;
+}
+
+.adminSiteFooterWrap .siteFooterRight {
+  justify-self: end;
+  max-width: 420px;
+}
+
+.adminSiteFooterWrap .siteFooterMapCard {
+  height: 78px;
+  border-radius: 8px;
+}
+
+.adminSiteFooterWrap .siteFooterCopy {
+  padding-top: 2px;
+  font-size: 10px;
 }
 
 @media (max-width: 1100px) {
@@ -2249,8 +2325,37 @@
     grid-auto-rows: auto;
   }
 
-  .adminHomeOverviewGrid .adminPanelChart {
+  .adminHomeOverviewGrid .adminPanelChart,
+  .adminHomeOverviewGrid .adminPanelAttendance,
+  .adminHomeOverviewGrid .adminPerformanceAverageCard {
+    grid-column: 1;
     grid-row: auto;
+  }
+
+  .adminSiteFooterWrap .siteFooterInner {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .adminSiteFooterWrap .siteFooterLeft,
+  .adminSiteFooterWrap .siteFooterRight {
+    justify-self: stretch;
+    max-width: none;
+  }
+
+  .adminSiteFooterWrap .siteFooterContainer {
+    margin-left: calc(var(--admin-main-offset) + var(--admin-main-pad-x));
+    margin-right: var(--admin-main-pad-x);
+  }
+
+  .adminBarChart {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 18px;
+  }
+
+  .adminBarColButton {
+    flex: 0 0 64px;
   }
 
   .adminScheduleEditor {
@@ -2263,6 +2368,10 @@
     --admin-main-offset: 94px;
     --admin-main-pad-x: 14px;
     padding: 14px var(--admin-main-pad-x);
+  }
+
+  .adminSiteFooterWrap {
+    margin-bottom: -14px;
   }
 
 
@@ -2314,7 +2423,7 @@
   }
 
   .adminBarCol {
-    min-width: 64px;
+    min-width: 0;
   }
 
   .adminPanelChart,
@@ -2420,4 +2529,3 @@
     transition: none !important;
   }
 }
-

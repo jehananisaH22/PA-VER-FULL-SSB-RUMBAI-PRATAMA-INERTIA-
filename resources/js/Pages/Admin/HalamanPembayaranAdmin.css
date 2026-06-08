@@ -510,22 +510,22 @@
 .adminPaymentStatusDropdown {
   position: relative;
   width: fit-content;
-  min-width: 154px;
+  min-width: 142px;
   z-index: 6;
 }
 
 .adminPaymentStatusTrigger {
   width: 100%;
-  min-height: 34px;
+  min-height: 32px;
   border: 1px solid #a8d185;
   border-radius: 999px;
   background: linear-gradient(180deg, #ffffff 0%, #f4faef 100%);
   box-shadow: 0 6px 14px rgba(117, 170, 74, 0.1);
-  padding: 0 12px 0 13px;
+  padding: 0 10px 0 12px;
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   color: #2a4f1f;
   font-size: 11px;
   font-weight: 700;
@@ -574,8 +574,8 @@
 }
 
 .adminPaymentStatusTriggerIcon {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -600,8 +600,8 @@
   top: calc(100% + 8px);
   right: 0;
   width: 100%;
-  min-width: 168px;
-  max-width: 176px;
+  min-width: 150px;
+  max-width: 158px;
   z-index: 20;
   padding: 8px;
   border-radius: 14px;
@@ -1341,12 +1341,12 @@
 
 .adminPaymentTableWrap th:nth-child(5),
 .adminPaymentTableWrap td:nth-child(5) {
-  width: 18%;
+  width: 16%;
 }
 
 .adminPaymentTableWrap th:nth-child(6),
 .adminPaymentTableWrap td:nth-child(6) {
-  width: 26%;
+  width: 18%;
 }
 
 .adminPaymentTableWrap th {
@@ -1387,20 +1387,20 @@
 }
 
 .adminPaymentStatusDropdown {
-  min-width: 178px;
+  min-width: 142px;
 }
 
 .adminPaymentStatusTrigger {
-  min-height: 35px;
-  padding: 0 13px 0 15px;
+  min-height: 32px;
+  padding: 0 10px 0 12px;
   font-size: 12px;
   font-weight: 600;
   box-shadow: none;
 }
 
 .adminPaymentStatusTriggerIcon {
-  width: 16px;
-  height: 16px;
+  width: 13px;
+  height: 13px;
 }
 
 .adminPaymentEmptyCell {

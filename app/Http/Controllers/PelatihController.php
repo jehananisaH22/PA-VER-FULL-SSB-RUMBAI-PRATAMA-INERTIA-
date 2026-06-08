@@ -54,6 +54,10 @@ class PelatihController extends Controller
 
     }])->whereHas('siswa', function ($query) {
         $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
+    })
+    ->where(function ($query) use ($pelatih) {
+        $query->where('id_pelatih', $pelatih->id_pelatih)
+            ->orWhereNull('id_pelatih');
     });
 
     // ambil jadwal terbaru
@@ -188,7 +192,12 @@ public function Rekap_Absensi(Request $request)
     $pelatih = $this->currentPelatih();
     $studentIds = $pelatih
         ? DB::table('jadwal_siswa')
+            ->join('jadwal_latihan', 'jadwal_siswa.id_jadwal', '=', 'jadwal_latihan.id_jadwal')
             ->join('siswa', 'jadwal_siswa.id_siswa', '=', 'siswa.id_siswa')
+            ->where(function ($query) use ($pelatih) {
+                $query->where('jadwal_latihan.id_pelatih', $pelatih->id_pelatih)
+                    ->orWhereNull('jadwal_latihan.id_pelatih');
+            })
             ->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active'])
             ->pluck('jadwal_siswa.id_siswa')
             ->unique()
@@ -238,10 +247,7 @@ public function Rekap_Absensi(Request $request)
 
 public function Performa_Siswa(Request $request, $id)
 {
-    $user = Auth::user();
-
-    // ambil pelatih berdasarkan user login
-    $pelatih = Pelatih::resolveForUser($user);
+    $pelatih = $this->currentPelatih();
 
     if (!$pelatih) {
         return response()->json([
@@ -255,6 +261,10 @@ public function Performa_Siswa(Request $request, $id)
             $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
         }])
         ->where('id_jadwal', $id)
+        ->where(function ($query) use ($pelatih) {
+            $query->where('id_pelatih', $pelatih->id_pelatih)
+                ->orWhereNull('id_pelatih');
+        })
         ->first();
 
     if (!$jadwal) {
@@ -287,6 +297,10 @@ public function Input_Performa_Siswa(Request $request, $id)
             $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
         }])
         ->where('id_jadwal', $id)
+        ->where(function ($query) use ($pelatih) {
+            $query->where('id_pelatih', $pelatih->id_pelatih)
+                ->orWhereNull('id_pelatih');
+        })
         ->first();
 
     if (!$jadwal) {
@@ -308,9 +322,20 @@ public function Input_Performa_Siswa(Request $request, $id)
     $tanggal = $request->filled('tanggal_penilaian')
         ? Carbon::parse($request->tanggal_penilaian)
         : now();
+    $scheduleDate = Carbon::parse($jadwal->tanggal);
+
+    if ($tanggal->dayOfWeek !== $scheduleDate->dayOfWeek) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Tanggal input performa tidak sesuai dengan hari jadwal latihan yang dipilih.',
+            'schedule_day' => $scheduleDate->locale('id')->translatedFormat('l'),
+            'input_day' => $tanggal->locale('id')->translatedFormat('l'),
+        ], 422);
+    }
+
     $savedStudentIds = [];
 
-    DB::transaction(function () use ($request, $jadwal, $tanggal, &$savedStudentIds) {
+    DB::transaction(function () use ($request, $jadwal, $pelatih, $tanggal, &$savedStudentIds) {
         $nextId = ((int) DB::table('performa_siswa')
             ->lockForUpdate()
             ->orderByDesc('id_performa')
@@ -325,14 +350,29 @@ public function Input_Performa_Siswa(Request $request, $id)
             continue;
         }
 
-            Performa_Siswa::create([
-                'id_performa' => $nextId++,
+            $keys = [
                 'id_siswa' => $item['id_siswa'],
+                'id_jadwal' => $jadwal->id_jadwal,
                 'tanggal_penilaian' => $tanggal->toDateString(),
+            ];
+            $values = [
+                'id_pelatih' => $pelatih->id_pelatih,
                 'dribbling' => $item['dribbling'],
                 'passing' => $item['passing'],
                 'shooting' => $item['shooting'],
-            ]);
+                'rata_rata' => round(((float) $item['dribbling'] + (float) $item['passing'] + (float) $item['shooting']) / 3, 2),
+            ];
+            $existingPerformance = Performa_Siswa::where($keys)->first();
+
+            if ($existingPerformance) {
+                $existingPerformance->update($values);
+            } else {
+                Performa_Siswa::create(array_merge(
+                    ['id_performa' => $nextId++],
+                    $keys,
+                    $values
+                ));
+            }
 
             $savedStudentIds[] = (int) $item['id_siswa'];
         }
@@ -357,62 +397,19 @@ public function Input_Performa_Siswa(Request $request, $id)
 
     return response()->json([
         'status' => true,
-        'message' => 'Performa berhasil disimpan'
+        'message' => 'Performa berhasil disimpan',
+        'saved' => count(array_unique($savedStudentIds)),
+        'schedule' => [
+            'id_jadwal' => $jadwal->id_jadwal,
+            'tanggal' => $scheduleDate->toDateString(),
+            'lokasi' => $jadwal->lokasi,
+        ],
     ]);
 }
 
 public function Update_Performa_Siswa(Request $request, $id_jadwal)
 {
-    $user = Auth::user();
-
-    $pelatih = Pelatih::resolveForUser($user);
-
-    if (!$pelatih) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Data pelatih tidak ditemukan'
-        ], 404);
-    }
-
-    // ambil jadwal + siswa yang ikut jadwal itu
-    $jadwal = Jadwal_Latihan::with(['siswa' => function ($query) {
-            $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
-        }])
-        ->where('id_jadwal', $id_jadwal)
-        ->first();
-
-    if (!$jadwal) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Jadwal tidak ditemukan'
-        ], 404);
-    }
-
-    foreach ($request->data as $item) {
-
-        // pastikan siswa memang ada di jadwal ini
-        $cekSiswa = $jadwal->siswa->where('id_siswa', $item['id_siswa'])->first();
-
-        if (!$cekSiswa) {
-            continue; // skip kalau bukan siswa di jadwal ini
-        }
-
-       Performa_Siswa::updateOrCreate(
-    [
-        'id_siswa' => $item['id_siswa'],
-    ],
-    [
-        'dribbling' => $item['dribbling'],
-        'passing' => $item['passing'],
-        'shooting' => $item['shooting'],
-    ]
-);
-    }
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Performa berhasil disimpan'
-    ]);
+    return $this->Input_Performa_Siswa($request, $id_jadwal);
 }
 
 
@@ -507,16 +504,32 @@ public function Tambah_Catatan_Pelatih(Request $request)
 
                 $catatan->load(['siswa', 'pelatih']);
                 $studentIds[] = (int) $catatan->id_siswa;
+                $tanggal = $catatan->tanggal_catatan
+                    ? Carbon::parse($catatan->tanggal_catatan)
+                    : now();
 
                 $insert[] = [
                     'id_catatan' => $catatan->id_catatan,
+                    'id' => $catatan->id_catatan,
                     'id_siswa' => $catatan->id_siswa,
+                    'studentId' => $catatan->id_siswa,
                     'nama_siswa' => $catatan->siswa->nama_siswa ?? null,
+                    'studentName' => $catatan->siswa->nama_siswa ?? null,
+                    'player' => $catatan->siswa->nama_siswa ?? null,
                     'umur' => 'U-' . ($catatan->siswa->umur ?? 0),
+                    'category' => $catatan->siswa?->kategori_umur
+                        ? strtolower(str_replace('-', '', $catatan->siswa->kategori_umur))
+                        : null,
                     'id_pelatih' => $catatan->id_pelatih,
                     'nama_pelatih' => $catatan->pelatih->nama_pelatih ?? null,
+                    'coach' => $catatan->pelatih->nama_pelatih ?? 'Pelatih',
+                    'coachName' => $catatan->pelatih->nama_pelatih ?? 'Pelatih',
                     'catatan' => $catatan->catatan,
-                    'tanggal_catatan' => $catatan->tanggal_catatan
+                    'note' => $catatan->catatan,
+                    'title' => $catatan->catatan,
+                    'tanggal_catatan' => $catatan->tanggal_catatan,
+                    'date' => $tanggal->format('d/m/Y'),
+                    'createdAt' => $tanggal->timestamp * 1000,
                 ];
             }
         });
@@ -697,7 +710,7 @@ public function FormUploadBuktiPembayaran(Request $request)
         ],
         'data' => [
             'kategori_umur' => $kategoriUmur,
-            'jenis_pembayaran' => ['Pendaftaran', 'Harian'],
+            'jenis_pembayaran' => ['Pendaftaran', 'Bulanan', 'Harian'],
             'siswa' => $siswa,
         ],
     ]);
@@ -716,7 +729,7 @@ public function Store_Bukti_Pembayaran_Pelatih(Request $request)
 
     $validated = $request->validate([
         'id_siswa' => 'required|exists:siswa,id_siswa',
-        'jenis' => 'required|in:Harian,Pendaftaran',
+        'jenis' => 'required|in:Harian,Bulanan,Pendaftaran',
         'tanggal_bukti_bayar' => 'required|date',
         'bukti_bayar' => 'required|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
     ]);
@@ -740,6 +753,7 @@ public function Store_Bukti_Pembayaran_Pelatih(Request $request)
             : $tanggal->format('Y-m');
         $jumlah = match ($validated['jenis']) {
             'Pendaftaran' => 280000,
+            'Bulanan' => 150000,
             'Harian' => 35000,
             default => 0,
         };
@@ -907,7 +921,7 @@ public function History_Bukti_Pembayaran_Pelatih(Request $request)
         ],
         'options' => [
             'kategori_umur' => $kategoriUmur,
-            'jenis_pembayaran' => ['Pendaftaran', 'Harian'],
+            'jenis_pembayaran' => ['Pendaftaran', 'Bulanan', 'Harian'],
         ],
         'data' => $history,
     ]);

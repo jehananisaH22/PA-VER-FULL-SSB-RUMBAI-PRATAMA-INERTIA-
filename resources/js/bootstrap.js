@@ -8,9 +8,13 @@ window.axios.defaults.xsrfHeaderName = 'X-XSRF-TOKEN';
 
 window.refreshCsrfToken = (csrfToken = null) => {
     const tokenMeta = document.head.querySelector('meta[name="csrf-token"]');
-    const token = csrfToken || tokenMeta?.content || '';
+    const token = csrfToken || tokenMeta?.content || window.axios.defaults.headers.common['X-CSRF-TOKEN'] || '';
 
     if (token) {
+        if (tokenMeta) {
+            tokenMeta.setAttribute('content', token);
+        }
+
         window.axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
     }
 
@@ -39,7 +43,10 @@ window.axios.interceptors.response.use(
             originalRequest.__csrfRetried = true;
 
             try {
-                const response = await axios.get('/api/csrf-token');
+                const response = await axios.get('/api/csrf-token', {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    withCredentials: true,
+                });
                 const token = window.refreshCsrfToken?.(response?.data?.csrfToken);
 
                 if (token) {

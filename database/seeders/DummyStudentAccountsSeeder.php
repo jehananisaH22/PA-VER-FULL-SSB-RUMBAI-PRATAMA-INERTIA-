@@ -23,10 +23,9 @@ class DummyStudentAccountsSeeder extends Seeder
 
             foreach ($this->dummyStudents() as $item) {
                 $user = User::updateOrCreate(
-                    ['email' => $item['email']],
+                    ['email' => $item['email'], 'role' => 'orang_tua'],
                     [
                         'name' => $item['parent_name'],
-                        'role' => 'orang_tua',
                         'password' => self::PASSWORD,
                         'email_verified_at' => now(),
                     ]
@@ -96,10 +95,9 @@ class DummyStudentAccountsSeeder extends Seeder
     private function ensureCoach(): Pelatih
     {
         $user = User::updateOrCreate(
-            ['email' => 'pelatih.dummy@ssbrumbai.test'],
+            ['email' => 'pelatih.dummy@ssbrumbai.test', 'role' => 'pelatih'],
             [
                 'name' => 'Pelatih Dummy',
-                'role' => 'pelatih',
                 'password' => self::PASSWORD,
                 'email_verified_at' => now(),
             ]
