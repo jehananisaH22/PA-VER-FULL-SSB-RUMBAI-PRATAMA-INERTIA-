@@ -244,7 +244,18 @@ class SsbInertiaData
     {
         $query = DB::table('performa_siswa')
             ->join('siswa', 'performa_siswa.id_siswa', '=', 'siswa.id_siswa')
-            ->select('performa_siswa.*', 'siswa.nama_siswa', 'siswa.umur');
+            ->leftJoin('jadwal_latihan', 'performa_siswa.id_jadwal', '=', 'jadwal_latihan.id_jadwal')
+            ->leftJoin('pelatih', 'performa_siswa.id_pelatih', '=', 'pelatih.id_pelatih')
+            ->select(
+                'performa_siswa.*',
+                'siswa.nama_siswa',
+                'siswa.umur',
+                'jadwal_latihan.tanggal as jadwal_tanggal',
+                'jadwal_latihan.jam_mulai',
+                'jadwal_latihan.jam_selesai',
+                'jadwal_latihan.lokasi',
+                'pelatih.nama_pelatih'
+            );
 
         if ($activeOnly) {
             $query->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active']);
@@ -263,7 +274,16 @@ class SsbInertiaData
                     'studentId' => $row->id_siswa,
                     'studentName' => $row->nama_siswa,
                     'player' => $row->nama_siswa,
-                    'category' => self::categoryFromAge((int) $row->umur),
+                    'category' => self::categoryValue(self::categoryFromAge((int) $row->umur)),
+                    'scheduleId' => $row->id_jadwal ? 'schedule-' . $row->id_jadwal : null,
+                    'scheduleLabel' => $row->jadwal_tanggal
+                        ? Carbon::parse($row->jadwal_tanggal)->locale('id')->translatedFormat('l') . ' | ' .
+                            Carbon::parse($row->jam_mulai)->format('H.i') . '-' .
+                            Carbon::parse($row->jam_selesai)->format('H.i') . ' WIB | ' .
+                            ($row->lokasi ?: '-')
+                        : '-',
+                    'coach' => $row->nama_pelatih ?: 'Pelatih',
+                    'coachName' => $row->nama_pelatih ?: 'Pelatih',
                     'month' => self::monthKey($date),
                     'year' => $date->format('Y'),
                     'date' => self::dateSlash($date),
@@ -610,9 +630,12 @@ class SsbInertiaData
                     'date' => $paymentDate
                         ? Carbon::parse($paymentDate)->locale('id')->translatedFormat('d F Y')
                         : '-',
-                    'type' => $row->jenis === 'Pendaftaran'
-                        ? 'Uang Pendaftaran'
-                        : ($row->jenis === 'Harian' ? 'Pembayaran Harian' : 'Pembayaran'),
+                    'type' => match ($row->jenis) {
+                        'Pendaftaran' => 'Uang Pendaftaran',
+                        'Bulanan' => 'Iuran Bulanan',
+                        'Harian' => 'Pembayaran Harian',
+                        default => 'Pembayaran',
+                    },
                     'status' => match (true) {
                         $row->status === 'Lunas' => 'Lunas',
                         $proofStatus === 'menunggu validasi' => 'Menunggu Validasi',
@@ -700,6 +723,35 @@ class SsbInertiaData
         $activeStudent = $selectedStudentId
             ? $students->firstWhere('id_siswa', (int) $selectedStudentId)
             : null;
+
+        if (! $activeStudent && $students->isNotEmpty()) {
+            $studentIdsWithRevision = $students->pluck('id_siswa')->filter()->values();
+            $revisionStudentId = $studentIdsWithRevision->isNotEmpty()
+                ? DB::table('pendaftaran')
+                    ->whereIn('id_siswa', $studentIdsWithRevision)
+                    ->where('status_approval', 'Revisi')
+                    ->orderByDesc('tanggal_daftar')
+                    ->orderByDesc('id_pendaftaran')
+                    ->value('id_siswa')
+                : null;
+
+            if (! $revisionStudentId && $studentIdsWithRevision->isNotEmpty()) {
+                $revisionStudentId = DB::table('bukti_pembayaran')
+                    ->join('pembayaran', 'bukti_pembayaran.id_pembayaran', '=', 'pembayaran.id_pembayaran')
+                    ->whereIn('bukti_pembayaran.id_siswa', $studentIdsWithRevision)
+                    ->where('bukti_pembayaran.status', 'ditolak')
+                    ->where('pembayaran.jenis', 'Pendaftaran')
+                    ->orderByDesc('bukti_pembayaran.tanggal_bukti_bayar')
+                    ->orderByDesc('bukti_pembayaran.id_bukti_pembayaran')
+                    ->value('bukti_pembayaran.id_siswa');
+            }
+
+            if ($revisionStudentId) {
+                $activeStudent = $students->firstWhere('id_siswa', (int) $revisionStudentId);
+                $selectedStudentId = $activeStudent ? (int) $activeStudent->id_siswa : $selectedStudentId;
+            }
+        }
+
         $firstStudent = $activeStudent;
         $studentIds = $firstStudent ? [$firstStudent->id_siswa] : [];
         $latestPayment = $studentIds

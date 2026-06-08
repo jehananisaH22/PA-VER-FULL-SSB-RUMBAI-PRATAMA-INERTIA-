@@ -91,7 +91,9 @@ export default function TataLetakPelatih({
         </div>
       </main>
 
-      <SiteFooter />
+      <div className="coachFooterWrap">
+        <SiteFooter />
+      </div>
     </div>
   );
 }

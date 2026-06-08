@@ -13,6 +13,8 @@ class Performa_Siswa extends Model
     protected $fillable = [
         'id_performa',
         'id_siswa',
+        'id_jadwal',
+        'id_pelatih',
         'tanggal_penilaian',
         'dribbling',
         'passing',

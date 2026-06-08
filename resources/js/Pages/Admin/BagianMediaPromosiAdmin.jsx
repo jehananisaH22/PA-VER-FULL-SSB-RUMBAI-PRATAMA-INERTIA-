@@ -12,6 +12,7 @@ const emptyNewsForm = {
   image: "",
   imageFile: null,
   imageName: "",
+  selectedPlayerIds: [],
 };
 
 const emptyGalleryForm = {
@@ -51,12 +52,19 @@ function handleImageError(event, fallbackImage) {
 
 async function submitMedia(form, category) {
   const isEditing = Boolean(form.id);
+  const selectedPlayerIds = Array.isArray(form.selectedPlayerIds)
+    ? form.selectedPlayerIds.filter(Boolean)
+    : [];
   const formData = new FormData();
   formData.append("kategori", category);
-  formData.append("target_mode", "semua");
+  formData.append("target_mode", category === "Berita" && selectedPlayerIds.length > 0 ? "siswa" : "semua");
   formData.append("judul", form.title.trim());
   formData.append("isi_promosi", category === "Berita" ? form.body.trim() : "");
   formData.append("tanggal_promosi", todayInputValue());
+
+  if (category === "Berita") {
+    selectedPlayerIds.forEach((id) => formData.append("id_siswa[]", id));
+  }
 
   if (form.imageFile) {
     formData.append("foto_promosi", form.imageFile);
@@ -72,6 +80,7 @@ async function submitMedia(form, category) {
 
 export default function BagianMediaPromosiAdmin({
   articles = [],
+  students = [],
   onDeleteArticle,
   onRecordAdminActivity,
 }) {
@@ -82,6 +91,7 @@ export default function BagianMediaPromosiAdmin({
   const [statusType, setStatusType] = useState("success");
   const [confirmAction, setConfirmAction] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [playerCategoryFilter, setPlayerCategoryFilter] = useState("all");
 
   const newsItems = useMemo(
     () => articles.filter((item) => String(item.category || "").toLowerCase() === "berita"),
@@ -90,6 +100,33 @@ export default function BagianMediaPromosiAdmin({
   const galleryItems = useMemo(
     () => articles.filter((item) => String(item.category || "").toLowerCase() === "galeri"),
     [articles]
+  );
+  const playerOptions = useMemo(
+    () => students
+      .filter((item) => item?.id)
+      .map((item) => ({
+        id: String(item.id),
+        name: item.name || item.childName || `Siswa ${item.id}`,
+        category: item.category || "",
+      }))
+      .sort((left, right) => left.name.localeCompare(right.name)),
+    [students]
+  );
+  const playerCategoryOptions = useMemo(() => {
+    const categories = Array.from(
+      new Set(playerOptions.map((player) => String(player.category || "").trim()).filter(Boolean))
+    ).sort((left, right) => left.localeCompare(right));
+
+    return [{ value: "all", label: "Semua Kategori" }, ...categories.map((category) => ({
+      value: category,
+      label: category,
+    }))];
+  }, [playerOptions]);
+  const filteredPlayerOptions = useMemo(
+    () => playerCategoryFilter === "all"
+      ? playerOptions
+      : playerOptions.filter((player) => String(player.category || "") === playerCategoryFilter),
+    [playerCategoryFilter, playerOptions]
   );
 
   const showStatus = (message, type = "success") => {
@@ -116,6 +153,34 @@ export default function BagianMediaPromosiAdmin({
 
       setGalleryForm((prev) => ({ ...prev, image, imageFile: file, imageName: file.name }));
     });
+  };
+
+  const toggleNewsPlayer = (playerId) => {
+    setNewsForm((prev) => {
+      const currentIds = new Set((prev.selectedPlayerIds || []).map(String));
+
+      if (currentIds.has(String(playerId))) {
+        currentIds.delete(String(playerId));
+      } else {
+        currentIds.add(String(playerId));
+      }
+
+      return { ...prev, selectedPlayerIds: Array.from(currentIds) };
+    });
+  };
+
+  const selectAllNewsPlayers = () => {
+    setNewsForm((prev) => ({
+      ...prev,
+      selectedPlayerIds: Array.from(new Set([
+        ...(prev.selectedPlayerIds || []).map(String),
+        ...filteredPlayerOptions.map((player) => player.id),
+      ])),
+    }));
+  };
+
+  const clearNewsPlayers = () => {
+    setNewsForm((prev) => ({ ...prev, selectedPlayerIds: [] }));
   };
 
   const validateNews = () => {
@@ -251,6 +316,9 @@ export default function BagianMediaPromosiAdmin({
       image: item.image || "",
       imageFile: null,
       imageName: item.imageName || "",
+      selectedPlayerIds: Array.isArray(item.players)
+        ? item.players.map((player) => String(player.id)).filter(Boolean)
+        : [],
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -316,6 +384,60 @@ export default function BagianMediaPromosiAdmin({
                   placeholder="Tulis isi berita yang akan muncul di halaman detail."
                 />
               </label>
+              <div className="adminMediaPlayerField">
+                <div className="adminMediaPlayerFieldHead">
+                  <span>Pemain di Berita</span>
+                  <div className="adminMediaPlayerTools">
+                    <label className="adminMediaPlayerFilter">
+                      <select
+                        value={playerCategoryFilter}
+                        onChange={(event) => setPlayerCategoryFilter(event.target.value)}
+                        aria-label="Filter kategori pemain"
+                      >
+                        {playerCategoryOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <button type="button" onClick={selectAllNewsPlayers} disabled={filteredPlayerOptions.length === 0}>
+                      Semua
+                    </button>
+                    <button type="button" onClick={clearNewsPlayers} disabled={(newsForm.selectedPlayerIds || []).length === 0}>
+                      Bersihkan
+                    </button>
+                  </div>
+                </div>
+                <p>
+                  {newsForm.selectedPlayerIds.length > 0
+                    ? `${newsForm.selectedPlayerIds.length} pemain dipilih dan akan tampil di detail berita.`
+                    : "Kosongkan jika berita ditujukan untuk semua pemain aktif."}
+                </p>
+                <div className="adminMediaPlayerList">
+                  {filteredPlayerOptions.length > 0 ? filteredPlayerOptions.map((player) => {
+                    const isSelected = (newsForm.selectedPlayerIds || []).includes(player.id);
+
+                    return (
+                      <label
+                        key={player.id}
+                        className={`adminMediaPlayerOption ${isSelected ? "isSelected" : ""}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleNewsPlayer(player.id)}
+                        />
+                        <span className="adminMediaPlayerCheck" aria-hidden="true" />
+                        <span className="adminMediaPlayerName">{player.name}</span>
+                        <small>{player.category || "-"}</small>
+                      </label>
+                    );
+                  }) : (
+                    <div className="adminMediaPlayerEmpty">Tidak ada pemain pada kategori ini.</div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="adminMediaUploadBox">
@@ -431,6 +553,12 @@ export default function BagianMediaPromosiAdmin({
                 <small>{item.dateLabel}</small>
                 <h4>{item.title}</h4>
                 {activeTab === "berita" && <p>{excerpt(item.body)}</p>}
+                {activeTab === "berita" && Array.isArray(item.players) && item.players.length > 0 && (
+                  <div className="adminMediaPlayerSummary">
+                    {item.players.slice(0, 3).map((player) => player.name).join(", ")}
+                    {item.players.length > 3 ? ` +${item.players.length - 3} pemain` : ""}
+                  </div>
+                )}
                 <div className="adminMediaCardActions">
                   <button type="button" className="adminMediaGhostButton" onClick={() => (activeTab === "berita" ? editNews(item) : editGallery(item))}>
                     Edit

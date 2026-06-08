@@ -318,7 +318,7 @@ public function submitValidasi(Request $request, $id)
     $values = array_map(fn($v) => strtolower(trim($v ?? '')), $request->only($fields));
     $paymentProofStatus = strtolower(trim((string) $request->input('val_bukti_pembayaran', 'valid')));
 
-    if (!in_array('valid', $values) || $paymentProofStatus !== 'valid') {
+    if (in_array('tidak_valid', $values, true) || $paymentProofStatus !== 'valid') {
         $statusApproval = 'Revisi';
     } elseif (count(array_unique($values)) === 1 && reset($values) === 'valid') {
         $statusApproval = 'Disetujui';

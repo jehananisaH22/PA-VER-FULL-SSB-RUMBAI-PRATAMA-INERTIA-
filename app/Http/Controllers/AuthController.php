@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Validation\ValidationException;
 
@@ -34,42 +33,10 @@ class AuthController extends Controller
             'password_confirmation' => $request->input('password_confirmation', $request->input('password')),
         ]);
 
-        $resumeValidation = $request->validate([
+        $validated = $request->validate([
             'nama' => 'required|string|max:100',
             'email' => ['required', 'email'],
             'no_hp' => ['required', 'regex:/^[0-9]{10,13}$/'],
-            'password' => [
-                'required',
-                'confirmed',
-                PasswordRule::min(8)->letters()->numbers()->symbols(),
-            ],
-        ]);
-
-        $existingParentUser = User::query()
-            ->whereRaw('LOWER(email) = ?', [$resumeValidation['email']])
-            ->where('role', 'orang_tua')
-            ->first();
-        $existingParentPhone = OrangTua::query()
-            ->where('no_hp', $resumeValidation['no_hp'])
-            ->first();
-
-        if ($existingParentUser || $existingParentPhone) {
-            return $this->resumeExistingParentRegistration(
-                $request,
-                $resumeValidation,
-                $existingParentUser,
-                $existingParentPhone
-            );
-        }
-
-        $validated = $request->validate([
-            'nama' => 'required|string|max:100',
-            'email' => [
-                'required',
-                'email',
-                Rule::unique('users', 'email')->where(fn ($query) => $query->where('role', 'orang_tua')),
-            ],
-            'no_hp' => ['required', 'regex:/^[0-9]{10,13}$/', 'unique:orang_tua,no_hp'],
             'password' => [
                 'required',
                 'confirmed',
@@ -99,7 +66,7 @@ class AuthController extends Controller
                 'user_id' => $user->id,
             ]);
 
-            $link = url('/api/verify-email?token=' . $token . '&email=' . urlencode($user->email));
+            $link = url('/verify-email?token=' . $token . '&email=' . urlencode($user->email));
 
             Mail::to($user->email)->send(new VerifyEmailMail($user->name, $link));
 
@@ -112,6 +79,7 @@ class AuthController extends Controller
             ]);
 
             $request->session()->put('registration.account', [
+                'userId' => $user->id,
                 'name' => $validated['nama'],
                 'email' => $validated['email'],
                 'phone' => $validated['no_hp'],
@@ -257,6 +225,38 @@ class AuthController extends Controller
 
         if (! $user) {
             if (! $request->expectsJson()) {
+                $sessionUser = $this->registrationSessionUser($request);
+
+                if ($sessionUser) {
+                    $this->markEmailVerified($sessionUser);
+                    Auth::login($sessionUser);
+                    $request->session()->regenerate();
+
+                    return $this->redirectVerifiedParentToRegistration($request, $sessionUser);
+                }
+
+                $authenticatedUser = $request->user();
+
+                if (
+                    $authenticatedUser
+                    && $authenticatedUser->role === 'orang_tua'
+                    && $authenticatedUser->email_verified_at
+                    && $request->filled('email')
+                    && hash_equals(strtolower($authenticatedUser->email), strtolower($request->email))
+                ) {
+                    $parent = $authenticatedUser->orangTua;
+
+                    $request->session()->put('registration.account', [
+                        'userId' => $authenticatedUser->id,
+                        'name' => $authenticatedUser->name,
+                        'email' => $authenticatedUser->email,
+                        'phone' => optional($parent)->no_hp,
+                    ]);
+
+                    return redirect('/register/form')
+                        ->with('success', 'Email sudah diverifikasi. Silakan lengkapi berkas pendaftaran.');
+                }
+
                 return redirect('/register/verify-notice')
                     ->with('verificationMessage', 'Link verifikasi tidak valid. Silakan gunakan email verifikasi terbaru.');
             }
@@ -272,6 +272,16 @@ class AuthController extends Controller
 
         if (! $tokenMatchesUser) {
             if (! $request->expectsJson()) {
+                $sessionUser = $this->registrationSessionUser($request);
+
+                if ($sessionUser) {
+                    $this->markEmailVerified($sessionUser);
+                    Auth::login($sessionUser);
+                    $request->session()->regenerate();
+
+                    return $this->redirectVerifiedParentToRegistration($request, $sessionUser);
+                }
+
                 return redirect('/register/verify-notice')
                     ->with('verificationMessage', 'Link verifikasi tidak valid. Silakan gunakan email verifikasi terbaru.');
             }
@@ -319,6 +329,7 @@ class AuthController extends Controller
                     'show_child_picker_after_login',
                 ]);
                 $request->session()->put('registration.account', [
+                    'userId' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
                     'phone' => optional($parent)->no_hp,
@@ -360,6 +371,75 @@ class AuthController extends Controller
         return $hasChild ? '/orang-tua/dashboard' : '/register/form';
     }
 
+    private function registrationSessionUser(Request $request): ?User
+    {
+        $account = $request->session()->get('registration.account', []);
+        $userId = $account['userId'] ?? null;
+        $email = strtolower(trim((string) ($account['email'] ?? $request->email)));
+
+        if (! $userId || $email === '') {
+            return null;
+        }
+
+        $user = User::query()
+            ->where('id', $userId)
+            ->where('role', 'orang_tua')
+            ->first();
+
+        if (! $user || ! hash_equals(strtolower($user->email), $email)) {
+            return null;
+        }
+
+        return $user;
+    }
+
+    private function markEmailVerified(User $user): void
+    {
+        if (! $user->email_verified_at || $user->verification_token) {
+            $user->update([
+                'email_verified_at' => now(),
+                'verification_token' => null,
+            ]);
+            $user->refresh();
+        }
+    }
+
+    private function redirectVerifiedParentToRegistration(Request $request, User $user)
+    {
+        $parent = $user->orangTua;
+        $hasChild = $parent && Siswa::query()
+            ->where(function ($query) use ($user, $parent) {
+                $query->where('user_id', $user->id);
+
+                if ($parent?->id_ortu) {
+                    $query->orWhere('id_ortu', $parent->id_ortu);
+                }
+            })
+            ->exists();
+
+        if ($hasChild) {
+            $request->session()->forget('id_siswa');
+            $request->session()->put('show_child_picker_after_login', true);
+
+            return redirect('/orang-tua/dashboard')
+                ->with('success', 'Email berhasil diverifikasi. Silakan pilih data anak.');
+        }
+
+        $request->session()->forget([
+            'id_siswa',
+            'show_child_picker_after_login',
+        ]);
+        $request->session()->put('registration.account', [
+            'userId' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => optional($parent)->no_hp,
+        ]);
+
+        return redirect('/register/form')
+            ->with('success', 'Email berhasil diverifikasi. Silakan lengkapi berkas pendaftaran.');
+    }
+
     public function verificationStatus(Request $request)
     {
         $request->validate([
@@ -367,9 +447,17 @@ class AuthController extends Controller
         ]);
 
         $user = User::query()
-            ->whereRaw('LOWER(email) = ?', [strtolower($request->email)])
+            ->where('id', $request->session()->get('registration.account.userId'))
             ->where('role', 'orang_tua')
             ->first();
+
+        if (! $user) {
+            $user = User::query()
+                ->whereRaw('LOWER(email) = ?', [strtolower($request->email)])
+                ->where('role', 'orang_tua')
+                ->orderByDesc('id')
+                ->first();
+        }
 
         return response()->json([
             'status' => true,
@@ -408,11 +496,13 @@ class AuthController extends Controller
             'role' => 'required|in:orang_tua,admin,pelatih',
         ]);
 
-        $user = User::whereRaw('LOWER(email) = ?', [$request->email])
+        $matchingUsers = User::whereRaw('LOWER(email) = ?', [$request->email])
             ->where('role', $request->role)
-            ->first();
+            ->orderByDesc('id')
+            ->get();
+        $user = $matchingUsers->first(fn ($candidate) => Hash::check($request->password, $candidate->password));
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        if (! $user) {
             return $this->loginFailed($request, 'Email atau kata kunci salah.', 401);
         }
 

@@ -5,6 +5,10 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.paymentPage > .siteFooter {
+  margin-top: 32px;
+}
+
 .paymentTopbar {
   position: sticky;
   top: 0;

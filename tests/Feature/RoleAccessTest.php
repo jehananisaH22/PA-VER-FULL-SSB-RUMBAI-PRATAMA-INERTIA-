@@ -54,7 +54,7 @@ class RoleAccessTest extends TestCase
             ->assertRedirect('/register/form');
     }
 
-    public function test_existing_verified_parent_without_child_can_resume_from_register_page(): void
+    public function test_parent_can_register_new_account_with_reused_contact_without_child(): void
     {
         $user = User::factory()->create([
             'role' => 'orang_tua',
@@ -72,18 +72,32 @@ class RoleAccessTest extends TestCase
             'no_hp' => '081234567804',
         ]);
 
+        $existingUserCount = User::where('email', $user->email)
+            ->where('role', 'orang_tua')
+            ->count();
+        $existingParentCount = OrangTua::where('no_hp', '081234567804')->count();
+
         $this->post('/api/register', [
             'nama' => 'Jehan',
             'email' => $user->email,
             'no_hp' => '081234567804',
             'password' => 'Password1!',
         ], ['X-Inertia' => 'true'])
-            ->assertRedirect('/register/form');
+            ->assertRedirect('/register/verify-notice');
 
-        $this->assertAuthenticatedAs($user);
+        $this->getJson('/api/verification-status?email=' . urlencode($user->email))
+            ->assertOk()
+            ->assertJson([
+                'verified' => false,
+                'next_url' => '/register/form',
+            ]);
+
+        $this->assertGuest();
+        $this->assertSame($existingUserCount + 1, User::where('email', $user->email)->where('role', 'orang_tua')->count());
+        $this->assertSame($existingParentCount + 1, OrangTua::where('no_hp', '081234567804')->count());
     }
 
-    public function test_existing_verified_parent_with_child_can_resume_to_child_picker(): void
+    public function test_parent_can_register_new_account_with_reused_contact_even_when_old_account_has_child(): void
     {
         $user = User::factory()->create([
             'role' => 'orang_tua',
@@ -109,15 +123,23 @@ class RoleAccessTest extends TestCase
             'status' => 'Active',
         ]);
 
+        $existingUserCount = User::where('email', $user->email)
+            ->where('role', 'orang_tua')
+            ->count();
+        $existingParentCount = OrangTua::where('no_hp', '081234567805')->count();
+
         $this->post('/api/register', [
             'nama' => 'Parent Anak',
             'email' => $user->email,
             'no_hp' => '081234567805',
             'password' => 'Password1!',
         ], ['X-Inertia' => 'true'])
-            ->assertRedirect('/orang-tua/dashboard');
+            ->assertRedirect('/register/verify-notice');
 
-        $this->assertTrue((bool) session('show_child_picker_after_login'));
+        $this->assertGuest();
+        $this->assertFalse((bool) session('show_child_picker_after_login'));
+        $this->assertSame($existingUserCount + 1, User::where('email', $user->email)->where('role', 'orang_tua')->count());
+        $this->assertSame($existingParentCount + 1, OrangTua::where('no_hp', '081234567805')->count());
     }
 
     public function test_parent_login_with_child_redirects_to_dashboard_picker(): void

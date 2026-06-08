@@ -5,6 +5,10 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.attendancePage > .siteFooter {
+  margin-top: 32px;
+}
+
 .attendanceTopbar {
   position: sticky;
   top: 0;

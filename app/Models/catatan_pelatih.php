@@ -43,7 +43,9 @@ class Catatan_Pelatih extends Model
             'coach' => $this->pelatih?->nama_pelatih ?? 'Pelatih',
             'studentName' => $this->siswa?->nama_siswa ?? '-',
             'player' => $this->siswa?->nama_siswa ?? '-',
-            'category' => $this->siswa?->kategori_umur ?? '-',
+            'category' => $this->siswa?->kategori_umur
+                ? strtolower(str_replace('-', '', $this->siswa->kategori_umur))
+                : '-',
             'date' => $tanggal?->format('d/m/Y') ?? '-',
             'note' => $this->catatan,
             'title' => $this->catatan,

@@ -84,8 +84,8 @@ public function coachSection(?string $section = null)
         'userName' => $coachName,
         'currentCoachName' => $coachName,
         'notifications' => SsbInertiaData::coachNotifications($coach?->id),
-        'studentDirectory' => SsbInertiaData::studentDirectory(true),
-        'trainingSchedules' => SsbInertiaData::schedules(null, true),
+        'studentDirectory' => SsbInertiaData::studentDirectory(true, $coachStudentIds),
+        'trainingSchedules' => SsbInertiaData::schedules(null, true, $coachProfile?->id_pelatih),
         'attendanceRecaps' => $attendanceRecaps,
         'history' => $performanceHistory,
         'performanceHistory' => $performanceHistory,
@@ -109,7 +109,12 @@ private function currentCoachProfile(?User $user = null): ?Pelatih
 private function studentIdsForCoach(int $coachId): array
 {
     return DB::table('jadwal_siswa')
+        ->join('jadwal_latihan', 'jadwal_siswa.id_jadwal', '=', 'jadwal_latihan.id_jadwal')
         ->join('siswa', 'jadwal_siswa.id_siswa', '=', 'siswa.id_siswa')
+        ->where(function ($query) use ($coachId) {
+            $query->where('jadwal_latihan.id_pelatih', $coachId)
+                ->orWhereNull('jadwal_latihan.id_pelatih');
+        })
         ->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active'])
         ->pluck('jadwal_siswa.id_siswa')
         ->map(fn ($id) => (int) $id)
@@ -424,8 +429,8 @@ public function pelatihDashboard()
             'userName' => $coachName,
             'currentCoachName' => $coachName,
             'notifications' => SsbInertiaData::coachNotifications($coach?->id),
-            'studentDirectory' => SsbInertiaData::studentDirectory(true),
-            'trainingSchedules' => SsbInertiaData::schedules(null, true),
+            'studentDirectory' => SsbInertiaData::studentDirectory(true, $coachProfile ? $this->studentIdsForCoach((int) $coachProfile->id_pelatih) : []),
+            'trainingSchedules' => SsbInertiaData::schedules(null, true, $coachProfile?->id_pelatih),
             'attendanceRecaps' => $attendanceRecaps,
             'history' => $performanceHistory,
             'performanceHistory' => $performanceHistory,

@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { router } from "@inertiajs/react";
 import TataLetakPelatih from "./TataLetakPelatih";
 import "./PerformaPelatih.css";
 
@@ -48,6 +47,7 @@ const monthDisplayNames = [
 ];
 
 const weekdayDisplayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+const performanceToastElementId = "ssb-coach-performance-toast";
 
 function normalizeText(value) {
   return String(value || "")
@@ -82,6 +82,43 @@ function getScheduleStudentIds(schedule) {
     : [];
 }
 
+function getSchedulePlayersForCategory(schedule, selectedCategory, studentDirectory = []) {
+  if (!schedule || !selectedCategory) return [];
+
+  const selectedStudentIds = getScheduleStudentIds(schedule);
+
+  if (selectedStudentIds.length > 0) {
+    return studentDirectory.filter(
+      (item) => selectedStudentIds.includes(String(item.id)) && item.category === selectedCategory
+    );
+  }
+
+  const selectedStudentNames = getScheduleStudentNames(schedule);
+
+  if (selectedStudentNames.length > 0) {
+    const selectedNameSet = new Set(selectedStudentNames.map((name) => normalizeText(name)));
+
+    return studentDirectory.filter(
+      (item) => item.category === selectedCategory && selectedNameSet.has(normalizeText(item.name))
+    );
+  }
+
+  if (schedule.category && schedule.category !== "all") {
+    return studentDirectory.filter((item) => item.category === schedule.category);
+  }
+
+  return studentDirectory.filter((item) => item.category === selectedCategory);
+}
+
+function formatScheduleTargetLabelForCategory(schedule, selectedCategory, studentDirectory = []) {
+  const categoryPlayers = getSchedulePlayersForCategory(schedule, selectedCategory, studentDirectory);
+
+  if (categoryPlayers.length === 1) return categoryPlayers[0].name;
+  if (categoryPlayers.length > 1) return `${categoryPlayers.length} siswa dipilih`;
+
+  return formatScheduleTargetLabel(schedule);
+}
+
 function formatScheduleTargetLabel(schedule) {
   const studentNames = getScheduleStudentNames(schedule);
   if (studentNames.length === 1) return studentNames[0];
@@ -89,15 +126,66 @@ function formatScheduleTargetLabel(schedule) {
   return formatScheduleTarget(schedule?.category, schedule?.studentName);
 }
 
-function formatScheduleLabel(schedule) {
+function formatScheduleLabel(schedule, selectedCategory, studentDirectory = []) {
   if (!schedule) return "-";
-  return `${schedule.day} | ${schedule.time} | ${formatScheduleTargetLabel(schedule)}`;
+  const place = [schedule.place, schedule.location, schedule.lokasi]
+    .find((value) => value && value !== "-");
+
+  return [
+    schedule.day,
+    schedule.time,
+    place,
+    selectedCategory
+      ? formatScheduleTargetLabelForCategory(schedule, selectedCategory, studentDirectory)
+      : formatScheduleTargetLabel(schedule),
+  ].filter(Boolean).join(" | ");
 }
 
 function normalizeScore(value) {
+  if (value === "") return "";
   const number = Number(value);
   if (Number.isNaN(number)) return "";
   return String(Math.max(0, Math.min(100, number)));
+}
+
+function hasScoreValue(value) {
+  return value !== undefined && value !== null && String(value).trim() !== "";
+}
+
+function removePerformanceToast() {
+  if (typeof document === "undefined") return;
+  document.getElementById(performanceToastElementId)?.remove();
+}
+
+function showPerformanceToast(nextToast) {
+  if (typeof document === "undefined" || !nextToast?.message) return;
+
+  removePerformanceToast();
+
+  const toastElement = document.createElement("div");
+  toastElement.id = performanceToastElementId;
+  toastElement.className = `coachPerformanceToast ${nextToast.type === "error" ? "isError" : "isSuccess"}`;
+  toastElement.setAttribute("role", "status");
+
+  const textElement = document.createElement("div");
+  textElement.className = "coachPerformanceToastText";
+
+  const titleElement = document.createElement("strong");
+  titleElement.textContent = nextToast.type === "error" ? "Gagal" : "Berhasil";
+
+  const messageElement = document.createElement("span");
+  messageElement.textContent = nextToast.message;
+
+  const closeButton = document.createElement("button");
+  closeButton.type = "button";
+  closeButton.className = "coachPerformanceToastClose";
+  closeButton.setAttribute("aria-label", "Tutup notifikasi");
+  closeButton.textContent = "x";
+  closeButton.addEventListener("click", removePerformanceToast);
+
+  textElement.append(titleElement, messageElement);
+  toastElement.append(textElement, closeButton);
+  document.body.appendChild(toastElement);
 }
 
 function getTodayDate() {
@@ -442,13 +530,6 @@ export default function PerformaPelatih(props) {
     setLocalHistory(incomingHistory);
   }, [incomingHistory]);
 
-  useEffect(() => {
-    if (!toast) return undefined;
-
-    const timerId = window.setTimeout(() => setToast(null), 3200);
-    return () => window.clearTimeout(timerId);
-  }, [toast]);
-
   const filteredSchedules = useMemo(() => {
     if (!selectedCategory || !Array.isArray(trainingSchedules)) return [];
 
@@ -479,10 +560,10 @@ export default function PerformaPelatih(props) {
       { value: "", label: "Pilih Jadwal" },
       ...filteredSchedules.map((item) => ({
         value: item.id,
-        label: formatScheduleLabel(item),
+        label: formatScheduleLabel(item, selectedCategory, studentDirectory),
       })),
     ];
-  }, [filteredSchedules, selectedCategory]);
+  }, [filteredSchedules, selectedCategory, studentDirectory]);
 
   const selectedSchedule = useMemo(
     () => filteredSchedules.find((item) => item.id === selectedScheduleId) || null,
@@ -490,41 +571,30 @@ export default function PerformaPelatih(props) {
   );
 
   const visiblePlayers = useMemo(
-    () => {
-      const selectedStudentIds = getScheduleStudentIds(selectedSchedule);
-
-      if (selectedStudentIds.length > 0) {
-        return studentDirectory.filter((item) => selectedStudentIds.includes(String(item.id)));
-      }
-
-      const selectedStudentNames = getScheduleStudentNames(selectedSchedule);
-
-      if (selectedStudentNames.length > 0) {
-        const playerFromDirectory = studentDirectory
-          .filter((item) =>
-            selectedStudentNames.some(
-              (studentName) => normalizeText(item.name) === normalizeText(studentName)
-            )
-          )
-          .map((item) => ({ id: item.id, name: item.name, category: item.category }));
-
-        return playerFromDirectory.length > 0
-          ? playerFromDirectory
-          : selectedStudentNames.map((name) => ({
-              id: name,
-              name,
-              category: selectedSchedule?.category || selectedCategory,
-            }));
-      }
-
-      const playersFromDirectory = studentDirectory
-        .filter((item) => item.category === selectedCategory)
-        .map((item) => ({ id: item.id, name: item.name, category: item.category }));
-
-      return playersFromDirectory;
-    },
+    () => getSchedulePlayersForCategory(selectedSchedule, selectedCategory, studentDirectory),
     [selectedCategory, selectedSchedule, studentDirectory]
   );
+
+  useEffect(() => {
+    setScores((prev) => {
+      const visibleIds = new Set(visiblePlayers.map((player) => String(player.id)));
+      const nextScores = {};
+
+      Object.entries(prev).forEach(([playerId, row]) => {
+        if (visibleIds.has(String(playerId))) {
+          nextScores[playerId] = row;
+        }
+      });
+
+      return nextScores;
+    });
+  }, [visiblePlayers]);
+
+  useEffect(() => {
+    if (selectedSchedule?.date) {
+      setSelectedDate(selectedSchedule.date);
+    }
+  }, [selectedSchedule]);
 
   const ownHistory = useMemo(
     () => localHistory.filter((item) => !item.coach || item.coach === currentCoach),
@@ -545,13 +615,18 @@ export default function PerformaPelatih(props) {
 
   const isScoreRowComplete = (player) => {
     const row = scores[player.id] || {};
-    return row.dribbling && row.passing && row.shooting;
+    return scoreFields.every((field) => hasScoreValue(row[field]));
   };
+
+  const completedPlayers = useMemo(
+    () => visiblePlayers.filter((player) => isScoreRowComplete(player)),
+    [scores, visiblePlayers]
+  );
 
   const canSave =
     Boolean(selectedSchedule) &&
     visiblePlayers.length > 0 &&
-    visiblePlayers.some((player) => isScoreRowComplete(player));
+    completedPlayers.length > 0;
 
   const handleScoreChange = (playerId, key, value) => {
     setScores((prev) => ({
@@ -621,10 +696,9 @@ export default function PerformaPelatih(props) {
     if (isSaving) return;
 
     const { month, year } = getMonthYearFromInputDate(selectedDate);
-    const scheduleLabel = formatScheduleLabel(selectedSchedule);
-    const skippedCount = visiblePlayers.filter((player) => !isScoreRowComplete(player)).length;
-    const newRows = visiblePlayers
-      .filter((player) => isScoreRowComplete(player))
+    const scheduleLabel = formatScheduleLabel(selectedSchedule, selectedCategory, studentDirectory);
+    const skippedCount = visiblePlayers.length - completedPlayers.length;
+    const newRows = completedPlayers
       .map((player) => ({
         id: `${Date.now()}-${player.id}`,
         studentId: player.id,
@@ -643,7 +717,9 @@ export default function PerformaPelatih(props) {
       }));
 
     setIsSaving(true);
+    setShowConfirmSave(false);
     setToast(null);
+    removePerformanceToast();
 
     try {
       const isSuccess = onSavePerformance
@@ -651,7 +727,7 @@ export default function PerformaPelatih(props) {
         : await savePerformanceToServer(newRows);
 
       if (!isSuccess) {
-        setToast({
+        showPerformanceToast({
           type: "error",
           message: "Nilai performa gagal disimpan. Data siswa belum cocok dengan jadwal.",
         });
@@ -659,19 +735,17 @@ export default function PerformaPelatih(props) {
       }
 
       setLocalHistory((prev) => [...newRows, ...prev]);
-      setShowConfirmSave(false);
       setActiveSection("history");
-      setToast({
+      showPerformanceToast({
         type: "success",
         message:
           skippedCount > 0
             ? `Nilai performa berhasil disimpan. ${skippedCount} siswa kosong dilewati.`
             : "Nilai performa berhasil disimpan.",
       });
-      router.reload({ preserveScroll: true, only: ["history"] });
     } catch (error) {
       const isServerError = Number(error?.response?.status || 0) >= 500;
-      setToast({
+      showPerformanceToast({
         type: "error",
         message:
           isServerError
@@ -691,8 +765,18 @@ export default function PerformaPelatih(props) {
           className={`coachPerformanceToast ${toast.type === "error" ? "isError" : "isSuccess"}`}
           role="status"
         >
-          <strong>{toast.type === "error" ? "Gagal" : "Berhasil"}</strong>
-          <span>{toast.message}</span>
+          <div className="coachPerformanceToastText">
+            <strong>{toast.type === "error" ? "Gagal" : "Berhasil"}</strong>
+            <span>{toast.message}</span>
+          </div>
+          <button
+            type="button"
+            className="coachPerformanceToastClose"
+            aria-label="Tutup notifikasi"
+            onClick={() => setToast(null)}
+          >
+            x
+          </button>
         </div>
       ) : null}
 

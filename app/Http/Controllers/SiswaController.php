@@ -790,9 +790,10 @@ public function Store_Bukti_Pendaftaran(Request $request)
         $request->session()->forget([
             'registration.form',
             'registration.account',
+            'id_siswa',
+            'show_child_picker_after_login',
         ]);
-        $request->session()->put('id_siswa', $siswa->id_siswa);
-        $request->session()->put('show_child_picker_after_login', true);
+        Auth::logout();
 
         $this->notifyAdmins(
             'Bukti Pembayaran Pendaftaran',
@@ -800,14 +801,15 @@ public function Store_Bukti_Pendaftaran(Request $request)
         );
 
         if ($request->header('X-Inertia')) {
-            return redirect('/orang-tua/dashboard')
-                ->with('success', 'Bukti pembayaran berhasil dikirim. Silakan pilih data anak.');
+            return back()
+                ->with('registrationPaymentSuccess', true)
+                ->with('success', 'Bukti pembayaran berhasil dikirim. Silakan login setelah menutup pesan ini.');
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Bukti pembayaran berhasil dikirim',
-            'next_url' => '/orang-tua/dashboard',
+            'next_url' => '/login/orangtua',
         ]);
     } catch (\Throwable $e) {
         DB::rollBack();

@@ -19,17 +19,19 @@ class WebPageController extends Controller
     public function verifyNotice(Request $request)
     {
         $account = $request->session()->get('registration.account');
+        $userId = $account['userId'] ?? null;
         $email = strtolower(trim((string) ($account['email'] ?? '')));
         $verificationLink = $account['verificationLink'] ?? '';
 
         if (! $verificationLink && $email !== '') {
             $user = User::query()
-                ->whereRaw('LOWER(email) = ?', [$email])
+                ->when($userId, fn ($query) => $query->where('id', $userId))
+                ->when(! $userId, fn ($query) => $query->whereRaw('LOWER(email) = ?', [$email])->orderByDesc('id'))
                 ->whereNotNull('verification_token')
                 ->first();
 
             if ($user) {
-                $verificationLink = url('/api/verify-email?token=' . $user->verification_token . '&email=' . urlencode($user->email));
+                $verificationLink = url('/verify-email?token=' . $user->verification_token . '&email=' . urlencode($user->email));
             }
         }
 
@@ -104,11 +106,12 @@ class WebPageController extends Controller
                 $request->session()->forget([
                     'registration.form',
                     'registration.account',
+                    'id_siswa',
+                    'show_child_picker_after_login',
                 ]);
-                $request->session()->put('id_siswa', $studentId);
-                $request->session()->put('show_child_picker_after_login', true);
+                Auth::logout();
 
-                return redirect('/orang-tua/dashboard');
+                $request->session()->flash('registrationPaymentSuccess', true);
             }
         }
 

@@ -1,10 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./PilihTahun.css";
 
-export default function PilihTahun({ options = [], placeholder = "Pilih tahun", className = "" }) {
+export default function PilihTahun({
+  options = [],
+  placeholder = "Pilih tahun",
+  className = "",
+  value,
+  onChange,
+}) {
   const [isOpen, setIsOpen] = useState(false);
-  const [value, setValue] = useState("");
+  const [localValue, setLocalValue] = useState("");
   const wrapRef = useRef(null);
+  const isControlled = value !== undefined;
+  const currentValue = isControlled ? String(value || "") : localValue;
+  const normalizedOptions = useMemo(() => options.map((item) => String(item)), [options]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -16,7 +25,21 @@ export default function PilihTahun({ options = [], placeholder = "Pilih tahun", 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const selectedLabel = value || placeholder;
+  useEffect(() => {
+    if (!isControlled && localValue && !normalizedOptions.includes(localValue)) {
+      setLocalValue("");
+    }
+  }, [isControlled, localValue, normalizedOptions]);
+
+  const selectValue = (nextValue) => {
+    if (!isControlled) {
+      setLocalValue(nextValue);
+    }
+    onChange?.(nextValue);
+    setIsOpen(false);
+  };
+
+  const selectedLabel = currentValue || placeholder;
 
   return (
     <div className={`yearSelect ${className}`.trim()} ref={wrapRef}>
@@ -34,23 +57,17 @@ export default function PilihTahun({ options = [], placeholder = "Pilih tahun", 
         <div className="yearSelectMenu">
           <button
             type="button"
-            className={`yearSelectOption ${value === "" ? "active" : ""}`}
-            onClick={() => {
-              setValue("");
-              setIsOpen(false);
-            }}
+            className={`yearSelectOption ${currentValue === "" ? "active" : ""}`}
+            onClick={() => selectValue("")}
           >
             {placeholder}
           </button>
-          {options.map((item) => (
+          {normalizedOptions.map((item) => (
             <button
               type="button"
               key={item}
-              className={`yearSelectOption ${value === String(item) ? "active" : ""}`}
-              onClick={() => {
-                setValue(String(item));
-                setIsOpen(false);
-              }}
+              className={`yearSelectOption ${currentValue === item ? "active" : ""}`}
+              onClick={() => selectValue(item)}
             >
               {item}
             </button>
