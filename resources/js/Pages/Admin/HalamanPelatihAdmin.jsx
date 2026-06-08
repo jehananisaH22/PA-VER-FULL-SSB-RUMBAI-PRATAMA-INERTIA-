@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import Pagination from "../../components/Pagination";
 import { router } from "@inertiajs/react";
 import "./HalamanPelatihAdmin.css";
 
@@ -54,10 +55,26 @@ export default function HalamanPelatihAdmin({
     });
   }, [coachRows, searchText]);
 
+  const [coachesPage, setCoachesPage] = useState(1);
+  const [coachesPageSize, setCoachesPageSize] = useState(10);
+  const totalCoaches = filteredCoaches.length;
+  const pagedCoaches = useMemo(() => {
+    const start = (coachesPage - 1) * coachesPageSize;
+    return filteredCoaches.slice(start, start + coachesPageSize);
+  }, [filteredCoaches, coachesPage, coachesPageSize]);
+
   const filteredNotes = useMemo(() => {
     if (selectedCoachFilter === "Semua Pelatih") return coachNotes;
     return coachNotes.filter((item) => item.coachName === selectedCoachFilter);
   }, [coachNotes, selectedCoachFilter]);
+
+  const [notesPage, setNotesPage] = useState(1);
+  const [notesPageSize, setNotesPageSize] = useState(8);
+  const totalNotes = filteredNotes.length;
+  const pagedNotes = useMemo(() => {
+    const start = (notesPage - 1) * notesPageSize;
+    return filteredNotes.slice(start, start + notesPageSize);
+  }, [filteredNotes, notesPage, notesPageSize]);
 
   const handleDeleteCoach = async () => {
     if (!deleteTarget || isDeletingCoach) return;
@@ -220,7 +237,7 @@ export default function HalamanPelatihAdmin({
             </thead>
             <tbody>
               {filteredCoaches.length > 0 ? (
-                filteredCoaches.map((coach) => (
+                pagedCoaches.map((coach) => (
                   <tr key={coach.id}>
                     <td>{coach.name}</td>
                     <td>{coach.email}</td>
@@ -246,6 +263,19 @@ export default function HalamanPelatihAdmin({
           </table>
         </div>
       </article>
+
+      <div className="adminTablePagination">
+        <Pagination
+          total={totalCoaches}
+          page={coachesPage}
+          pageSize={coachesPageSize}
+          onPageChange={(p) => setCoachesPage(p)}
+          onPageSizeChange={(s) => {
+            setCoachesPageSize(s);
+            setCoachesPage(1);
+          }}
+        />
+      </div>
 
       <article className="adminCard adminCatatanPelatihCard">
         <div className="adminCatatanPelatihHead">
@@ -275,7 +305,7 @@ export default function HalamanPelatihAdmin({
             </thead>
             <tbody>
               {filteredNotes.length > 0 ? (
-                filteredNotes.map((item) => (
+                pagedNotes.map((item) => (
                   <tr key={item.id}>
                     <td>{item.coachName}</td>
                     <td>{item.studentName}</td>
@@ -294,6 +324,19 @@ export default function HalamanPelatihAdmin({
           </table>
         </div>
       </article>
+
+      <div className="adminTablePagination">
+        <Pagination
+          total={totalNotes}
+          page={notesPage}
+          pageSize={notesPageSize}
+          onPageChange={(p) => setNotesPage(p)}
+          onPageSizeChange={(s) => {
+            setNotesPageSize(s);
+            setNotesPage(1);
+          }}
+        />
+      </div>
 
       {deleteTarget && (
         <div

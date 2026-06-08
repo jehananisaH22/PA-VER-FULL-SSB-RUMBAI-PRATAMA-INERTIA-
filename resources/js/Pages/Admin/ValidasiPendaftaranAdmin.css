@@ -1,6 +1,7 @@
 .adminRegPage {
   margin-top: 24px;
   position: relative;
+  padding-bottom: 54px;
 }
 
 .adminRegToast {
@@ -63,6 +64,7 @@
 .adminRegListCard {
   min-height: calc(100vh - 190px);
   padding: 20px 24px 24px;
+  margin-bottom: 24px;
 }
 
 .adminRegListHeader {

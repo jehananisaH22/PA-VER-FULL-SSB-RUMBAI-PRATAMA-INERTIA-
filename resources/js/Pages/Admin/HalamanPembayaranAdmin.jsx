@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import Pagination from "../../components/Pagination";
 import { createPortal } from "react-dom";
 import { router } from "@inertiajs/react";
 import "./HalamanPembayaranAdmin.css";
@@ -480,6 +481,14 @@ export default function HalamanPembayaranAdmin({
     });
   }, [paymentRows, searchQuery, selectedCategory, selectedPaymentType]);
 
+  const [paymentsPage, setPaymentsPage] = useState(1);
+  const [paymentsPageSize, setPaymentsPageSize] = useState(10);
+  const totalPayments = filteredRows.length;
+  const pagedPayments = useMemo(() => {
+    const start = (paymentsPage - 1) * paymentsPageSize;
+    return filteredRows.slice(start, start + paymentsPageSize);
+  }, [filteredRows, paymentsPage, paymentsPageSize]);
+
   const notificationStudentOptions = useMemo(() => {
     const normalizedQuery = notificationStudentName.trim().toLowerCase();
     const rowsByStudent = [
@@ -861,7 +870,7 @@ export default function HalamanPembayaranAdmin({
                 </thead>
                 <tbody>
                   {filteredRows.length > 0 ? (
-                    filteredRows.map((row) => (
+                    pagedPayments.map((row) => (
                       <tr key={row.id}>
                         <td className="adminPaymentNameCell">
                           <strong>{row.studentName}</strong>
@@ -904,6 +913,18 @@ export default function HalamanPembayaranAdmin({
               </table>
             </div>
           </article>
+          <div className="adminTablePagination">
+            <Pagination
+              total={totalPayments}
+              page={paymentsPage}
+              pageSize={paymentsPageSize}
+              onPageChange={(p) => setPaymentsPage(p)}
+              onPageSizeChange={(s) => {
+                setPaymentsPageSize(s);
+                setPaymentsPage(1);
+              }}
+            />
+          </div>
         </>
       )}
 

@@ -58,6 +58,7 @@ export default function PerformaOrangTua({
   canSwitchChild = false,
   childrenOptions = [],
   selectedChildId = null,
+   studentProfile, // 👈 TAMBAH INI
 }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(null);
@@ -70,6 +71,8 @@ export default function PerformaOrangTua({
     selectedChildId
   );
   const displayUserName = activeChildName || userName;
+  const profilePhoto = studentProfile?.photo || ProfileIcon;
+
   const showChildPickerAction = canSwitchChild || childrenOptions.length > 0;
   const openSelectChild = () => {
     if (onSelectChild) {
@@ -88,6 +91,10 @@ export default function PerformaOrangTua({
   const openAchievements = visitOrCall(onOpenAchievements, parentRoutes.achievements);
   const openNotes = visitOrCall(onOpenCatatanPelatih, parentRoutes.notes);
   const openPayments = visitOrCall(onOpenPayments, parentRoutes.payments);
+
+  const activeChild = childrenOptions.find(
+  (child) => child.id === selectedChildId
+);
 
   const availableYears = useMemo(() => {
     const years = Array.from(new Set(performanceHistory.map((item) => String(item.year)))).sort(
@@ -155,6 +162,8 @@ export default function PerformaOrangTua({
     [effectiveSelectedYear, performanceHistory.length, performanceMap]
   );
 
+  console.log(studentProfile);
+
   return (
     <div className="performancePage">
       <header className="performanceTopbar">
@@ -182,7 +191,7 @@ export default function PerformaOrangTua({
                 className="performanceProfileBtn"
                 onClick={() => setIsProfileOpen((prev) => !prev)}
               >
-                <img src={ProfileIcon} alt="" />
+                <img src={profilePhoto} alt="Profil" />
                 <span>{displayUserName}</span>
               </button>
               {isProfileOpen && (
@@ -213,7 +222,7 @@ export default function PerformaOrangTua({
         <div className="performanceContainer">
           <section className="performanceCard performanceIdentity">
             <div className="performanceChildPhoto">
-              <img src={ProfileIcon} alt="Anak" />
+           <img src={profilePhoto} alt="Anak" />
             </div>
             <div>
               <h1>{displayUserName}</h1>
@@ -384,7 +393,9 @@ export default function PerformaOrangTua({
             )}
           </section>
         </div>
+        
       </main>
+    
 
       <SiteFooter />
       {childPickerModal}

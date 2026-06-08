@@ -6,14 +6,21 @@
   --muted: #64748b;
   --brand: #3f7d22;
   --brand-soft: #e8f4e2;
-  --admin-main-offset: 104px;
+  --admin-main-offset: 100px;
   --admin-main-pad-x: 24px;
-  min-height: 100vh;
   background: var(--bg);
   color: var(--text);
   position: relative;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.adminMain {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .adminPage button:focus,
@@ -385,6 +392,9 @@
 }
 
 .adminMain {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   padding: 20px var(--admin-main-pad-x) 28px;
   margin-left: var(--admin-main-offset);
   transition: margin-left 280ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -2216,12 +2226,12 @@
 }
 
 .adminSiteFooterWrap {
-  margin: 24px 0 -28px;
-  width: 100vw;
-  transform: translateX(calc(-1 * (var(--admin-main-offset) + var(--admin-main-pad-x))));
+  margin-top: auto;
   position: relative;
+  width: 100vw;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 1;
-  overflow: hidden;
 }
 
 @media (max-width: 1100px) {
@@ -2255,11 +2265,6 @@
     padding: 14px var(--admin-main-pad-x);
   }
 
-  .adminSiteFooterWrap {
-    margin: 20px 0 -14px;
-    width: 100vw;
-    transform: translateX(calc(-1 * (var(--admin-main-offset) + var(--admin-main-pad-x))));
-  }
 
   .adminPage.menuOpen .adminMain {
     --admin-main-offset: 208px;

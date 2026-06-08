@@ -299,3 +299,145 @@ html body :where(.adminPaymentToastIcon, .trainingScheduleToastDot) {
     flex: 1;
   }
 }
+
+/* =========================
+   Pagination
+========================= */
+
+.paginationWrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.paginationButtons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.paginationNumbers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.paginationInfo {
+  white-space: nowrap;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.paginationSize {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.paginationBtn,
+.paginationPage {
+  height: 40px;
+  min-width: 40px;
+  padding: 0 14px;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.paginationBtn:hover:not(:disabled),
+.paginationPage:hover {
+  background: #f4f7fb;
+  border-color: #5dae2f;
+  color: #5dae2f;
+}
+
+.paginationBtn:active:not(:disabled),
+.paginationPage:active {
+  transform: scale(0.97);
+}
+
+.paginationBtn:disabled {
+  background: #f8fafc;
+  color: #9ca3af;
+  border-color: #e5e7eb;
+  cursor: not-allowed;
+}
+
+.paginationPage.isActive {
+  background: #5dae2f;
+  border-color: #5dae2f;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(93, 174, 47, 0.25);
+}
+
+.paginationEll {
+  color: #6b7280;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 0 4px;
+}
+
+.paginationInfo {
+  color: #6b7280;
+  font-size: 14px;
+  text-align: center;
+}
+
+.paginationInfo strong {
+  color: #111827;
+  font-weight: 700;
+}
+
+.paginationSize {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+}
+
+.paginationSize:focus {
+  border-color: #5dae2f;
+  box-shadow: 0 0 0 3px rgba(93, 174, 47, 0.15);
+}
+
+@media (max-width: 768px) {
+  .paginationButtons {
+    gap: 8px;
+  }
+
+  .paginationBtn {
+    min-width: auto;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .paginationPage {
+    min-width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+
+  .paginationInfo {
+    font-size: 13px;
+  }
+}

@@ -39,6 +39,15 @@ const roleConfig = {
 
 const roleOptions = [roleConfig.orangtua, roleConfig.pelatih, roleConfig.admin];
 
+const roleChoiceImageStyle = (accentColor) => ({
+  display: "block",
+  height: "128px",
+  margin: "0 0 18px",
+  borderRadius: "10px",
+  background: `linear-gradient(135deg, ${accentColor || "#6e9f49"}, #e6efe1)`,
+  overflow: "hidden",
+});
+
 export default function RoleLogin({
   role,
   onBack,
@@ -204,7 +213,10 @@ export default function RoleLogin({
                   style={{ "--role-accent": item.accentColor }}
                   onClick={() => selectRole(item.key)}
                 >
-                  <span className="roleChoiceImage">
+                  <span
+                    className="roleChoiceImage"
+                    style={roleChoiceImageStyle(item.accentColor)}
+                  >
                     <img src={item.image} alt="" />
                   </span>
                   <span className="roleChoiceLabel">{item.label}</span>
@@ -310,4 +322,3 @@ export default function RoleLogin({
     </>
   );
 }
-

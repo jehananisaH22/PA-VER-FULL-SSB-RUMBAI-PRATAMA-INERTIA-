@@ -40,6 +40,7 @@ export default function KehadiranOrangTua({
   canSwitchChild = false,
   childrenOptions = [],
   selectedChildId = null,
+  studentProfile, // 👈 TAMBAH INI
 }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [activeDonutItem, setActiveDonutItem] = useState(null);
@@ -52,6 +53,8 @@ export default function KehadiranOrangTua({
     selectedChildId
   );
   const displayUserName = activeChildName || userName;
+  const profilePhoto = studentProfile?.photo || ProfileIcon;
+
   const showChildPickerAction = canSwitchChild || childrenOptions.length > 0;
   const openSelectChild = () => {
     if (onSelectChild) {
@@ -160,7 +163,7 @@ export default function KehadiranOrangTua({
                 className="attendanceProfileBtn"
                 onClick={() => setIsProfileOpen((prev) => !prev)}
               >
-                <img src={ProfileIcon} alt="" />
+                <img src={profilePhoto} alt="Profil" />
                 <span>{displayUserName}</span>
               </button>
               {isProfileOpen && (
