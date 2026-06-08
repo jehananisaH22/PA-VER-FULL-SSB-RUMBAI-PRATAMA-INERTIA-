@@ -191,11 +191,14 @@ public function Admin_validasi_Pendaftaran_siswa($id)
         ->first();
 
     $buktiPath = $buktiPembayaran?->bukti_bayar;
+
+    // FIX SAFE PAYMENT URL
     $buktiUrl = $buktiPath
-        ? url('/api/admin/lihat-bukti/' . dirname($buktiPath) . '/' . basename($buktiPath))
+        ? url('/api/admin/lihat-bukti/pembayaran/' . basename($buktiPath))
         : null;
 
     $pendaftaran->setAttribute('bukti_pembayaran_pendaftaran', $buktiPembayaran);
+
     $pendaftaran->setAttribute('files', [
         'birthCert' => array_values(array_filter([$pendaftaran->siswa?->akta_kelahiran])),
         'reportCard' => array_values(array_filter([$pendaftaran->siswa?->rapor])),
@@ -203,35 +206,43 @@ public function Admin_validasi_Pendaftaran_siswa($id)
         'photo' => array_values(array_filter([$pendaftaran->siswa?->pas_photo_3x4])),
         'paymentProof' => array_values(array_filter([$buktiPath])),
     ]);
+
+    // ✅ FIXED ALL URL (IMPORTANT: /api ADDED)
     $pendaftaran->setAttribute('fileObjects', [
         'birthCert' => array_values(array_filter([
             $pendaftaran->siswa?->akta_kelahiran
-                ? url('/api/admin/file-pendaftaran-siswa/akta/' . basename($pendaftaran->siswa->akta_kelahiran))
+                ? url('/api/file-pendaftaran-siswa/akta/' . basename($pendaftaran->siswa->akta_kelahiran))
                 : null,
         ])),
+
         'reportCard' => array_values(array_filter([
             $pendaftaran->siswa?->rapor
-                ? url('/api/admin/file-pendaftaran-siswa/rapor/' . basename($pendaftaran->siswa->rapor))
+                ? url('/api/file-pendaftaran-siswa/rapor/' . basename($pendaftaran->siswa->rapor))
                 : null,
         ])),
+
         'familyCard' => array_values(array_filter([
             $pendaftaran->siswa?->kartu_keluarga
-                ? url('/api/admin/file-pendaftaran-siswa/kk/' . basename($pendaftaran->siswa->kartu_keluarga))
+                ? url('/api/file-pendaftaran-siswa/kk/' . basename($pendaftaran->siswa->kartu_keluarga))
                 : null,
         ])),
+
         'photo' => array_values(array_filter([
             $pendaftaran->siswa?->pas_photo_3x4
-                ? url('/api/admin/file-pendaftaran-siswa/foto/' . basename($pendaftaran->siswa->pas_photo_3x4))
+                ? url('/api/file-pendaftaran-siswa/foto/' . basename($pendaftaran->siswa->pas_photo_3x4))
                 : null,
         ])),
+
         'paymentProof' => array_values(array_filter([$buktiUrl])),
     ]);
+
     $pendaftaran->setAttribute('invalidIdentityFields', array_values(array_filter([
         $pendaftaran->val_nama_siswa === 'tidak_valid' ? 'childName' : null,
         $pendaftaran->val_nama_ayah === 'tidak_valid' ? 'fatherName' : null,
         $pendaftaran->val_nama_ibu === 'tidak_valid' ? 'motherName' : null,
         $pendaftaran->val_umur === 'tidak_valid' ? 'age' : null,
     ])));
+
     $pendaftaran->setAttribute('invalidUploadFields', array_values(array_filter([
         $pendaftaran->val_akta === 'tidak_valid' ? 'birthCert' : null,
         $pendaftaran->val_kk === 'tidak_valid' ? 'familyCard' : null,
@@ -257,10 +268,10 @@ public function lihatfilePendaftaran($jenis, $filename)
         ], 403);
     }
 
-    // ❗ FIX DUPLIKAT .png
+    // FIX double extension bug
     $filename = preg_replace('/(\.png)+$/', '.png', $filename);
 
-    $path = storage_path("app/$jenis/$filename");
+    $path = storage_path("app/private/$jenis/$filename");
 
     if (!file_exists($path)) {
         return response()->json([

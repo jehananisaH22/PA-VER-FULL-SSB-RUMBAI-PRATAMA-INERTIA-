@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import Pagination from "../../components/Pagination";
 import { router } from "@inertiajs/react";
 import "./BagianPrestasiAdmin.css";
 
@@ -149,6 +150,14 @@ export default function BagianPrestasiAdmin({
     () => [...achievementRows].sort((leftItem, rightItem) => rightItem.createdAt - leftItem.createdAt),
     [achievementRows]
   );
+
+  const [achievementsPage, setAchievementsPage] = useState(1);
+  const [achievementsPageSize, setAchievementsPageSize] = useState(10);
+  const totalAchievements = sortedAchievements.length;
+  const pagedAchievements = useMemo(() => {
+    const start = (achievementsPage - 1) * achievementsPageSize;
+    return sortedAchievements.slice(start, start + achievementsPageSize);
+  }, [sortedAchievements, achievementsPage, achievementsPageSize]);
 
   const handleSave = async () => {
     if (isSaving) return;
@@ -411,8 +420,8 @@ export default function BagianPrestasiAdmin({
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedAchievements.length > 0 ? (
-                    sortedAchievements.map((item, index) => (
+                  {pagedAchievements.length > 0 ? (
+                    pagedAchievements.map((item, index) => (
                       <tr key={item.id}>
                         <td>{index + 1}</td>
                         <td>{item.studentName}</td>
@@ -438,6 +447,21 @@ export default function BagianPrestasiAdmin({
           </div>
         )}
       </article>
+
+      {activeTab === "history" ? (
+        <div className="adminTablePagination">
+          <Pagination
+            total={totalAchievements}
+            page={achievementsPage}
+            pageSize={achievementsPageSize}
+            onPageChange={(p) => setAchievementsPage(p)}
+            onPageSizeChange={(s) => {
+              setAchievementsPageSize(s);
+              setAchievementsPage(1);
+            }}
+          />
+        </div>
+      ) : null}
     </section>
   );
 }

@@ -294,6 +294,26 @@ class AuthController extends Controller
             if ($user->role === 'orang_tua') {
                 Auth::login($user);
                 $request->session()->regenerate();
+
+                $parent = $user->orangTua;
+                $hasChild = $parent && Siswa::query()
+                    ->where(function ($query) use ($user, $parent) {
+                        $query->where('user_id', $user->id);
+
+                        if ($parent?->id_ortu) {
+                            $query->orWhere('id_ortu', $parent->id_ortu);
+                        }
+                    })
+                    ->exists();
+
+                if ($hasChild) {
+                    $request->session()->forget('id_siswa');
+                    $request->session()->put('show_child_picker_after_login', true);
+
+                    return redirect('/orang-tua/dashboard')
+                        ->with('success', 'Email berhasil diverifikasi. Silakan pilih data anak.');
+                }
+
                 $request->session()->forget([
                     'id_siswa',
                     'show_child_picker_after_login',
@@ -301,7 +321,7 @@ class AuthController extends Controller
                 $request->session()->put('registration.account', [
                     'name' => $user->name,
                     'email' => $user->email,
-                    'phone' => optional($user->orangTua)->no_hp,
+                    'phone' => optional($parent)->no_hp,
                 ]);
 
                 return redirect('/register/form')
@@ -316,8 +336,28 @@ class AuthController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Email berhasil diverifikasi',
-            'next_url' => $user->role === 'orang_tua' ? '/register/form' : '/login/' . str_replace('_', '', $user->role),
+            'next_url' => $this->verificationNextUrl($user),
         ]);
+    }
+
+    private function verificationNextUrl(User $user): string
+    {
+        if ($user->role !== 'orang_tua') {
+            return '/login/' . str_replace('_', '', $user->role);
+        }
+
+        $parent = $user->orangTua;
+        $hasChild = $parent && Siswa::query()
+            ->where(function ($query) use ($user, $parent) {
+                $query->where('user_id', $user->id);
+
+                if ($parent?->id_ortu) {
+                    $query->orWhere('id_ortu', $parent->id_ortu);
+                }
+            })
+            ->exists();
+
+        return $hasChild ? '/orang-tua/dashboard' : '/register/form';
     }
 
     public function verificationStatus(Request $request)
@@ -399,16 +439,26 @@ class AuthController extends Controller
         }
 
         if ($user->role === 'orang_tua') {
-            $ortu = $user->orangTua;
+            $ortu = $user->orangTua ?: DB::table('orang_tua')
+                ->where(function ($query) use ($user) {
+                    $query->where('user_id', $user->id)
+                        ->orWhereRaw('LOWER(email) = ?', [strtolower($user->email)]);
+                })
+                ->orderByDesc('user_id')
+                ->first();
 
             if (! $ortu) {
                 return $this->loginFailed($request, 'Data orang tua tidak ditemukan.', 404);
             }
 
-            $anak = $ortu->siswa;
+            $anak = $this->studentsForParentUser($user);
 
             if ($request->header('X-Inertia')) {
                 $request->session()->forget('id_siswa');
+                $request->session()->forget([
+                    'registration.form',
+                    'registration.account',
+                ]);
 
                 if ($anak->count() > 0) {
                     $request->session()->put('show_child_picker_after_login', true);
@@ -430,7 +480,7 @@ class AuthController extends Controller
                 'role' => 'orang_tua',
                 'action' => $anak->count() > 0 ? 'pilih_anak' : 'belum_ada_anak',
                 'message' => $anak->count() === 0 ? 'Belum memiliki data siswa' : null,
-                'data' => $anak,
+                'data' => $anak->values(),
                 'token' => $token,
             ]);
         }
@@ -471,20 +521,16 @@ class AuthController extends Controller
         ]);
 
         $request->validate([
-            'email' => [
-                'required',
-                'email',
-                Rule::exists('users', 'email')->where(fn ($query) => $query->where('role', 'orang_tua')),
-            ],
+            'email' => ['required', 'email'],
         ]);
 
         $user = User::whereRaw('LOWER(email) = ?', [$request->email])
-            ->where('role', 'orang_tua')
+            ->whereIn('role', ['orang_tua', 'admin', 'pelatih'])
             ->first();
 
-        if (! $user || $user->role !== 'orang_tua') {
+        if (! $user) {
             throw ValidationException::withMessages([
-                'email' => 'Reset password hanya tersedia untuk akun orang tua.',
+                'email' => 'Email tidak terdaftar.',
             ]);
         }
 
@@ -572,8 +618,8 @@ class AuthController extends Controller
             ], 400);
         }
 
-        $user = User::where('email', $request->email)
-            ->where('role', 'orang_tua')
+        $user = User::whereRaw('LOWER(email) = ?', [$request->email])
+            ->whereIn('role', ['orang_tua', 'admin', 'pelatih'])
             ->first();
 
         if (! $user) {
@@ -597,6 +643,20 @@ class AuthController extends Controller
 
         if ($user->role === 'orang_tua') {
             DB::table('orang_tua')
+                ->where('user_id', $user->id)
+                ->orWhereRaw('LOWER(email) = ?', [$request->email])
+                ->update(['password' => $hashedPassword]);
+        }
+
+        if ($user->role === 'admin') {
+            DB::table('admin')
+                ->where('user_id', $user->id)
+                ->orWhereRaw('LOWER(email) = ?', [$request->email])
+                ->update(['password' => $hashedPassword]);
+        }
+
+        if ($user->role === 'pelatih') {
+            DB::table('pelatih')
                 ->where('user_id', $user->id)
                 ->orWhereRaw('LOWER(email) = ?', [$request->email])
                 ->update(['password' => $hashedPassword]);
@@ -644,6 +704,30 @@ class AuthController extends Controller
     private function wantsPageResponse(Request $request): bool
     {
         return $request->header('X-Inertia') || ! $request->expectsJson();
+    }
+
+    private function studentsForParentUser(User $user)
+    {
+        $parentIds = DB::table('orang_tua')
+            ->where(function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                    ->orWhereRaw('LOWER(email) = ?', [strtolower($user->email)]);
+            })
+            ->pluck('id_ortu')
+            ->filter()
+            ->unique()
+            ->values();
+
+        return DB::table('siswa')
+            ->where(function ($query) use ($user, $parentIds) {
+                $query->where('user_id', $user->id);
+
+                if ($parentIds->isNotEmpty()) {
+                    $query->orWhereIn('id_ortu', $parentIds);
+                }
+            })
+            ->orderBy('nama_siswa')
+            ->get();
     }
 
     private function validResetToken(string $requestToken, string $storedToken): bool

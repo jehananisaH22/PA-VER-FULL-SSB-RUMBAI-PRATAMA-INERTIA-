@@ -11,8 +11,9 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  min-height: calc(100vh - 140px);
   padding-top: 28px;
-  padding-bottom: 10px;
+  padding-bottom: 30px;
 }
 
 .adminPaymentToolbar {
@@ -339,10 +340,13 @@
 
 .adminPaymentSurface {
   min-height: 430px;
+  display: flex;
+  flex-direction: column;
   padding: 12px 18px 18px;
   border-radius: 18px;
   background: linear-gradient(180deg, #ffffff 0%, var(--admin-payment-surface-soft) 100%);
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  margin-bottom: 4px;
 }
 
 .adminPaymentSurfaceHead {
@@ -442,6 +446,13 @@
   font-size: 12px;
   line-height: 1.35;
   font-weight: 500;
+}
+
+.adminTablePagination {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
 }
 
 .adminPaymentNameCell small {
