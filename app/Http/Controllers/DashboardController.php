@@ -91,7 +91,7 @@ public function coachSection(?string $section = null)
         'performanceHistory' => $performanceHistory,
         'notes' => $coachNotes,
         'coachNotes' => $coachNotes,
-        'paymentSubmissions' => SsbInertiaData::paymentRows(true),
+        'paymentSubmissions' => SsbInertiaData::paymentRows(true, $coachStudentIds),
     ]);
 }
 
@@ -421,22 +421,25 @@ public function pelatihDashboard()
         $coachProfile = $this->currentCoachProfile($coach);
         $coachName = $coachProfile?->nama_pelatih ?? $coach?->name ?? 'Pelatih';
 
-        $attendanceRecaps = SsbInertiaData::attendanceRecaps(null, true);
-        $performanceHistory = SsbInertiaData::performanceHistory(null, true);
-        $coachNotes = SsbInertiaData::coachNotes(null, true);
+        $coachStudentIds = $coachProfile
+            ? $this->studentIdsForCoach((int) $coachProfile->id_pelatih)
+            : [];
+        $attendanceRecaps = SsbInertiaData::attendanceRecaps($coachStudentIds, true);
+        $performanceHistory = SsbInertiaData::performanceHistory($coachStudentIds, true);
+        $coachNotes = SsbInertiaData::coachNotes($coachStudentIds, true);
 
         return Inertia::render('coach/DasborPelatih', [
             'userName' => $coachName,
             'currentCoachName' => $coachName,
             'notifications' => SsbInertiaData::coachNotifications($coach?->id),
-            'studentDirectory' => SsbInertiaData::studentDirectory(true, $coachProfile ? $this->studentIdsForCoach((int) $coachProfile->id_pelatih) : []),
+            'studentDirectory' => SsbInertiaData::studentDirectory(true, $coachStudentIds),
             'trainingSchedules' => SsbInertiaData::schedules(null, true, $coachProfile?->id_pelatih),
             'attendanceRecaps' => $attendanceRecaps,
             'history' => $performanceHistory,
             'performanceHistory' => $performanceHistory,
             'notes' => $coachNotes,
             'coachNotes' => $coachNotes,
-            'paymentSubmissions' => SsbInertiaData::paymentRows(true),
+            'paymentSubmissions' => SsbInertiaData::paymentRows(true, $coachStudentIds),
         ]);
     }
 

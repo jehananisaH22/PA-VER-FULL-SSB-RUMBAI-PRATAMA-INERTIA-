@@ -54,7 +54,7 @@ export default function UploadUlangBerkasOrangTua({
     selectedChildId
   );
   const displayUserName = activeChildName || userName;
-  const showChildPickerAction = canSwitchChild || childrenOptions.length > 0;
+  const showChildPickerAction = canSwitchChild || childrenOptions.length > 1;
   const openSelectChild = () => {
     if (onSelectChild) {
       onSelectChild();

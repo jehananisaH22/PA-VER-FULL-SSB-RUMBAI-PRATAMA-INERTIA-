@@ -293,6 +293,13 @@
   color: #24591d;
 }
 
+.coachCalendarDay.isDisabled,
+.coachCalendarDay:disabled {
+  color: #cbd5e1;
+  background: #f8fafc;
+  cursor: not-allowed;
+}
+
 .coachCalendarTodayBtn {
   margin-top: 8px;
   min-height: 34px;
@@ -308,6 +315,12 @@
 
 .coachCalendarTodayBtn:hover {
   background: #e3f4da;
+}
+
+.coachCalendarTodayBtn:disabled {
+  color: #cbd5e1;
+  background: #f8fafc;
+  cursor: not-allowed;
 }
 
 .coachAttendanceSubmitBtn {
@@ -454,7 +467,7 @@
   border-color: #b8dca6;
 }
 
-.coachStatusChip.is-izin {
+.coachStatusChip.is-alpha {
   color: #a16207;
   border-color: #f3d07c;
 }
@@ -470,7 +483,7 @@
   color: #ffffff;
 }
 
-.coachStatusChip.is-izin.is-active {
+.coachStatusChip.is-alpha.is-active {
   background: #eab308;
   border-color: #eab308;
   color: #ffffff;
@@ -542,12 +555,43 @@
 
 .coachRecapCard .coachTableWrap {
   margin-top: 2px;
-  overflow: visible;
+  overflow-x: auto;
   min-height: 196px;
 }
 
 .coachRecapCard .coachTable {
-  table-layout: fixed;
+  table-layout: auto;
+}
+
+.coachAttendanceMatrixTable {
+  min-width: 1120px;
+}
+
+.coachAttendanceExtraMatrixTable {
+  min-width: 860px;
+}
+
+.coachAdditionalRecapBlock {
+  margin-top: 18px;
+}
+
+.coachAdditionalRecapHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.coachAdditionalRecapHead h2 {
+  margin: 0;
+}
+
+.coachAdditionalRecapHead p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .coachRecapCard .coachTable th {
@@ -559,24 +603,84 @@
   color: #334155;
 }
 
-.coachRecapCard .coachTable th:nth-child(1),
-.coachRecapCard .coachTable td:nth-child(1) {
-  width: 20%;
+.coachAttendanceMatrixTable th,
+.coachAttendanceMatrixTable td {
+  text-align: center;
+  vertical-align: middle;
 }
 
-.coachRecapCard .coachTable th:nth-child(2),
-.coachRecapCard .coachTable td:nth-child(2) {
-  width: 30%;
+.coachAttendanceMatrixTable th:nth-child(2),
+.coachAttendanceMatrixTable td:nth-child(2) {
+  min-width: 190px;
+  text-align: left;
 }
 
-.coachRecapCard .coachTable th:nth-child(3),
-.coachRecapCard .coachTable td:nth-child(3) {
-  width: 18%;
+.coachAttendanceMatrixTable th:nth-child(3),
+.coachAttendanceMatrixTable td:nth-child(3) {
+  min-width: 110px;
 }
 
-.coachRecapCard .coachTable th:nth-child(4),
-.coachRecapCard .coachTable td:nth-child(4) {
-  width: 12%;
+.coachMeetingHead {
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  line-height: 1.1;
+}
+
+.coachMeetingHead span {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.coachMeetingHead small {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.coachAttendanceStatusBadge {
+  min-width: 64px;
+  min-height: 26px;
+  border-radius: 999px;
+  padding: 5px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dbe3ee;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.coachAttendanceStatusBadge.is-hadir {
+  border-color: #9ed485;
+  background: #dff2d6;
+  color: #2f6420;
+}
+
+.coachAttendanceStatusBadge.is-alpha {
+  border-color: #f2d47b;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.coachAttendanceStatusBadge.is-sakit {
+  border-color: #f0aaaa;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.coachAttendanceStatusBadge.is-empty {
+  color: #94a3b8;
+}
+
+.coachMeetingDate {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .coachCategoryHeaderSoftSelect {

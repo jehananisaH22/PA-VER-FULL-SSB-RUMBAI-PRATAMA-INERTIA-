@@ -260,6 +260,13 @@
   color: #214d17;
 }
 
+.coachPerformanceCalendarDay.isDisabled,
+.coachPerformanceCalendarDay:disabled {
+  color: #cbd5e1;
+  background: #f8fafc;
+  cursor: not-allowed;
+}
+
 .coachPerformanceCalendarToday {
   min-height: 30px;
   border: 0;
@@ -277,6 +284,12 @@
 .coachPerformanceCalendarToday:focus-visible {
   outline: none;
   background: #dff2d6;
+}
+
+.coachPerformanceCalendarToday:disabled {
+  color: #cbd5e1;
+  background: #f8fafc;
+  cursor: not-allowed;
 }
 
 .coachPerformanceInputTableWrap {
@@ -427,6 +440,19 @@
   margin-top: 12px;
 }
 
+.coachPerformanceHistoryHead {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(420px, 560px);
+  align-items: start;
+  gap: 16px;
+}
+
+.coachPerformanceHistoryFilters {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) minmax(110px, 0.8fr) minmax(150px, 1fr);
+  gap: 10px;
+}
+
 .coachPerformanceHistoryCard h2 {
   margin: 0;
   font-size: 24px;
@@ -437,10 +463,107 @@
 
 .coachPerformanceHistoryCard .coachTableWrap {
   margin-top: 12px;
+  overflow-x: auto;
 }
 
 .coachPerformanceHistoryCard .coachTable th {
   font-size: 14px;
+}
+
+.coachPerformanceMatrixTable {
+  min-width: 1120px;
+  table-layout: auto;
+}
+
+.coachPerformanceExtraMatrixTable {
+  min-width: 860px;
+}
+
+.coachAdditionalRecapBlock {
+  margin-top: 18px;
+}
+
+.coachAdditionalRecapHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.coachAdditionalRecapHead h2 {
+  margin: 0;
+}
+
+.coachAdditionalRecapHead p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.coachPerformanceMatrixTable th,
+.coachPerformanceMatrixTable td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.coachPerformanceMatrixTable th:nth-child(2),
+.coachPerformanceMatrixTable td:nth-child(2) {
+  min-width: 190px;
+  text-align: left;
+}
+
+.coachPerformanceMatrixTable th:nth-child(3),
+.coachPerformanceMatrixTable td:nth-child(3) {
+  min-width: 100px;
+}
+
+.coachPerformanceMeetingHead {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  line-height: 1.1;
+}
+
+.coachPerformanceMeetingHead span {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.coachPerformanceMeetingHead small {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.coachPerformanceScoreBadge {
+  min-width: 48px;
+  min-height: 28px;
+  border-radius: 999px;
+  padding: 5px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #9ed485;
+  background: #dff2d6;
+  color: #2f6420;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.coachPerformanceScoreBadge.isEmpty {
+  border-color: #dbe3ee;
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
+.coachPerformanceScoreDate {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .coachPerformanceHistoryCategorySelect {
@@ -485,6 +608,14 @@
   .coachPerformanceFilters {
     grid-template-columns: 1fr;
     gap: 10px;
+  }
+
+  .coachPerformanceHistoryHead {
+    grid-template-columns: 1fr;
+  }
+
+  .coachPerformanceHistoryFilters {
+    grid-template-columns: 1fr;
   }
 
   .coachPerformanceSaveBtn {

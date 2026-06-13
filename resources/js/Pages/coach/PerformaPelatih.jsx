@@ -15,6 +15,7 @@ const categoryOptions = [
 ];
 
 const scoreFields = ["dribbling", "passing", "shooting"];
+const meetingsPerMonth = 8;
 
 const monthOptions = [
   { value: "januari", label: "Januari" },
@@ -47,6 +48,34 @@ const monthDisplayNames = [
 ];
 
 const weekdayDisplayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+const dayNameToIndex = {
+  minggu: 0,
+  min: 0,
+  sunday: 0,
+  senin: 1,
+  sen: 1,
+  monday: 1,
+  selasa: 2,
+  sel: 2,
+  tuesday: 2,
+  rabu: 3,
+  rab: 3,
+  wednesday: 3,
+  kamis: 4,
+  kam: 4,
+  thursday: 4,
+  jumat: 5,
+  jum: 5,
+  friday: 5,
+  sabtu: 6,
+  sab: 6,
+  saturday: 6,
+};
+const routineScheduleWeekdays = new Set([0, 3]);
+const routineScheduleSlots = new Set([
+  "3|16.30-17.30",
+  "0|07.30-09.30",
+]);
 const performanceToastElementId = "ssb-coach-performance-toast";
 
 function normalizeText(value) {
@@ -261,6 +290,129 @@ function getMonthYearFromInputDate(value) {
   };
 }
 
+function getCurrentMonthOptionValue() {
+  return monthOptions[new Date().getMonth()]?.value || "januari";
+}
+
+const yearOptions = [
+  ...Array.from({ length: 3 }, (_, index) => {
+    const year = String(new Date().getFullYear() - index);
+    return { value: year, label: year };
+  }),
+];
+
+function getAverageScore(row) {
+  const directAverage = Number(row?.average ?? row?.rata_rata ?? row?.rataRata);
+  if (Number.isFinite(directAverage) && directAverage > 0) {
+    return Math.round(directAverage);
+  }
+
+  const scores = scoreFields
+    .map((field) => Number(row?.[field]))
+    .filter((score) => Number.isFinite(score));
+
+  if (scores.length === 0) return null;
+  return Math.round(scores.reduce((total, score) => total + score, 0) / scores.length);
+}
+
+function getMonthIndexFromValue(monthValue) {
+  return Math.max(0, monthOptions.findIndex((month) => month.value === monthValue));
+}
+
+function getScheduleWeekday(schedule) {
+  const date = schedule?.date ? parseDateInputValue(schedule.date) : null;
+  if (date && !Number.isNaN(date.getTime())) return date.getDay();
+
+  return dayNameToIndex[normalizeText(schedule?.day)] ?? null;
+}
+
+function isRoutineSchedule(schedule) {
+  if (schedule?.isRoutine === true) return true;
+  if (schedule?.isRoutine === false) return false;
+
+  const weekday = getScheduleWeekday(schedule);
+  const time = String(schedule?.time || "")
+    .replace(/\s*WIB\s*/i, "")
+    .replace(/\s+/g, "");
+
+  return routineScheduleWeekdays.has(weekday) && routineScheduleSlots.has(`${weekday}|${time}`);
+}
+
+function scheduleMatchesHistoryFilter(schedule, category) {
+  if (!schedule) return false;
+  return category === "all" || schedule.category === "all" || schedule.category === category;
+}
+
+function buildMonthlyMeetingSlots(yearValue, monthValue, schedules = [], category = "all", mode = "routine") {
+  const year = Number(yearValue) || new Date().getFullYear();
+  const monthIndex = getMonthIndexFromValue(monthValue);
+  const selectedSchedules = schedules
+    .filter((schedule) => scheduleMatchesHistoryFilter(schedule, category))
+    .filter((schedule) => {
+      if (mode === "extra") return !isRoutineSchedule(schedule);
+      if (mode === "all") return true;
+      return isRoutineSchedule(schedule);
+    })
+    .map((schedule) => ({
+      ...schedule,
+      weekday: getScheduleWeekday(schedule),
+    }))
+    .filter((schedule) => Number.isInteger(schedule.weekday));
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const slots = [];
+
+  selectedSchedules.forEach((schedule) => {
+    if (mode === "extra") {
+      const scheduleDate = schedule?.date ? parseDateInputValue(schedule.date) : null;
+      if (!scheduleDate || Number.isNaN(scheduleDate.getTime())) return;
+      if (scheduleDate.getFullYear() !== year || scheduleDate.getMonth() !== monthIndex) return;
+
+      const isoDate = formatDateInputValue(scheduleDate);
+      slots.push({
+        date: isoDate,
+        dateLabel: `${String(scheduleDate.getDate()).padStart(2, "0")} ${monthDisplayNames[monthIndex].slice(0, 3)}`,
+        time: schedule.time || "",
+        scheduleId: schedule.id,
+        sortKey: `${isoDate} ${schedule.time || ""}`,
+      });
+      return;
+    }
+
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const date = new Date(year, monthIndex, day);
+      if (date.getDay() !== schedule.weekday) continue;
+
+      const isoDate = formatDateInputValue(date);
+      slots.push({
+        date: isoDate,
+        dateLabel: `${String(day).padStart(2, "0")} ${monthDisplayNames[monthIndex].slice(0, 3)}`,
+        time: schedule.time || "",
+        scheduleId: schedule.id,
+        sortKey: `${isoDate} ${schedule.time || ""}`,
+      });
+    }
+  });
+
+  return Array.from(new Map(
+    slots
+      .sort((left, right) => left.sortKey.localeCompare(right.sortKey))
+      .map((slot) => [`${slot.date}-${slot.time}`, slot])
+  ).values()).slice(0, mode === "routine" ? meetingsPerMonth : undefined);
+}
+
+function performanceRowMatchesSlot(row, slot) {
+  if (!row || !slot) return false;
+  const sameDate = slashDateToInputValue(row.date) === slot.date;
+  const sameSchedule = !row.scheduleId || !slot.scheduleId || row.scheduleId === slot.scheduleId;
+  return sameDate && sameSchedule;
+}
+
+function slashDateToInputValue(value) {
+  const [dd, mm, yyyy] = String(value || "").split("/");
+  if (!dd || !mm || !yyyy) return "";
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 function ChevronDownIcon() {
   return (
     <svg viewBox="0 0 20 20" aria-hidden="true">
@@ -384,7 +536,7 @@ function CoachPerformanceSelect({ value, onChange, options, ariaLabel, className
   );
 }
 
-function CoachPerformanceDatePicker({ value, onChange, ariaLabel }) {
+function CoachPerformanceDatePicker({ value, onChange, ariaLabel, allowedWeekdays = null }) {
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef(null);
   const selectedDate = parseDateInputValue(value);
@@ -409,7 +561,12 @@ function CoachPerformanceDatePicker({ value, onChange, ariaLabel }) {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
+  const isDateAllowed = (date) => {
+    return !Array.isArray(allowedWeekdays) || allowedWeekdays.includes(date.getDay());
+  };
+
   const handlePickDate = (date) => {
+    if (!isDateAllowed(date)) return;
     onChange(formatDateInputValue(date));
     setIsOpen(false);
   };
@@ -473,6 +630,7 @@ function CoachPerformanceDatePicker({ value, onChange, ariaLabel }) {
               const isOutsideMonth = date.getMonth() !== viewMonth.getMonth();
               const isSelected = isSameDate(date, selectedDate);
               const isToday = isSameDate(date, today);
+              const isAllowed = isDateAllowed(date);
 
               return (
                 <button
@@ -480,8 +638,9 @@ function CoachPerformanceDatePicker({ value, onChange, ariaLabel }) {
                   type="button"
                   className={`coachPerformanceCalendarDay ${isOutsideMonth ? "isMuted" : ""} ${
                     isSelected ? "isSelected" : ""
-                  } ${isToday ? "isToday" : ""}`}
+                  } ${isToday ? "isToday" : ""} ${!isAllowed ? "isDisabled" : ""}`}
                   onClick={() => handlePickDate(date)}
+                  disabled={!isAllowed}
                   aria-label={formatInputDateToSlash(dateValue)}
                   aria-pressed={isSelected}
                 >
@@ -495,6 +654,7 @@ function CoachPerformanceDatePicker({ value, onChange, ariaLabel }) {
             type="button"
             className="coachPerformanceCalendarToday"
             onClick={() => handlePickDate(today)}
+            disabled={!isDateAllowed(today)}
           >
             Hari ini
           </button>
@@ -517,6 +677,8 @@ export default function PerformaPelatih(props) {
   const [activeSection, setActiveSection] = useState("input");
   const [selectedCategory, setSelectedCategory] = useState("u10");
   const [selectedHistoryCategory, setSelectedHistoryCategory] = useState("all");
+  const [selectedHistoryMonth, setSelectedHistoryMonth] = useState(getCurrentMonthOptionValue);
+  const [selectedHistoryYear, setSelectedHistoryYear] = useState(() => String(new Date().getFullYear()));
   const [selectedScheduleId, setSelectedScheduleId] = useState("");
   const [selectedDate, setSelectedDate] = useState(getTodayDateInputValue());
   const [showConfirmSave, setShowConfirmSave] = useState(false);
@@ -534,6 +696,7 @@ export default function PerformaPelatih(props) {
     if (!selectedCategory || !Array.isArray(trainingSchedules)) return [];
 
     return trainingSchedules
+      .filter((item) => isRoutineSchedule(item))
       .filter((item) => {
         if (selectedCategory === "all") {
           return true;
@@ -569,6 +732,10 @@ export default function PerformaPelatih(props) {
     () => filteredSchedules.find((item) => item.id === selectedScheduleId) || null,
     [filteredSchedules, selectedScheduleId]
   );
+  const selectedScheduleAllowedWeekdays = useMemo(() => {
+    const weekday = getScheduleWeekday(selectedSchedule);
+    return Number.isInteger(weekday) ? [weekday] : null;
+  }, [selectedSchedule]);
 
   const visiblePlayers = useMemo(
     () => getSchedulePlayersForCategory(selectedSchedule, selectedCategory, studentDirectory),
@@ -609,9 +776,81 @@ export default function PerformaPelatih(props) {
   }, [ownHistory]);
 
   const filteredHistory = useMemo(() => {
-    if (selectedHistoryCategory === "all") return ownHistory;
-    return ownHistory.filter((item) => item.category === selectedHistoryCategory);
-  }, [ownHistory, selectedHistoryCategory]);
+    return ownHistory.filter((item) => {
+      const isCategoryMatch = selectedHistoryCategory === "all" || item.category === selectedHistoryCategory;
+      return isCategoryMatch && item.month === selectedHistoryMonth && String(item.year) === selectedHistoryYear;
+    });
+  }, [ownHistory, selectedHistoryCategory, selectedHistoryMonth, selectedHistoryYear]);
+
+  const performanceMeetingSlots = useMemo(
+    () => buildMonthlyMeetingSlots(
+      selectedHistoryYear,
+      selectedHistoryMonth,
+      trainingSchedules,
+      selectedHistoryCategory,
+      "routine"
+    ),
+    [selectedHistoryCategory, selectedHistoryMonth, selectedHistoryYear, trainingSchedules]
+  );
+
+  const performanceMatrixRows = useMemo(() => {
+    const groupedRows = new Map();
+
+    filteredHistory.forEach((item) => {
+      const key = `${item.studentId || item.player}-${item.category || ""}`;
+      const current = groupedRows.get(key) || {
+        id: key,
+        player: item.player || item.studentName || "-",
+        category: item.category,
+        rows: [],
+      };
+
+      current.rows.push(item);
+      groupedRows.set(key, current);
+    });
+
+    return Array.from(groupedRows.values())
+      .map((group) => {
+        const rows = group.rows
+          .slice()
+          .sort((left, right) => {
+            const leftTime = Date.parse(slashDateToInputValue(left.date)) || Number(left.createdAt || 0);
+            const rightTime = Date.parse(slashDateToInputValue(right.date)) || Number(right.createdAt || 0);
+            return leftTime - rightTime;
+          });
+        const cells = Array.from({ length: meetingsPerMonth }, (_, index) => {
+          const slot = performanceMeetingSlots[index] || null;
+          const row = slot
+            ? rows.find((item) => performanceRowMatchesSlot(item, slot)) || null
+            : rows[index] || null;
+          const average = getAverageScore(row);
+
+          return {
+            meeting: index + 1,
+            date: slot?.dateLabel || row?.date || "",
+            time: slot?.time || "",
+            average,
+            dribbling: row?.dribbling,
+            passing: row?.passing,
+            shooting: row?.shooting,
+          };
+        });
+        const filledScores = cells
+          .map((cell) => cell.average)
+          .filter((score) => Number.isFinite(Number(score)));
+
+        return {
+          ...group,
+          cells,
+          meetingCount: filledScores.length,
+          average: filledScores.length
+            ? Math.round(filledScores.reduce((total, score) => total + Number(score), 0) / filledScores.length)
+            : "-",
+        };
+      })
+      .filter((group) => group.meetingCount > 0)
+      .sort((left, right) => left.player.localeCompare(right.player));
+  }, [filteredHistory, performanceMeetingSlots]);
 
   const isScoreRowComplete = (player) => {
     const row = scores[player.id] || {};
@@ -735,6 +974,9 @@ export default function PerformaPelatih(props) {
       }
 
       setLocalHistory((prev) => [...newRows, ...prev]);
+      setSelectedHistoryMonth(month);
+      setSelectedHistoryYear(year);
+      setSelectedHistoryCategory(selectedCategory || "all");
       setActiveSection("history");
       showPerformanceToast({
         type: "success",
@@ -832,6 +1074,7 @@ export default function PerformaPelatih(props) {
                 value={selectedDate}
                 onChange={setSelectedDate}
                 ariaLabel="Pilih tanggal input performa latihan"
+                allowedWeekdays={selectedScheduleAllowedWeekdays}
               />
             </div>
           </div>
@@ -888,55 +1131,80 @@ export default function PerformaPelatih(props) {
           </div>
           </section>
         ) : (
-          <section className="coachCard coachTableCard coachPerformanceHistoryCard coachSectionSwap">
-          <h2>History Nilai Saya</h2>
-          <div className="coachTableWrap">
-            <table className="coachTable">
-              <thead>
-                <tr>
-                  <th>Tanggal</th>
-                  <th>Jadwal</th>
-                  <th>Bulan</th>
-                  <th>Tahun</th>
-                  <th>
-                    <CoachPerformanceSelect
-                      value={selectedHistoryCategory}
-                      onChange={setSelectedHistoryCategory}
-                      options={historyCategoryOptions}
-                      ariaLabel="Filter kategori history nilai"
-                      className="coachPerformanceHistoryCategorySelect"
-                    />
-                  </th>
-                  <th>Nama Siswa</th>
-                  <th>Dribbling</th>
-                  <th>Passing</th>
-                  <th>Shooting</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredHistory.length > 0 ? (
-                  filteredHistory.map((item) => (
-                    <tr key={item.id}>
-                      <td>{item.date}</td>
-                      <td>{item.scheduleLabel || "-"}</td>
-                      <td>{monthOptions.find((m) => m.value === item.month)?.label || item.month}</td>
-                      <td>{item.year}</td>
-                      <td>{categoryLabel[item.category] || item.category}</td>
-                      <td>{item.player}</td>
-                      <td>{item.dribbling}</td>
-                      <td>{item.passing}</td>
-                      <td>{item.shooting}</td>
-                    </tr>
-                  ))
-                ) : (
+            <section className="coachCard coachTableCard coachPerformanceHistoryCard coachSectionSwap">
+            <div className="coachPerformanceHistoryHead">
+              <h2>History Nilai Saya</h2>
+              <div className="coachPerformanceHistoryFilters">
+                <CoachPerformanceSelect
+                  value={selectedHistoryMonth}
+                  onChange={setSelectedHistoryMonth}
+                  options={monthOptions}
+                  ariaLabel="Filter bulan history nilai"
+                />
+                <CoachPerformanceSelect
+                  value={selectedHistoryYear}
+                  onChange={setSelectedHistoryYear}
+                  options={yearOptions}
+                  ariaLabel="Filter tahun history nilai"
+                />
+                <CoachPerformanceSelect
+                  value={selectedHistoryCategory}
+                  onChange={setSelectedHistoryCategory}
+                  options={historyCategoryOptions}
+                  ariaLabel="Filter kategori history nilai"
+                />
+              </div>
+            </div>
+            <div className="coachTableWrap">
+              <table className="coachTable coachPerformanceMatrixTable">
+                <thead>
                   <tr>
-                    <td colSpan={9}>Belum ada history nilai untuk kategori yang dipilih.</td>
+                    <th>No</th>
+                    <th>Nama Siswa</th>
+                    <th>Kategori</th>
+                    {Array.from({ length: meetingsPerMonth }, (_, index) => (
+                      <th key={`performance-meeting-${index + 1}`}>
+                        <span className="coachPerformanceMeetingHead">
+                          <span>P{index + 1}</span>
+                          <small>{performanceMeetingSlots[index]?.dateLabel || "Nilai"}</small>
+                          {performanceMeetingSlots[index]?.time ? (
+                            <small>{performanceMeetingSlots[index].time.replace(" WIB", "")}</small>
+                          ) : null}
+                        </span>
+                      </th>
+                    ))}
+                    <th>Terisi</th>
+                    <th>Rata-rata</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          </section>
+                </thead>
+                <tbody>
+                  {performanceMatrixRows.length > 0 ? (
+                    performanceMatrixRows.map((item, rowIndex) => (
+                      <tr key={item.id}>
+                        <td>{rowIndex + 1}</td>
+                        <td>{item.player}</td>
+                        <td>{categoryLabel[item.category] || item.category}</td>
+                        {item.cells.map((cell) => (
+                          <td key={`${item.id}-meeting-${cell.meeting}`}>
+                            <span className={`coachPerformanceScoreBadge ${cell.average === null ? "isEmpty" : ""}`}>
+                              {cell.average ?? "-"}
+                            </span>
+                            {cell.time ? <small className="coachPerformanceScoreDate">{cell.time.replace(" WIB", "")}</small> : null}
+                          </td>
+                        ))}
+                        <td>{item.meetingCount}/{meetingsPerMonth}</td>
+                        <td>{item.average}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={14}>Belum ada history nilai untuk filter yang dipilih.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            </section>
         )}
       </div>
 

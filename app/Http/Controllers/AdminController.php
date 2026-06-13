@@ -335,9 +335,7 @@ public function submitValidasi(Request $request, $id)
     $paymentCreated = false;
     $paymentData = null;
 
-        if ($statusApproval === 'Disetujui') {
-            $this->activateStudentAccount($pendaftaran->siswa);
-
+    if ($statusApproval === 'Disetujui') {
         $cekPembayaran = Pembayaran::where('id_siswa', $pendaftaran->id_siswa)
             ->where('jenis', 'Pendaftaran')
             ->first();
@@ -370,6 +368,8 @@ public function submitValidasi(Request $request, $id)
         if ($latestRegistrationProof) {
             $latestRegistrationProof->update(['status' => 'diterima']);
         }
+
+        $this->activateStudentAccount($pendaftaran->siswa);
 
         $this->sendStudentNotification(
             $pendaftaran->siswa,
@@ -2320,7 +2320,31 @@ private function activateStudentAccount(?Siswa $siswa): void
         return;
     }
 
+    if (! $this->studentRegistrationPaymentIsApproved($siswa)) {
+        $siswa->update(['status' => 'Inactive']);
+        return;
+    }
+
     $siswa->update(['status' => 'Active']);
     $this->syncActiveStudentToCategorySchedules($siswa->fresh());
+}
+
+private function studentRegistrationPaymentIsApproved(Siswa $siswa): bool
+{
+    $registrationIsApproved = Pendaftaran_Siswa::where('id_siswa', $siswa->id_siswa)
+        ->where('status_approval', 'Disetujui')
+        ->exists();
+
+    if (! $registrationIsApproved) {
+        return false;
+    }
+
+    return Pembayaran::query()
+        ->join('bukti_pembayaran', 'pembayaran.id_pembayaran', '=', 'bukti_pembayaran.id_pembayaran')
+        ->where('pembayaran.id_siswa', $siswa->id_siswa)
+        ->where('pembayaran.jenis', 'Pendaftaran')
+        ->where('pembayaran.status', 'Lunas')
+        ->whereRaw('LOWER(bukti_pembayaran.status) = ?', ['diterima'])
+        ->exists();
 }
 }
