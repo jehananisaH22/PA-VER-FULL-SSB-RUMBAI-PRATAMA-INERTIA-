@@ -50,6 +50,8 @@ const roleChoiceImageStyle = (accentColor) => ({
 
 export default function RoleLogin({
   role,
+  initialEmail = "",
+  switchChildId = null,
   onBack,
   onChangeRole,
   onOpenResetPassword,
@@ -58,7 +60,7 @@ export default function RoleLogin({
   const { errors = {}, flash = {} } = usePage().props;
   const [selectedRoleKey, setSelectedRoleKey] = useState(role || "");
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail || "");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -178,6 +180,7 @@ export default function RoleLogin({
       email: normalizedEmail,
       password,
       role: currentRole.key === "orangtua" ? "orang_tua" : currentRole.key,
+      switch_child_id: currentRole.key === "orangtua" ? switchChildId : null,
     }, {
       preserveScroll: true,
       onStart: () => setIsSubmitting(true),

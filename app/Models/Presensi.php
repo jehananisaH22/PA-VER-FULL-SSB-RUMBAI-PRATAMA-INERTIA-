@@ -14,6 +14,7 @@ class Presensi extends Model
         'id_siswa',
         'id_jadwal',
         'id_pelatih',
+        'tanggal_presensi',
         'status_kehadiran'
     ];
 

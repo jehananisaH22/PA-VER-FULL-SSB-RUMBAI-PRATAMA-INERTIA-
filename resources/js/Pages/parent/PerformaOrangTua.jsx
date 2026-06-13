@@ -58,7 +58,7 @@ export default function PerformaOrangTua({
   canSwitchChild = false,
   childrenOptions = [],
   selectedChildId = null,
-   studentProfile, // 👈 TAMBAH INI
+  studentProfile,
 }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(null);
@@ -73,7 +73,7 @@ export default function PerformaOrangTua({
   const displayUserName = activeChildName || userName;
   const profilePhoto = studentProfile?.photo || ProfileIcon;
 
-  const showChildPickerAction = canSwitchChild || childrenOptions.length > 0;
+  const showChildPickerAction = canSwitchChild || childrenOptions.length > 1;
   const openSelectChild = () => {
     if (onSelectChild) {
       onSelectChild();
@@ -92,31 +92,41 @@ export default function PerformaOrangTua({
   const openNotes = visitOrCall(onOpenCatatanPelatih, parentRoutes.notes);
   const openPayments = visitOrCall(onOpenPayments, parentRoutes.payments);
 
-  const activeChild = childrenOptions.find(
-  (child) => child.id === selectedChildId
-);
+  const routinePerformanceHistory = useMemo(
+    () => performanceHistory.filter((item) => item?.isRoutine !== false),
+    [performanceHistory]
+  );
 
   const availableYears = useMemo(() => {
-    const years = Array.from(new Set(performanceHistory.map((item) => String(item.year)))).sort(
+    const years = Array.from(new Set(routinePerformanceHistory.map((item) => String(item.year)))).sort(
       (leftItem, rightItem) => Number(rightItem) - Number(leftItem)
     );
     return years.length > 0 ? years : [String(new Date().getFullYear())];
-  }, [performanceHistory]);
+  }, [routinePerformanceHistory]);
   const effectiveSelectedYear = availableYears.includes(selectedYear)
     ? selectedYear
     : availableYears[0];
 
   const performanceMap = useMemo(() => {
     const nextMap = new Map();
-    performanceHistory.forEach((item) => {
+    routinePerformanceHistory.forEach((item) => {
       const normalizedMonth = coachMonthMap[item.month] || item.month || "01";
       const key = `${item.year}-${normalizedMonth}`;
-      if (!nextMap.has(key)) {
-        nextMap.set(key, item);
-      }
+      const bucket = nextMap.get(key) || {
+        dribbling: 0,
+        passing: 0,
+        shooting: 0,
+        count: 0,
+      };
+
+      bucket.dribbling += Number(item.dribbling || 0);
+      bucket.passing += Number(item.passing || 0);
+      bucket.shooting += Number(item.shooting || 0);
+      bucket.count += 1;
+      nextMap.set(key, bucket);
     });
     return nextMap;
-  }, [performanceHistory]);
+  }, [routinePerformanceHistory]);
 
   const chartData = useMemo(
     () =>
@@ -124,8 +134,8 @@ export default function PerformaOrangTua({
         const matchedRow = performanceMap.get(`${effectiveSelectedYear}-${month.value}`);
         if (!matchedRow) return 0;
         return Math.round(
-          (Number(matchedRow.dribbling) + Number(matchedRow.passing) + Number(matchedRow.shooting)) /
-            3
+          (matchedRow.dribbling + matchedRow.passing + matchedRow.shooting) /
+            (matchedRow.count * 3)
         );
       }),
     [effectiveSelectedYear, performanceMap]
@@ -133,15 +143,15 @@ export default function PerformaOrangTua({
 
   const scoreRows = useMemo(
     () => {
-      if (performanceHistory.length === 0) {
+      if (routinePerformanceHistory.length === 0) {
         return [];
       }
 
       return perfMonthOptions.map((month) => {
         const matchedRow = performanceMap.get(`${effectiveSelectedYear}-${month.value}`);
-        const dribbling = matchedRow ? Number(matchedRow.dribbling) : null;
-        const passing = matchedRow ? Number(matchedRow.passing) : null;
-        const shooting = matchedRow ? Number(matchedRow.shooting) : null;
+        const dribbling = matchedRow ? Math.round(matchedRow.dribbling / matchedRow.count) : null;
+        const passing = matchedRow ? Math.round(matchedRow.passing / matchedRow.count) : null;
+        const shooting = matchedRow ? Math.round(matchedRow.shooting / matchedRow.count) : null;
         const average =
           matchedRow && dribbling !== null && passing !== null && shooting !== null
             ? Math.round((dribbling + passing + shooting) / 3)
@@ -159,10 +169,8 @@ export default function PerformaOrangTua({
         };
       });
     },
-    [effectiveSelectedYear, performanceHistory.length, performanceMap]
+    [effectiveSelectedYear, routinePerformanceHistory.length, performanceMap]
   );
-
-  console.log(studentProfile);
 
   return (
     <div className="performancePage">
@@ -402,6 +410,3 @@ export default function PerformaOrangTua({
     </div>
   );
 }
-
-
-

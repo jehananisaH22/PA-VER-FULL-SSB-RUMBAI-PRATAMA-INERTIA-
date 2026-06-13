@@ -55,7 +55,7 @@ export default function KehadiranOrangTua({
   const displayUserName = activeChildName || userName;
   const profilePhoto = studentProfile?.photo || ProfileIcon;
 
-  const showChildPickerAction = canSwitchChild || childrenOptions.length > 0;
+  const showChildPickerAction = canSwitchChild || childrenOptions.length > 1;
   const openSelectChild = () => {
     if (onSelectChild) {
       onSelectChild();
@@ -319,7 +319,6 @@ export default function KehadiranOrangTua({
     </div>
   );
 }
-
 
 
 

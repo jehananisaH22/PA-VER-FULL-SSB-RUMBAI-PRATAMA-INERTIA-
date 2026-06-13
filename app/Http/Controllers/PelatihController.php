@@ -16,6 +16,7 @@ use App\Models\BuktiPembayaran;
 use App\Models\Notifikasi;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class PelatihController extends Controller
@@ -29,6 +30,23 @@ class PelatihController extends Controller
     }
 
     return Pelatih::resolveForUser($user);
+  }
+
+  private function studentIdsForPelatih(Pelatih $pelatih): array
+  {
+    return DB::table('jadwal_siswa')
+        ->join('jadwal_latihan', 'jadwal_siswa.id_jadwal', '=', 'jadwal_latihan.id_jadwal')
+        ->join('siswa', 'jadwal_siswa.id_siswa', '=', 'siswa.id_siswa')
+        ->where(function ($query) use ($pelatih) {
+            $query->where('jadwal_latihan.id_pelatih', $pelatih->id_pelatih)
+                ->orWhereNull('jadwal_latihan.id_pelatih');
+        })
+        ->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active'])
+        ->pluck('jadwal_siswa.id_siswa')
+        ->map(fn ($id) => (int) $id)
+        ->unique()
+        ->values()
+        ->all();
   }
 
   public function Kehadiran(Request $request)
@@ -77,6 +95,15 @@ class PelatihController extends Controller
         $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
     });
 
+    $pelatih = $this->currentPelatih();
+
+    if ($pelatih) {
+        $jadwal->where(function ($query) use ($pelatih) {
+            $query->where('id_pelatih', $pelatih->id_pelatih)
+                ->orWhereNull('id_pelatih');
+        });
+    }
+
     $jadwal = $jadwal->get();
 
     return response()->json([
@@ -106,6 +133,10 @@ public function Input_Presensi(Request $request)
 
     $jadwal = Jadwal_Latihan::with('siswa')
         ->where('id_jadwal', $request->id_jadwal)
+        ->where(function ($query) use ($pelatih) {
+            $query->where('id_pelatih', $pelatih->id_pelatih)
+                ->orWhereNull('id_pelatih');
+        })
         ->firstOrFail();
 
     $validStudentIds = $jadwal->siswa
@@ -116,13 +147,29 @@ public function Input_Presensi(Request $request)
         ? Carbon::parse($request->tanggal)
         : now();
     $scheduleDate = Carbon::parse($jadwal->tanggal);
+    $routineSlotKey = (int) $scheduleDate->dayOfWeek . '|' .
+        Carbon::parse($jadwal->jam_mulai)->format('H:i:s') . '-' .
+        Carbon::parse($jadwal->jam_selesai)->format('H:i:s');
+    $isRoutineSchedule = in_array($routineSlotKey, [
+        Carbon::WEDNESDAY . '|16:30:00-17:30:00',
+        Carbon::SUNDAY . '|07:30:00-09:30:00',
+    ], true);
 
-    if ($attendanceDate->dayOfWeek !== $scheduleDate->dayOfWeek) {
+    if ($isRoutineSchedule && $attendanceDate->dayOfWeek !== $scheduleDate->dayOfWeek) {
         return response()->json([
             'status' => false,
             'message' => 'Tanggal absensi tidak sesuai dengan hari jadwal latihan yang dipilih.',
             'schedule_day' => $scheduleDate->locale('id')->translatedFormat('l'),
             'attendance_day' => $attendanceDate->locale('id')->translatedFormat('l'),
+        ], 422);
+    }
+
+    if (! $isRoutineSchedule && ! $attendanceDate->isSameDay($scheduleDate)) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Tanggal absensi latihan tambahan harus sama dengan tanggal jadwal dari admin.',
+            'schedule_date' => $scheduleDate->toDateString(),
+            'attendance_date' => $attendanceDate->toDateString(),
         ], 422);
     }
     $savedCount = 0;
@@ -134,16 +181,29 @@ public function Input_Presensi(Request $request)
         }
 
         $status = ucfirst(strtolower((string) $item['status']));
-        if (! in_array($status, ['Hadir', 'Sakit', 'Izin'], true)) {
+        if ($status === 'Izin') {
+            $status = 'Alpha';
+        }
+
+        if (! in_array($status, ['Hadir', 'Sakit', 'Alpha'], true)) {
             continue;
         }
 
-        $presensi = Presensi::firstOrNew([
+        $presensiKeys = [
             'id_siswa' => $item['id_siswa'],
-            'id_jadwal' => $request->id_jadwal
-        ]);
+            'id_jadwal' => $request->id_jadwal,
+        ];
+
+        if (Schema::hasColumn('presensi', 'tanggal_presensi')) {
+            $presensiKeys['tanggal_presensi'] = $attendanceDate->toDateString();
+        }
+
+        $presensi = Presensi::firstOrNew($presensiKeys);
 
         $presensi->id_pelatih = $pelatih->id_pelatih;
+        if (Schema::hasColumn('presensi', 'tanggal_presensi')) {
+            $presensi->tanggal_presensi = $attendanceDate->toDateString();
+        }
         $presensi->status_kehadiran = $status;
         $presensi->created_at = $attendanceDate->copy()->startOfDay();
         $presensi->updated_at = now();
@@ -190,19 +250,7 @@ public function Rekap_Absensi(Request $request)
     $tahun = $request->tahun ?? now()->year;
 
     $pelatih = $this->currentPelatih();
-    $studentIds = $pelatih
-        ? DB::table('jadwal_siswa')
-            ->join('jadwal_latihan', 'jadwal_siswa.id_jadwal', '=', 'jadwal_latihan.id_jadwal')
-            ->join('siswa', 'jadwal_siswa.id_siswa', '=', 'siswa.id_siswa')
-            ->where(function ($query) use ($pelatih) {
-                $query->where('jadwal_latihan.id_pelatih', $pelatih->id_pelatih)
-                    ->orWhereNull('jadwal_latihan.id_pelatih');
-            })
-            ->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active'])
-            ->pluck('jadwal_siswa.id_siswa')
-            ->unique()
-            ->all()
-        : null;
+    $studentIds = $pelatih ? $this->studentIdsForPelatih($pelatih) : null;
 
     $siswa = Siswa::whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
         ->when($studentIds !== null, fn ($query) => $query->whereIn('id_siswa', $studentIds))
@@ -219,7 +267,7 @@ public function Rekap_Absensi(Request $request)
 
         $hadir = $presensi->where('status_kehadiran', 'Hadir')->count();
         $sakit = $presensi->where('status_kehadiran', 'Sakit')->count();
-        $izin  = $presensi->where('status_kehadiran', 'Izin')->count();
+        $alpha  = $presensi->filter(fn ($row) => in_array($row->status_kehadiran, ['Alpha', 'Izin'], true))->count();
 
         return [
             'id_siswa' => $s->id_siswa,
@@ -230,7 +278,7 @@ public function Rekap_Absensi(Request $request)
 
             'hadir' => $total ? round(($hadir / $total) * 100, 1) : 0,
             'sakit' => $total ? round(($sakit / $total) * 100, 1) : 0,
-            'izin'  => $total ? round(($izin / $total) * 100, 1) : 0,
+            'alpha'  => $total ? round(($alpha / $total) * 100, 1) : 0,
 
             'total' => $total,
         ];
@@ -323,8 +371,22 @@ public function Input_Performa_Siswa(Request $request, $id)
         ? Carbon::parse($request->tanggal_penilaian)
         : now();
     $scheduleDate = Carbon::parse($jadwal->tanggal);
+    $routineSlotKey = (int) $scheduleDate->dayOfWeek . '|' .
+        Carbon::parse($jadwal->jam_mulai)->format('H:i:s') . '-' .
+        Carbon::parse($jadwal->jam_selesai)->format('H:i:s');
+    $isRoutineSchedule = in_array($routineSlotKey, [
+        Carbon::WEDNESDAY . '|16:30:00-17:30:00',
+        Carbon::SUNDAY . '|07:30:00-09:30:00',
+    ], true);
 
-    if ($tanggal->dayOfWeek !== $scheduleDate->dayOfWeek) {
+    if (! $isRoutineSchedule) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Input nilai performa hanya untuk jadwal latihan tetap.',
+        ], 422);
+    }
+
+    if ($isRoutineSchedule && $tanggal->dayOfWeek !== $scheduleDate->dayOfWeek) {
         return response()->json([
             'status' => false,
             'message' => 'Tanggal input performa tidak sesuai dengan hari jadwal latihan yang dipilih.',
@@ -424,6 +486,7 @@ public function Catatan_Pelatih(Request $request)
 
     if ($pelatih) {
         $query->where('id_pelatih', $pelatih->id_pelatih);
+        $query->whereIn('id_siswa', $this->studentIdsForPelatih($pelatih));
     }
 
     if ($request->filled('id_pelatih')) {
@@ -483,10 +546,15 @@ public function Tambah_Catatan_Pelatih(Request $request)
 
     $insert = [];
     $studentIds = [];
+    $allowedStudentIds = $pelatih ? $this->studentIdsForPelatih($pelatih) : null;
 
     try {
-        DB::transaction(function () use ($request, $idPelatih, &$insert, &$studentIds) {
+        DB::transaction(function () use ($request, $idPelatih, $allowedStudentIds, &$insert, &$studentIds) {
             foreach ($request->data as $item) {
+                if ($allowedStudentIds !== null && ! in_array((int) $item['id_siswa'], $allowedStudentIds, true)) {
+                    continue;
+                }
+
                 $isActiveStudent = Siswa::where('id_siswa', $item['id_siswa'])
                     ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
                     ->exists();
@@ -598,10 +666,13 @@ public function Update_Catatan_Pelatih(Request $request, $id)
         ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
         ->exists();
 
-    if (! $isActiveStudent) {
+    if (
+        ! $isActiveStudent
+        || ($pelatih && ! in_array((int) $request->id_siswa, $this->studentIdsForPelatih($pelatih), true))
+    ) {
         return response()->json([
             'status' => false,
-            'message' => 'Siswa belum aktif. Catatan belum bisa diupdate pelatih.'
+            'message' => 'Siswa belum aktif atau tidak termasuk jadwal pelatih.'
         ], 422);
     }
 
@@ -668,8 +739,12 @@ public function Hapus_Catatan_Pelatih($id)
 
 public function FormUploadBuktiPembayaran(Request $request)
 {
+    $pelatih = $this->currentPelatih();
+    $allowedStudentIds = $pelatih ? $this->studentIdsForPelatih($pelatih) : null;
+
     $kategoriUmur = Siswa::select('umur')
         ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+        ->when($allowedStudentIds !== null, fn ($query) => $query->whereIn('id_siswa', $allowedStudentIds))
         ->distinct()
         ->orderBy('umur')
         ->pluck('umur')
@@ -679,6 +754,10 @@ public function FormUploadBuktiPembayaran(Request $request)
     $siswaQuery = Siswa::select('id_siswa', 'nama_siswa', 'umur', 'status')
         ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
         ->orderBy('nama_siswa');
+
+    if ($allowedStudentIds !== null) {
+        $siswaQuery->whereIn('id_siswa', $allowedStudentIds);
+    }
 
     if ($request->filled('kategori_umur')) {
         $umur = $this->extractUmur($request->kategori_umur);
@@ -741,10 +820,13 @@ public function Store_Bukti_Pembayaran_Pelatih(Request $request)
             ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
             ->first();
 
-        if (! $siswa) {
+        if (
+            ! $siswa
+            || ! in_array((int) $siswa->id_siswa, $this->studentIdsForPelatih($pelatih), true)
+        ) {
             return response()->json([
                 'success' => false,
-                'message' => 'Siswa belum aktif. Pembayaran belum bisa diinput pelatih.',
+                'message' => 'Siswa belum aktif atau tidak termasuk jadwal pelatih.',
             ], 422);
         }
         $tanggal = Carbon::parse($validated['tanggal_bukti_bayar']);
@@ -861,6 +943,11 @@ public function History_Bukti_Pembayaran_Pelatih(Request $request)
     ])->whereHas('siswa', function ($query) {
         $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
     });
+    $pelatih = $this->currentPelatih();
+
+    if ($pelatih) {
+        $query->whereIn('id_siswa', $this->studentIdsForPelatih($pelatih));
+    }
 
     if ($request->filled('kategori_umur')) {
         $umur = $this->extractUmur($request->kategori_umur);
@@ -905,6 +992,7 @@ public function History_Bukti_Pembayaran_Pelatih(Request $request)
 
     $kategoriUmur = Siswa::select('umur')
         ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+        ->when($pelatih, fn ($query) => $query->whereIn('id_siswa', $this->studentIdsForPelatih($pelatih)))
         ->distinct()
         ->orderBy('umur')
         ->pluck('umur')
@@ -936,6 +1024,15 @@ public function Hapus_Bukti_Pembayaran_Pelatih($id)
             'success' => false,
             'message' => 'Data bukti pembayaran tidak ditemukan',
         ], 404);
+    }
+
+    $pelatih = $this->currentPelatih();
+
+    if ($pelatih && ! in_array((int) $bukti->id_siswa, $this->studentIdsForPelatih($pelatih), true)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Bukti pembayaran siswa di luar jadwal pelatih tidak bisa dihapus',
+        ], 403);
     }
 
     DB::beginTransaction();

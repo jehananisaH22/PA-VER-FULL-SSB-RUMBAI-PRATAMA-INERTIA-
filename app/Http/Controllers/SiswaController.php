@@ -286,7 +286,6 @@ public function setAnak(Request $request)
     $idSiswa = (int) $request->input('id_siswa');
     $namaSiswa = trim((string) $request->input('nama_siswa', $request->input('name', '')));
 
-    $ortu = $this->resolveOrangTuaForUser($user);
     $ortuIds = $this->parentIdsForUser($user);
     $siswaQuery = $this->studentQueryForParent($user, $ortuIds);
 
@@ -303,30 +302,22 @@ public function setAnak(Request $request)
 
     $siswa = $siswaQuery->orderBy('id_siswa')->first(['id_siswa', 'nama_siswa', 'id_ortu', 'user_id']);
 
-    if (! $siswa && ($idSiswa > 0 || $namaSiswa !== '')) {
-        $fallbackQuery = \App\Models\Siswa::query();
-
-        if ($idSiswa > 0) {
-            $fallbackQuery->where('id_siswa', $idSiswa);
-        } else {
-            $fallbackQuery->whereRaw('LOWER(nama_siswa) = ?', [mb_strtolower($namaSiswa)]);
-        }
-
-        $siswa = $fallbackQuery->orderBy('id_siswa')->first(['id_siswa', 'nama_siswa', 'id_ortu', 'user_id']);
-    }
-
     if (!$siswa) {
         return response()->json([
             'status' => false,
-            'message' => 'Anak tidak ditemukan. Pastikan data siswa sudah terdaftar.'
+            'message' => 'Anak tidak ditemukan untuk email orang tua ini. Pastikan memilih anak yang sesuai akun.'
         ], 404);
     }
 
-    if ($ortu && ($siswa->id_ortu !== $ortu->id_ortu || $siswa->user_id !== $user->id)) {
-        $siswa->forceFill([
-            'id_ortu' => $ortu->id_ortu,
-            'user_id' => $user->id,
-        ])->save();
+    if (
+        $request->boolean('current_account_only')
+        && ! $this->currentAccountOwnsStudent($user, (int) $siswa->id_siswa)
+    ) {
+        return response()->json([
+            'status' => false,
+            'code' => 'needs_child_login',
+            'message' => 'Anak ini memakai akun lain pada email yang sama. Silakan login dengan kata kunci anak tersebut.',
+        ], 403);
     }
 
     session(['id_siswa' => $siswa->id_siswa]);
@@ -341,6 +332,22 @@ public function setAnak(Request $request)
     ]);
 }
 
+private function currentAccountOwnsStudent($user, int $studentId): bool
+{
+    if (! $user) {
+        return false;
+    }
+
+    return \App\Models\Siswa::query()
+        ->leftJoin('orang_tua', 'siswa.id_ortu', '=', 'orang_tua.id_ortu')
+        ->where('siswa.id_siswa', $studentId)
+        ->where(function ($query) use ($user) {
+            $query->where('siswa.user_id', $user->id)
+                ->orWhere('orang_tua.user_id', $user->id);
+        })
+        ->exists();
+}
+
 private function resolveOrangTuaForUser($user): ?OrangTua
 {
     if (! $user) {
@@ -351,6 +358,7 @@ private function resolveOrangTuaForUser($user): ?OrangTua
             $query->where('user_id', $user->id)
                 ->orWhereRaw('LOWER(email) = ?', [strtolower($user->email)]);
         })
+        ->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [$user->id])
         ->orderByDesc('user_id')
         ->first();
 
@@ -801,7 +809,7 @@ public function Store_Bukti_Pendaftaran(Request $request)
         );
 
         if ($request->header('X-Inertia')) {
-            return back()
+            return redirect('/register/payment-proof')
                 ->with('registrationPaymentSuccess', true)
                 ->with('success', 'Bukti pembayaran berhasil dikirim. Silakan login setelah menutup pesan ini.');
         }

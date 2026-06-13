@@ -1,5 +1,5 @@
 import { router, usePage } from "@inertiajs/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ModalPilihAnakOrangTua from "../ModalPilihAnakOrangTua";
 
 const selectedChildStorageKey = "ssb_selected_parent_child";
@@ -36,6 +36,7 @@ export default function useParentChildSwitcher(
   requireChildSelection = false
 ) {
   const { props } = usePage();
+  const parentEmail = props?.studentProfile?.parentEmail || props?.parentEmail || "";
   const initialChildOptions = useMemo(() => {
     const options = childrenOptions.length > 0 ? childrenOptions : [];
     const normalizedOptions = options.map(normalizeChild).filter(Boolean);
@@ -60,7 +61,9 @@ export default function useParentChildSwitcher(
   const [isChildPickerOpen, setIsChildPickerOpen] = useState(false);
   const [isLoadingChildren, setIsLoadingChildren] = useState(false);
   const [childPickerError, setChildPickerError] = useState("");
+  const didAutoSelectSingleChild = useRef(false);
   const mustPickChild = !selectedChildId && (childOptions.length > 0 || requireChildSelection);
+  const canAutoSelectSingleChild = !selectedChildId && childOptions.length === 1;
 
   useEffect(() => {
     if (!props?.csrfToken || !window.axios) return;
@@ -97,10 +100,10 @@ export default function useParentChildSwitcher(
   }, []);
 
   useEffect(() => {
-    if (openChildPickerOnLoad || mustPickChild) {
+    if ((openChildPickerOnLoad || mustPickChild) && !canAutoSelectSingleChild) {
       setIsChildPickerOpen(true);
     }
-  }, [mustPickChild, openChildPickerOnLoad]);
+  }, [canAutoSelectSingleChild, mustPickChild, openChildPickerOnLoad]);
 
   useEffect(() => {
     if (openChildPickerOnLoad || mustPickChild || isChildPickerOpen) {
@@ -135,7 +138,7 @@ export default function useParentChildSwitcher(
     fetchChildren();
   };
 
-  const selectChild = async (child) => {
+  const selectChild = useCallback(async (child) => {
     const selectedChild = normalizeChild(child);
     if (!selectedChild) return;
 
@@ -158,10 +161,20 @@ export default function useParentChildSwitcher(
       resolvedChild = normalizeChild(fetchedMatch) || selectedChild;
     }
 
+    if (!resolvedChild.id_siswa) {
+      setChildPickerError("Data anak belum lengkap. Silakan pilih ulang setelah data dimuat.");
+      return;
+    }
+
     setActiveChildName(resolvedChild.name);
     window.localStorage.setItem(selectedChildStorageKey, resolvedChild.name);
     if (resolvedChild.id_siswa) {
       window.localStorage.setItem(selectedChildIdStorageKey, String(resolvedChild.id_siswa));
+    }
+
+    if (resolvedChild.id_siswa && Number(resolvedChild.id_siswa) === Number(selectedChildId)) {
+      setIsChildPickerOpen(false);
+      return;
     }
 
     if (window.axios) {
@@ -169,6 +182,7 @@ export default function useParentChildSwitcher(
         const response = await window.axios.post("/api/anak/pilih", {
           id_siswa: resolvedChild.id_siswa,
           nama_siswa: resolvedChild.name,
+          current_account_only: true,
         }, {
           headers: {
             "X-CSRF-TOKEN": props?.csrfToken || document.head.querySelector('meta[name="csrf-token"]')?.content || "",
@@ -178,18 +192,38 @@ export default function useParentChildSwitcher(
         if (responseChildId) {
           window.localStorage.setItem(selectedChildIdStorageKey, String(responseChildId));
         }
-      } catch (error) {
-        setChildPickerError(error.response?.data?.message || "Anak gagal dipilih.");
+
+        setIsChildPickerOpen(false);
+        router.visit("/orang-tua/dashboard", {
+          replace: true,
+          preserveScroll: false,
+        });
         return;
+      } catch (error) {
+        const errorCode = error.response?.data?.code;
+        if (error.response?.status !== 403 || errorCode !== "needs_child_login") {
+          setChildPickerError(error.response?.data?.message || "Anak gagal dipilih.");
+          return;
+        }
       }
     }
 
     setIsChildPickerOpen(false);
-    router.visit("/orang-tua/dashboard", {
-      replace: true,
+    const loginParams = new URLSearchParams();
+    if (parentEmail) loginParams.set("email", parentEmail);
+    if (resolvedChild.id_siswa) loginParams.set("switch_child_id", String(resolvedChild.id_siswa));
+
+    router.visit(`/login/orangtua${loginParams.toString() ? `?${loginParams.toString()}` : ""}`, {
       preserveScroll: false,
     });
-  };
+  }, [childOptions, fetchChildren, parentEmail, props?.csrfToken, selectedChildId]);
+
+  useEffect(() => {
+    if (!canAutoSelectSingleChild || didAutoSelectSingleChild.current) return;
+
+    didAutoSelectSingleChild.current = true;
+    selectChild(childOptions[0]);
+  }, [canAutoSelectSingleChild, childOptions, selectChild]);
 
   return {
     activeChildName,

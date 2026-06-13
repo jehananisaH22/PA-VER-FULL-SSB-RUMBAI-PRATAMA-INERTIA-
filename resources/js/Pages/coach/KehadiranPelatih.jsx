@@ -4,9 +4,11 @@ import "./KehadiranPelatih.css";
 
 const statusOptions = [
   { value: "hadir", label: "Hadir" },
-  { value: "izin", label: "Izin" },
+  { value: "alpha", label: "Alpha" },
   { value: "sakit", label: "Sakit" },
 ];
+
+const meetingsPerMonth = 8;
 
 const baseCategoryOptions = [
   { value: "", label: "Pilih Kategori" },
@@ -57,6 +59,34 @@ const calendarMonthNames = [
 ];
 
 const calendarDayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+const dayNameToIndex = {
+  minggu: 0,
+  min: 0,
+  sunday: 0,
+  senin: 1,
+  sen: 1,
+  monday: 1,
+  selasa: 2,
+  sel: 2,
+  tuesday: 2,
+  rabu: 3,
+  rab: 3,
+  wednesday: 3,
+  kamis: 4,
+  kam: 4,
+  thursday: 4,
+  jumat: 5,
+  jum: 5,
+  friday: 5,
+  sabtu: 6,
+  sab: 6,
+  saturday: 6,
+};
+const routineScheduleWeekdays = new Set([0, 3]);
+const routineScheduleSlots = new Set([
+  "3|16.30-17.30",
+  "0|07.30-09.30",
+]);
 
 const recapCategoryOptions = [
   { value: "all", label: "Kategori" },
@@ -250,6 +280,118 @@ function formatDateDisplay(value) {
   return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
 }
 
+function normalizeAttendanceStatus(value) {
+  const status = normalizeText(value);
+  if (status === "izin") return "alpha";
+  if (["hadir", "alpha", "sakit"].includes(status)) return status;
+  return "";
+}
+
+function formatMeetingPercent(count) {
+  return `${Math.round((Number(count || 0) / meetingsPerMonth) * 100)}%`;
+}
+
+function getMonthIndexFromValue(monthValue) {
+  return Math.max(0, monthOptions.findIndex((month) => month.value === monthValue));
+}
+
+function getScheduleWeekday(schedule) {
+  const date = parseIsoDate(schedule?.date);
+  if (date) return date.getDay();
+
+  return dayNameToIndex[normalizeText(schedule?.day)] ?? null;
+}
+
+function isRoutineSchedule(schedule) {
+  if (schedule?.isRoutine === true) return true;
+  if (schedule?.isRoutine === false) return false;
+
+  const weekday = getScheduleWeekday(schedule);
+  const time = String(schedule?.time || "")
+    .replace(/\s*WIB\s*/i, "")
+    .replace(/\s+/g, "");
+
+  return routineScheduleWeekdays.has(weekday) && routineScheduleSlots.has(`${weekday}|${time}`);
+}
+
+function scheduleMatchesRecapFilter(schedule, category, scheduleId) {
+  if (!schedule) return false;
+  const categoryMatch = category === "all" || schedule.category === "all" || schedule.category === category;
+  const scheduleMatch = scheduleId === "all" || schedule.id === scheduleId;
+
+  return categoryMatch && scheduleMatch;
+}
+
+function buildMonthlyMeetingSlots(
+  yearValue,
+  monthValue,
+  schedules = [],
+  category = "all",
+  scheduleId = "all",
+  mode = "routine"
+) {
+  const year = Number(yearValue) || new Date().getFullYear();
+  const monthIndex = getMonthIndexFromValue(monthValue);
+  const selectedSchedules = schedules
+    .filter((schedule) => scheduleMatchesRecapFilter(schedule, category, scheduleId))
+    .filter((schedule) => {
+      if (mode === "extra") return !isRoutineSchedule(schedule);
+      if (mode === "all") return true;
+      return isRoutineSchedule(schedule);
+    })
+    .map((schedule) => ({
+      ...schedule,
+      weekday: getScheduleWeekday(schedule),
+    }))
+    .filter((schedule) => Number.isInteger(schedule.weekday));
+
+  const slots = [];
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+
+  selectedSchedules.forEach((schedule) => {
+    if (mode === "extra") {
+      const scheduleDate = schedule?.date ? parseIsoDate(schedule.date) : null;
+      if (!scheduleDate) return;
+      if (scheduleDate.getFullYear() !== year || scheduleDate.getMonth() !== monthIndex) return;
+
+      const isoDate = toIsoDate(scheduleDate);
+      slots.push({
+        date: isoDate,
+        dateLabel: `${String(scheduleDate.getDate()).padStart(2, "0")} ${calendarMonthNames[monthIndex].slice(0, 3)}`,
+        time: schedule.time || "",
+        scheduleId: schedule.id,
+        sortKey: `${isoDate} ${schedule.time || ""}`,
+      });
+      return;
+    }
+
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const date = new Date(year, monthIndex, day);
+      if (date.getDay() !== schedule.weekday) continue;
+
+      const isoDate = toIsoDate(date);
+      slots.push({
+        date: isoDate,
+        dateLabel: `${String(day).padStart(2, "0")} ${calendarMonthNames[monthIndex].slice(0, 3)}`,
+        time: schedule.time || "",
+        scheduleId: schedule.id,
+        sortKey: `${isoDate} ${schedule.time || ""}`,
+      });
+    }
+  });
+
+  return Array.from(new Map(
+    slots
+      .sort((left, right) => left.sortKey.localeCompare(right.sortKey))
+      .map((slot) => [`${slot.date}-${slot.time}`, slot])
+  ).values()).slice(0, mode === "routine" ? meetingsPerMonth : undefined);
+}
+
+function entryMatchesSlot(entry, slot) {
+  if (!entry || !slot) return false;
+  return entry.date === slot.date && (!entry.scheduleId || !slot.scheduleId || entry.scheduleId === slot.scheduleId);
+}
+
 function sameDate(left, right) {
   if (!left || !right) return false;
   return (
@@ -325,7 +467,7 @@ function SoftSelect({
   );
 }
 
-function CoachDatePicker({ value, onChange, disabled = false }) {
+function CoachDatePicker({ value, onChange, disabled = false, allowedWeekdays = null, allowedDates = null }) {
   const rootRef = useRef(null);
   const panelRef = useRef(null);
   const selectedDate = parseIsoDate(value);
@@ -420,7 +562,14 @@ function CoachDatePicker({ value, onChange, disabled = false }) {
     setViewDate((current) => new Date(current.getFullYear(), current.getMonth() + direction, 1));
   };
 
+  const isDateAllowed = (date) => {
+    const dateValue = toIsoDate(date);
+    if (Array.isArray(allowedDates)) return allowedDates.includes(dateValue);
+    return !Array.isArray(allowedWeekdays) || allowedWeekdays.includes(date.getDay());
+  };
+
   const selectDate = (date) => {
+    if (!isDateAllowed(date)) return;
     onChange(toIsoDate(date));
     setViewDate(date);
     setIsOpen(false);
@@ -479,6 +628,7 @@ function CoachDatePicker({ value, onChange, disabled = false }) {
               const isOutsideMonth = date.getMonth() !== viewDate.getMonth();
               const isSelected = sameDate(date, selectedDate);
               const isToday = sameDate(date, today);
+              const isAllowed = isDateAllowed(date);
 
               return (
                 <button
@@ -489,8 +639,10 @@ function CoachDatePicker({ value, onChange, disabled = false }) {
                     isOutsideMonth ? "isOutside" : "",
                     isSelected ? "isSelected" : "",
                     isToday ? "isToday" : "",
+                    !isAllowed ? "isDisabled" : "",
                   ].filter(Boolean).join(" ")}
                   onClick={() => selectDate(date)}
+                  disabled={!isAllowed}
                 >
                   {date.getDate()}
                 </button>
@@ -498,7 +650,12 @@ function CoachDatePicker({ value, onChange, disabled = false }) {
             })}
           </div>
 
-          <button type="button" className="coachCalendarTodayBtn" onClick={selectToday}>
+          <button
+            type="button"
+            className="coachCalendarTodayBtn"
+            onClick={selectToday}
+            disabled={!isDateAllowed(today)}
+          >
             Hari ini
           </button>
         </div>
@@ -600,6 +757,15 @@ export default function KehadiranPelatih(props) {
     () => filteredSchedules.find((item) => item.id === selectedScheduleId) || null,
     [filteredSchedules, selectedScheduleId]
   );
+  const selectedScheduleAllowedWeekdays = useMemo(() => {
+    if (selectedSchedule && !isRoutineSchedule(selectedSchedule)) return null;
+    const weekday = getScheduleWeekday(selectedSchedule);
+    return Number.isInteger(weekday) ? [weekday] : null;
+  }, [selectedSchedule]);
+  const selectedScheduleAllowedDates = useMemo(() => {
+    if (!selectedSchedule || isRoutineSchedule(selectedSchedule) || !selectedSchedule.date) return null;
+    return [selectedSchedule.date];
+  }, [selectedSchedule]);
 
   useEffect(() => {
     if (!selectedSchedule) {
@@ -634,11 +800,31 @@ export default function KehadiranPelatih(props) {
 
   const recapScheduleOptions = useMemo(() => {
     const scheduleMap = new Map();
+    const visibleSchedules = activeSection === "extraRecap"
+      ? trainingSchedules.filter((schedule) => !isRoutineSchedule(schedule))
+      : trainingSchedules.filter((schedule) => isRoutineSchedule(schedule));
+    const visibleScheduleIds = new Set(visibleSchedules.map((schedule) => String(schedule.id)));
+    const knownScheduleIds = new Set(trainingSchedules.map((schedule) => String(schedule.id)));
+    const hasUsableLabel = (value) => {
+      const label = normalizeText(value);
+      return label && label !== "-" && label !== "jadwal";
+    };
+
+    visibleSchedules.forEach((schedule) => {
+      if (!schedule.id) return;
+      const label = formatScheduleLabel(schedule, selectedRecapCategory, studentDirectory);
+      if (hasUsableLabel(label)) {
+        scheduleMap.set(String(schedule.id), label);
+      }
+    });
 
     localAttendanceRecaps.forEach((item) => {
       if (!item.scheduleId) return;
-      if (!scheduleMap.has(item.scheduleId)) {
-        scheduleMap.set(item.scheduleId, item.scheduleLabel || "Jadwal");
+      const scheduleId = String(item.scheduleId);
+
+      if (!knownScheduleIds.has(scheduleId) || !visibleScheduleIds.has(scheduleId)) return;
+      if (!scheduleMap.has(scheduleId) && hasUsableLabel(item.scheduleLabel)) {
+        scheduleMap.set(scheduleId, item.scheduleLabel);
       }
     });
 
@@ -649,7 +835,13 @@ export default function KehadiranPelatih(props) {
         label,
       })),
     ];
-  }, [localAttendanceRecaps]);
+  }, [activeSection, localAttendanceRecaps, selectedRecapCategory, studentDirectory, trainingSchedules]);
+
+  useEffect(() => {
+    if (activeSection === "recap" || activeSection === "extraRecap") {
+      setSelectedRecapSchedule("all");
+    }
+  }, [activeSection]);
 
   const recapInputByOptions = useMemo(() => {
     const inputByNames = new Set();
@@ -675,7 +867,10 @@ export default function KehadiranPelatih(props) {
       const isCategoryMatch =
         selectedRecapCategory === "all" || item.category === selectedRecapCategory;
       const isScheduleMatch =
-        selectedRecapSchedule === "all" || item.scheduleId === selectedRecapSchedule;
+        selectedRecapSchedule === "all" ||
+        item.scheduleId === selectedRecapSchedule ||
+        (Array.isArray(item.scheduleIds) && item.scheduleIds.includes(selectedRecapSchedule)) ||
+        (Array.isArray(item.entries) && item.entries.some((entry) => entry.scheduleId === selectedRecapSchedule));
       const itemInputBy = String(item.inputBy || item.coachName || "").trim();
       const isInputByMatch =
         selectedRecapInputBy === "all" || itemInputBy === selectedRecapInputBy;
@@ -690,6 +885,93 @@ export default function KehadiranPelatih(props) {
     selectedRecapSchedule,
     selectedRecapInputBy,
   ]);
+
+  const recapMeetingSlots = useMemo(
+    () => buildMonthlyMeetingSlots(
+      selectedYear,
+      selectedMonth,
+      trainingSchedules,
+      selectedRecapCategory,
+      selectedRecapSchedule,
+      "routine"
+    ),
+    [selectedMonth, selectedRecapCategory, selectedRecapSchedule, selectedYear, trainingSchedules]
+  );
+
+  const extraRecapMeetingSlots = useMemo(
+    () => buildMonthlyMeetingSlots(
+      selectedYear,
+      selectedMonth,
+      trainingSchedules,
+      selectedRecapCategory,
+      selectedRecapSchedule,
+      "extra"
+    ),
+    [selectedMonth, selectedRecapCategory, selectedRecapSchedule, selectedYear, trainingSchedules]
+  );
+
+  const recapMatrixRows = useMemo(() => {
+    return visibleRecap.map((row) => {
+      const entries = Array.isArray(row.entries) ? row.entries : [];
+      const cells = Array.from({ length: meetingsPerMonth }, (_, index) => {
+        const slot = recapMeetingSlots[index] || null;
+        const entry = slot
+          ? entries.find((item) => entryMatchesSlot(item, slot)) || null
+          : entries[index] || null;
+        const status = normalizeAttendanceStatus(entry?.status || entry?.statusLabel);
+
+        return {
+          meeting: index + 1,
+          dateLabel: slot?.dateLabel || entry?.dateLabel || "",
+          time: slot?.time || "",
+          status,
+          label: statusOptions.find((option) => option.value === status)?.label || "-",
+        };
+      });
+
+      const countByStatus = (status) => {
+        return cells.filter((cell) => cell.status === status).length;
+      };
+
+      return {
+        ...row,
+        cells,
+        hadirCount: countByStatus("hadir"),
+        alphaCount: countByStatus("alpha"),
+        sakitCount: countByStatus("sakit"),
+      };
+    });
+  }, [recapMeetingSlots, visibleRecap]);
+
+  const extraRecapMatrixRows = useMemo(() => {
+    if (extraRecapMeetingSlots.length === 0) return [];
+
+    return visibleRecap
+      .map((row) => {
+        const entries = Array.isArray(row.entries) ? row.entries : [];
+        const cells = extraRecapMeetingSlots.map((slot, index) => {
+          const entry = entries.find((item) => entryMatchesSlot(item, slot)) || null;
+          const status = normalizeAttendanceStatus(entry?.status || entry?.statusLabel);
+
+          return {
+            meeting: index + 1,
+            dateLabel: slot?.dateLabel || entry?.dateLabel || "",
+            time: slot?.time || "",
+            status,
+            label: statusOptions.find((option) => option.value === status)?.label || "-",
+          };
+        });
+
+        return {
+          ...row,
+          cells,
+          hadirCount: cells.filter((cell) => cell.status === "hadir").length,
+          alphaCount: cells.filter((cell) => cell.status === "alpha").length,
+          sakitCount: cells.filter((cell) => cell.status === "sakit").length,
+        };
+      })
+      .filter((row) => row.cells.some((cell) => cell.status));
+  }, [extraRecapMeetingSlots, visibleRecap]);
 
   const isInputValid =
     Boolean(selectedSchedule) &&
@@ -747,15 +1029,7 @@ export default function KehadiranPelatih(props) {
     }
 
     if (isSuccess) {
-      const statusTotals = visiblePlayers.reduce(
-        (totals, player) => ({
-          ...totals,
-          [statuses[player.id]]: (totals[statuses[player.id]] || 0) + 1,
-        }),
-        { hadir: 0, sakit: 0, izin: 0 }
-      );
-      const totalPlayers = Math.max(visiblePlayers.length, 1);
-      const toPercent = (value) => Math.round((Number(value || 0) / totalPlayers) * 100);
+      const toPercent = (value) => Math.round((Number(value || 0) / meetingsPerMonth) * 100);
       const startDate = new Date(attendanceDate);
       const monthIndex = startDate.getMonth();
       const nextMonth = monthOptions[monthIndex]?.value || selectedMonth;
@@ -769,12 +1043,27 @@ export default function KehadiranPelatih(props) {
           playerName: player.name || player,
           category: selectedCategory,
           scheduleId: selectedSchedule?.id || "",
+          scheduleIds: selectedSchedule?.id ? [selectedSchedule.id] : [],
           scheduleLabel: selectedScheduleSummary,
           month: nextMonth,
           year: nextYear,
-          hadir: toPercent(statusTotals.hadir),
-          sakit: toPercent(statusTotals.sakit),
-          izin: toPercent(statusTotals.izin),
+          meetingsTotal: meetingsPerMonth,
+          entries: [{
+            meeting: 1,
+            date: attendanceDate,
+            dateLabel: formatDateDisplay(attendanceDate).slice(0, 5),
+            status: normalizeAttendanceStatus(statuses[player.id]),
+            statusLabel: statusOptions.find((status) => status.value === statuses[player.id])?.label || "-",
+            scheduleId: selectedSchedule?.id || "",
+            scheduleLabel: selectedScheduleSummary,
+          }],
+          hadirCount: statuses[player.id] === "hadir" ? 1 : 0,
+          sakitCount: statuses[player.id] === "sakit" ? 1 : 0,
+          alphaCount: statuses[player.id] === "alpha" ? 1 : 0,
+          hadir: toPercent(statuses[player.id] === "hadir" ? 1 : 0),
+          sakit: toPercent(statuses[player.id] === "sakit" ? 1 : 0),
+          alpha: toPercent(statuses[player.id] === "alpha" ? 1 : 0),
+          izin: toPercent(statuses[player.id] === "alpha" ? 1 : 0),
         })),
         ...prev,
       ]);
@@ -826,6 +1115,13 @@ export default function KehadiranPelatih(props) {
           onClick={() => setActiveSection("recap")}
         >
           Rekap Kehadiran
+        </button>
+        <button
+          type="button"
+          className={`coachAttendanceSwitch ${activeSection === "extraRecap" ? "is-active" : ""}`}
+          onClick={() => setActiveSection("extraRecap")}
+        >
+          Rekap Latihan Tambahan
         </button>
       </section>
 
@@ -886,6 +1182,8 @@ export default function KehadiranPelatih(props) {
                   value={attendanceDate}
                   onChange={setAttendanceDate}
                   disabled={!selectedSchedule}
+                  allowedWeekdays={selectedScheduleAllowedWeekdays}
+                  allowedDates={selectedScheduleAllowedDates}
                 />
               </div>
               <p className="coachFieldHint">
@@ -954,10 +1252,102 @@ export default function KehadiranPelatih(props) {
               </div>
             </article>
           </section>
+        ) : activeSection === "recap" ? (
+            <section className="coachCard coachTableCard coachRecapCard coachSectionSwap">
+              <div className="coachTableHead">
+                <h2>Rekap Kehadiran Pemain</h2>
+                <div className="coachRecapFilters">
+                  <SoftSelect
+                    className="coachRecapSelect"
+                    value={selectedMonth}
+                    onChange={setSelectedMonth}
+                    options={monthOptions}
+                  />
+                  <SoftSelect
+                    className="coachRecapSelect"
+                    value={selectedYear}
+                    onChange={setSelectedYear}
+                    options={yearOptions}
+                  />
+                  <SoftSelect
+                    className="coachRecapSelect"
+                    value={selectedRecapSchedule}
+                    onChange={setSelectedRecapSchedule}
+                    options={recapScheduleOptions}
+                  />
+                </div>
+              </div>
+              <div className="coachTableWrap">
+                <table className="coachTable coachAttendanceMatrixTable">
+                  <thead>
+                    <tr>
+                      <th>No</th>
+                      <th>Nama</th>
+                      <th>
+                        <SoftSelect
+                          className="coachCategoryHeaderSoftSelect"
+                          value={selectedRecapCategory}
+                          onChange={setSelectedRecapCategory}
+                          options={recapCategoryOptions}
+                          displayLabel="Kategori"
+                        />
+                      </th>
+                      {Array.from({ length: meetingsPerMonth }, (_, index) => (
+                        <th key={`meeting-head-${index + 1}`}>
+                          <span className="coachMeetingHead">
+                            <span>P{index + 1}</span>
+                            <small>{recapMeetingSlots[index]?.dateLabel || "Pertemuan"}</small>
+                            {recapMeetingSlots[index]?.time ? (
+                              <small>{recapMeetingSlots[index].time.replace(" WIB", "")}</small>
+                            ) : null}
+                          </span>
+                        </th>
+                      ))}
+                      <th>Hadir</th>
+                      <th>Alpha</th>
+                      <th>Sakit</th>
+                      <th>% Hadir</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recapMatrixRows.length > 0 ? (
+                      recapMatrixRows.map((row, rowIndex) => (
+                        <tr key={row.id}>
+                          <td>{rowIndex + 1}</td>
+                          <td>{row.playerName || row.player}</td>
+                          <td>{getCategoryLabel(row.category)}</td>
+                          {row.cells.map((cell) => (
+                            <td key={`${row.id}-meeting-${cell.meeting}`}>
+                              <span className={`coachAttendanceStatusBadge ${cell.status ? `is-${cell.status}` : "is-empty"}`}>
+                                {cell.label}
+                              </span>
+                              {cell.time ? <small className="coachMeetingDate">{cell.time.replace(" WIB", "")}</small> : null}
+                            </td>
+                          ))}
+                          <td>{row.hadirCount}</td>
+                          <td>{row.alphaCount}</td>
+                          <td>{row.sakitCount}</td>
+                          <td>{formatMeetingPercent(row.hadirCount)}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={15}>Belum ada data untuk filter yang dipilih.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
         ) : (
           <section className="coachCard coachTableCard coachRecapCard coachSectionSwap">
             <div className="coachTableHead">
-              <h2>Rekap Kehadiran Pemain</h2>
+              <div className="coachAdditionalRecapHead">
+                <div>
+                  <h2>Rekap Latihan Tambahan</h2>
+                  <p>Jadwal di luar Rabu dan Minggu pada filter yang dipilih.</p>
+                </div>
+              </div>
               <div className="coachRecapFilters">
                 <SoftSelect
                   className="coachRecapSelect"
@@ -980,20 +1370,11 @@ export default function KehadiranPelatih(props) {
               </div>
             </div>
             <div className="coachTableWrap">
-              <table className="coachTable">
+              <table className="coachTable coachAttendanceMatrixTable coachAttendanceExtraMatrixTable">
                 <thead>
                   <tr>
+                    <th>No</th>
                     <th>Nama</th>
-                    <th>Jadwal</th>
-                    <th>
-                      <SoftSelect
-                        className="coachCategoryHeaderSoftSelect"
-                        value={selectedRecapInputBy}
-                        onChange={setSelectedRecapInputBy}
-                        options={recapInputByOptions}
-                        displayLabel="Diinput Oleh"
-                      />
-                    </th>
                     <th>
                       <SoftSelect
                         className="coachCategoryHeaderSoftSelect"
@@ -1003,27 +1384,51 @@ export default function KehadiranPelatih(props) {
                         displayLabel="Kategori"
                       />
                     </th>
+                    {extraRecapMeetingSlots.map((slot, index) => (
+                      <th key={`extra-meeting-head-${slot.date}-${slot.scheduleId}-${index}`}>
+                        <span className="coachMeetingHead">
+                          <span>T{index + 1}</span>
+                          <small>{slot.dateLabel || "Tambahan"}</small>
+                          {slot.time ? <small>{slot.time.replace(" WIB", "")}</small> : null}
+                        </span>
+                      </th>
+                    ))}
                     <th>Hadir</th>
+                    <th>Alpha</th>
                     <th>Sakit</th>
-                    <th>Izin</th>
+                    <th>% Hadir</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {visibleRecap.length > 0 ? (
-                    visibleRecap.map((row) => (
-                      <tr key={row.id}>
+                  {extraRecapMeetingSlots.length === 0 ? (
+                    <tr>
+                      <td colSpan={7}>Belum ada jadwal tambahan untuk filter yang dipilih.</td>
+                    </tr>
+                  ) : extraRecapMatrixRows.length > 0 ? (
+                    extraRecapMatrixRows.map((row, rowIndex) => (
+                      <tr key={`extra-${row.id}`}>
+                        <td>{rowIndex + 1}</td>
                         <td>{row.playerName || row.player}</td>
-                        <td>{row.scheduleLabel || "-"}</td>
-                        <td>{row.inputBy || row.coachName || "-"}</td>
                         <td>{getCategoryLabel(row.category)}</td>
-                        <td>{row.hadir}%</td>
-                        <td>{row.sakit}%</td>
-                        <td>{row.izin}%</td>
+                        {row.cells.map((cell) => (
+                          <td key={`extra-${row.id}-meeting-${cell.meeting}`}>
+                            <span className={`coachAttendanceStatusBadge ${cell.status ? `is-${cell.status}` : "is-empty"}`}>
+                              {cell.label}
+                            </span>
+                            {cell.time ? <small className="coachMeetingDate">{cell.time.replace(" WIB", "")}</small> : null}
+                          </td>
+                        ))}
+                        <td>{row.hadirCount}</td>
+                        <td>{row.alphaCount}</td>
+                        <td>{row.sakitCount}</td>
+                        <td>{`${Math.round((row.hadirCount / extraRecapMeetingSlots.length) * 100)}%`}</td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7}>Belum ada data untuk filter yang dipilih.</td>
+                      <td colSpan={extraRecapMeetingSlots.length + 7}>
+                        Belum ada data kehadiran untuk jadwal tambahan pada filter ini.
+                      </td>
                     </tr>
                   )}
                 </tbody>

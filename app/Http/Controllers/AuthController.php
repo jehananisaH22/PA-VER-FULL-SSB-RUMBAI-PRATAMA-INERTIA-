@@ -44,6 +44,29 @@ class AuthController extends Controller
             ],
         ]);
 
+        $existingUsers = User::query()
+            ->whereRaw('LOWER(email) = ?', [$validated['email']])
+            ->where('role', 'orang_tua')
+            ->orderByDesc('id')
+            ->get();
+        $existingUser = $existingUsers->first();
+        $existingParent = OrangTua::query()
+            ->whereRaw('LOWER(email) = ?', [$validated['email']])
+            ->orderByRaw('CASE WHEN user_id IS NULL THEN 1 ELSE 0 END')
+            ->orderByDesc('user_id')
+            ->first();
+        if (! $existingUser) {
+            $existingParent ??= OrangTua::query()
+                ->where('no_hp', $validated['no_hp'])
+                ->orderByRaw('CASE WHEN user_id IS NULL THEN 1 ELSE 0 END')
+                ->orderByDesc('user_id')
+                ->first();
+        }
+
+        if ($existingUser || $existingParent) {
+            return $this->resumeExistingParentRegistration($request, $validated, $existingUser, $existingParent, $existingUsers);
+        }
+
         DB::beginTransaction();
 
         try {
@@ -111,7 +134,7 @@ class AuthController extends Controller
         }
     }
 
-    private function resumeExistingParentRegistration(Request $request, array $validated, ?User $existingUser, ?OrangTua $existingParent)
+    private function resumeExistingParentRegistration(Request $request, array $validated, ?User $existingUser, ?OrangTua $existingParent, $existingUsers = null)
     {
         $parentUser = $existingUser;
 
@@ -130,75 +153,112 @@ class AuthController extends Controller
                 : null
         );
 
-        $sameAccount = $parentUser
-            && strtolower((string) $parentUser->email) === strtolower((string) $validated['email'])
-            && (! $parentProfile || (string) $parentProfile->no_hp === (string) $validated['no_hp']);
+        $sameEmailAccount = $parentUser
+            && strtolower((string) $parentUser->email) === strtolower((string) $validated['email']);
+        $samePhoneOnly = ! $sameEmailAccount
+            && $parentProfile
+            && (string) $parentProfile->no_hp === (string) $validated['no_hp'];
 
-        if (! $sameAccount || ! Hash::check($validated['password'], (string) $parentUser->password)) {
+        if (! $sameEmailAccount || $samePhoneOnly) {
             throw ValidationException::withMessages([
-                'email' => 'Email atau no handphone sudah terdaftar. Jika ini akun Anda, gunakan kata kunci yang sama atau login.',
-                'no_hp' => 'No handphone sudah terdaftar.',
+                'email' => 'Email atau no handphone sudah terdaftar, tetapi datanya tidak cocok dengan akun orang tua ini.',
+                'no_hp' => 'No handphone sudah terdaftar pada akun lain.',
             ]);
         }
 
-        if (! $parentUser->email_verified_at) {
+        $parentUsers = collect($existingUsers ?: []);
+        if ($parentUsers->isEmpty()) {
+            $parentUsers = User::query()
+                ->whereRaw('LOWER(email) = ?', [$validated['email']])
+                ->where('role', 'orang_tua')
+                ->orderByDesc('id')
+                ->get();
+        }
+        $passwordAlreadyUsed = $parentUsers->contains(
+            fn ($user) => Hash::check($validated['password'], (string) $user->password)
+        );
+        $hasVerifiedParentUser = $parentUsers->contains(fn ($user) => (bool) $user->email_verified_at);
+
+        if (! $hasVerifiedParentUser) {
             throw ValidationException::withMessages([
                 'email' => 'Email sudah terdaftar tetapi belum diverifikasi. Silakan cek email verifikasi terlebih dahulu.',
             ]);
         }
 
-        if (! $parentProfile) {
+        if ($passwordAlreadyUsed) {
+            throw ValidationException::withMessages([
+                'password' => 'Untuk daftar akun baru dengan email yang sama, kata kunci harus berbeda dari semua akun sebelumnya.',
+            ]);
+        }
+
+        return $this->registerAdditionalParentAccess($request, $validated, $parentProfile);
+    }
+
+    private function registerAdditionalParentAccess(Request $request, array $validated, ?OrangTua $linkedParent)
+    {
+        DB::beginTransaction();
+
+        try {
+            $token = Str::random(64);
+
+            $user = User::create([
+                'name' => $validated['nama'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'role' => 'orang_tua',
+                'verification_token' => $token,
+                'email_verified_at' => null,
+            ]);
+
             $parentProfile = OrangTua::create([
-                'user_id' => $parentUser->id,
+                'user_id' => $user->id,
                 'nama_ortu' => $validated['nama'],
-                'email' => $parentUser->email,
-                'password' => $parentUser->password,
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
                 'no_hp' => $validated['no_hp'],
             ]);
-        } elseif (! $parentProfile->user_id) {
-            $parentProfile->update(['user_id' => $parentUser->id]);
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+
+            Log::error('REGISTER ADDITIONAL PARENT ACCESS FAILED', [
+                'email' => $validated['email'],
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Akses tambahan orang tua gagal dibuat.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
 
-        Auth::login($parentUser);
-        $request->session()->regenerate();
+        $link = url('/verify-email?token=' . $token . '&email=' . urlencode($user->email));
+        Mail::to($user->email)->send(new VerifyEmailMail($user->name, $link));
+
+        $request->session()->forget([
+            'id_siswa',
+            'show_child_picker_after_login',
+        ]);
         $request->session()->put('registration.account', [
-            'name' => $parentProfile->nama_ortu ?: $parentUser->name,
-            'email' => $parentUser->email,
+            'userId' => $user->id,
+            'name' => $parentProfile->nama_ortu ?: $user->name,
+            'email' => $user->email,
             'phone' => $parentProfile->no_hp,
+            'verificationLink' => $link,
         ]);
 
-        $hasChild = Siswa::query()
-            ->where(function ($query) use ($parentUser, $parentProfile) {
-                $query->where('user_id', $parentUser->id);
-
-                if ($parentProfile?->id_ortu) {
-                    $query->orWhere('id_ortu', $parentProfile->id_ortu);
-                }
-            })
-            ->exists();
-
-        if ($hasChild) {
-            $request->session()->forget('id_siswa');
-            $request->session()->put('show_child_picker_after_login', true);
-            $nextUrl = '/orang-tua/dashboard';
-        } else {
-            $request->session()->forget([
-                'id_siswa',
-                'show_child_picker_after_login',
-            ]);
-            $nextUrl = '/register/form';
-        }
-
         if ($request->header('X-Inertia') || ! $request->expectsJson()) {
-            return redirect($nextUrl);
+            return redirect('/register/verify-notice');
         }
 
         return response()->json([
             'status' => true,
-            'message' => $hasChild
-                ? 'Akun sudah terdaftar. Silakan pilih anak.'
-                : 'Akun sudah terdaftar. Silakan lanjutkan pendaftaran siswa.',
-            'next_url' => $nextUrl,
+            'message' => 'Akun baru dibuat untuk email yang sama. Silakan verifikasi email terlebih dahulu.',
+            'next_url' => '/register/verify-notice',
         ]);
     }
 
@@ -494,13 +554,23 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required',
             'role' => 'required|in:orang_tua,admin,pelatih',
+            'switch_child_id' => 'nullable|integer|exists:siswa,id_siswa',
         ]);
 
         $matchingUsers = User::whereRaw('LOWER(email) = ?', [$request->email])
             ->where('role', $request->role)
             ->orderByDesc('id')
             ->get();
-        $user = $matchingUsers->first(fn ($candidate) => Hash::check($request->password, $candidate->password));
+        $switchChildId = $request->role === 'orang_tua' && $request->filled('switch_child_id')
+            ? (int) $request->switch_child_id
+            : null;
+        $user = $matchingUsers->first(function ($candidate) use ($request, $switchChildId) {
+            if (! Hash::check($request->password, $candidate->password)) {
+                return false;
+            }
+
+            return ! $switchChildId || $this->parentUserOwnsStudent($candidate, $switchChildId);
+        });
 
         if (! $user) {
             return $this->loginFailed($request, 'Email atau kata kunci salah.', 401);
@@ -550,6 +620,19 @@ class AuthController extends Controller
                     'registration.account',
                 ]);
 
+                if ($switchChildId) {
+                    $targetChild = $anak->firstWhere('id_siswa', $switchChildId);
+
+                    if (! $targetChild) {
+                        return $this->loginFailed($request, 'Anak tidak ditemukan untuk akun ini.', 404);
+                    }
+
+                    $request->session()->put('id_siswa', $switchChildId);
+                    $request->session()->forget('show_child_picker_after_login');
+
+                    return redirect('/orang-tua/dashboard');
+                }
+
                 if ($anak->count() > 0) {
                     $request->session()->put('show_child_picker_after_login', true);
                     return redirect('/orang-tua/dashboard');
@@ -569,6 +652,7 @@ class AuthController extends Controller
                 'status' => true,
                 'role' => 'orang_tua',
                 'action' => $anak->count() > 0 ? 'pilih_anak' : 'belum_ada_anak',
+                'selected_child_id' => $switchChildId,
                 'message' => $anak->count() === 0 ? 'Belum memiliki data siswa' : null,
                 'data' => $anak->values(),
                 'token' => $token,
@@ -818,6 +902,18 @@ class AuthController extends Controller
             })
             ->orderBy('nama_siswa')
             ->get();
+    }
+
+    private function parentUserOwnsStudent(User $user, int $studentId): bool
+    {
+        return DB::table('siswa')
+            ->leftJoin('orang_tua', 'siswa.id_ortu', '=', 'orang_tua.id_ortu')
+            ->where('siswa.id_siswa', $studentId)
+            ->where(function ($query) use ($user) {
+                $query->where('siswa.user_id', $user->id)
+                    ->orWhere('orang_tua.user_id', $user->id);
+            })
+            ->exists();
     }
 
     private function validResetToken(string $requestToken, string $storedToken): bool

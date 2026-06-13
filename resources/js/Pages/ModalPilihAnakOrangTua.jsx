@@ -13,7 +13,7 @@ export default function ModalPilihAnakOrangTua({
     <div className="childPickerOverlay" role="dialog" aria-modal="true" aria-label="Pilih anak">
       <div className="childPickerCard">
         <h2>Pilih Anak</h2>
-        <p>Pilih nama anak untuk membuka data yang sesuai.</p>
+        <p>Pilih nama anak, lalu masukkan kata kunci akun anak tersebut.</p>
         <div className="childPickerList">
           {isLoading && childrenOptions.length === 0 && <div className="childPickerState">Memuat data anak...</div>}
           {!isLoading && error && <div className="childPickerState is-error">{error}</div>}

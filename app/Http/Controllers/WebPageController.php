@@ -44,6 +44,7 @@ class WebPageController extends Controller
     public function registrationForm(Request $request)
     {
         $user = Auth::user();
+        $isAddingChildFromRegistration = $request->session()->has('registration.account');
 
         if ($user && $user->role === 'orang_tua') {
             $parentIds = DB::table('orang_tua')
@@ -66,7 +67,7 @@ class WebPageController extends Controller
                 })
                 ->exists();
 
-            if ($hasChild) {
+            if ($hasChild && ! $isAddingChildFromRegistration) {
                 $request->session()->forget([
                     'registration.form',
                     'registration.account',
@@ -86,11 +87,12 @@ class WebPageController extends Controller
 
     public function paymentProof(Request $request)
     {
+        $paymentWasSubmitted = (bool) $request->session()->get('registrationPaymentSuccess', false);
         $account = $request->session()->get('registration.account');
         $form = $request->session()->get('registration.form');
         $studentId = $form['studentId'] ?? null;
 
-        if (Auth::check() && Auth::user()->role === 'orang_tua') {
+        if (! $paymentWasSubmitted && Auth::check() && Auth::user()->role === 'orang_tua') {
             if (! $studentId) {
                 return redirect('/orang-tua/dashboard');
             }
@@ -163,6 +165,8 @@ class WebPageController extends Controller
 
         return Inertia::render('Auth/RoleLogin', [
             'role' => $role,
+            'initialEmail' => request()->query('email', ''),
+            'switchChildId' => request()->query('switch_child_id'),
         ]);
     }
 
