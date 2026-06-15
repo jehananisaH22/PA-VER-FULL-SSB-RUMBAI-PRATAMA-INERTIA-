@@ -285,7 +285,7 @@ export default function BagianJadwalLatihanAdmin({
 
   useEffect(() => {
     if (!toast) return undefined;
-    const timerId = window.setTimeout(() => setToast(null), 2800);
+    const timerId = window.setTimeout(() => setToast(null), 5000);
     return () => window.clearTimeout(timerId);
   }, [toast]);
 
@@ -802,4 +802,3 @@ export default function BagianJadwalLatihanAdmin({
     </section>
   );
 }
-

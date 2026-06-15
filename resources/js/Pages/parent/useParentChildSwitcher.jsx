@@ -54,8 +54,10 @@ export default function useParentChildSwitcher(
     if (!selectedChildId) return "";
     if (typeof window === "undefined") return defaultChildName || "";
 
-    const storedChildName = window.localStorage.getItem(selectedChildStorageKey);
-    return storedChildName || defaultChildName || "";
+    const selectedChild = initialChildOptions.find(
+      (child) => Number(child.id_siswa) === Number(selectedChildId)
+    );
+    return selectedChild?.name || defaultChildName || "";
   });
   const [childOptions, setChildOptions] = useState(initialChildOptions);
   const [isChildPickerOpen, setIsChildPickerOpen] = useState(false);
@@ -123,8 +125,19 @@ export default function useParentChildSwitcher(
 
     if (childOptions.length === 0) return;
 
+    const selectedChild = childOptions.find(
+      (child) => Number(child.id_siswa) === Number(selectedChildId)
+    );
+
+    if (selectedChild && selectedChild.name !== activeChildName) {
+      setActiveChildName(selectedChild.name);
+      window.localStorage.setItem(selectedChildStorageKey, selectedChild.name);
+      window.localStorage.setItem(selectedChildIdStorageKey, String(selectedChild.id_siswa));
+      return;
+    }
+
     if (!childOptions.some((child) => child.name === activeChildName)) {
-      const nextChild = childOptions[0];
+      const nextChild = selectedChild || childOptions[0];
       setActiveChildName(nextChild.name);
       window.localStorage.setItem(selectedChildStorageKey, nextChild.name);
       if (nextChild.id_siswa) {

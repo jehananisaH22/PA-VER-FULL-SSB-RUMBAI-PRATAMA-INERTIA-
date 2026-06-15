@@ -36,9 +36,18 @@ export default function VerifikasiEmail({ email = "", verificationLink = "" }) {
   }, [email]);
 
   const openEmailInbox = () => {
-    const domain = email.split("@")[1]?.toLowerCase() || "";
+    const normalizedEmail = email.trim().toLowerCase();
+    const domain = normalizedEmail.split("@")[1] || "";
     const goToInbox = (url) => {
-      window.open(url, "_blank", "noopener,noreferrer");
+      const inboxWindow = window.open(url, "ssb_verification_inbox");
+
+      if (inboxWindow) {
+        inboxWindow.opener = null;
+        inboxWindow.focus();
+        return;
+      }
+
+      window.alert("Browser memblokir tab email. Izinkan pop-up untuk membuka inbox email.");
     };
 
     if (domain === "gmail.com" || domain === "googlemail.com") {
@@ -56,7 +65,22 @@ export default function VerifikasiEmail({ email = "", verificationLink = "" }) {
       return;
     }
 
-    goToInbox(`mailto:${email}`);
+    if (["icloud.com", "me.com", "mac.com"].includes(domain)) {
+      goToInbox("https://www.icloud.com/mail/");
+      return;
+    }
+
+    if (["proton.me", "protonmail.com"].includes(domain)) {
+      goToInbox("https://mail.proton.me/");
+      return;
+    }
+
+    if (domain) {
+      goToInbox(`https://mail.${domain}`);
+      return;
+    }
+
+    goToInbox("https://mail.google.com/");
   };
 
   return (

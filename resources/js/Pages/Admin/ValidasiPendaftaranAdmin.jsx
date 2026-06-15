@@ -270,7 +270,7 @@ export default function ValidasiPendaftaranAdmin({
 
   React.useEffect(() => {
     if (!actionToast) return undefined;
-    const timer = setTimeout(() => setActionToast(null), 2200);
+    const timer = setTimeout(() => setActionToast(null), 5000);
     return () => clearTimeout(timer);
   }, [actionToast]);
 

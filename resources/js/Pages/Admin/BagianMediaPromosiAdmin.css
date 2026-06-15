@@ -176,7 +176,7 @@
 }
 
 .adminMediaPlayerFilter::after {
-  content: "";
+  content: none;
   position: absolute;
   right: 15px;
   top: 50%;
@@ -200,6 +200,29 @@
   cursor: pointer;
   appearance: none;
   padding: 0 36px 0 16px;
+}
+
+.adminMediaPlayerFilter .greenSelect {
+  width: 100%;
+  min-width: 178px;
+}
+
+.adminMediaPlayerFilter .greenSelectTrigger {
+  min-height: 34px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  color: #24452b;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0 14px 0 16px;
+}
+
+.adminMediaPlayerFilter .greenSelectTrigger:hover,
+.adminMediaPlayerFilter .greenSelect.is-open .greenSelectTrigger {
+  border: 0;
+  box-shadow: none;
 }
 
 .adminMediaPlayerFieldHead button:disabled {

@@ -1437,3 +1437,40 @@
     overflow-x: auto;
   }
 }
+
+/* Keep payment status controls compact inside table rows. */
+.adminPaymentTableWrap .adminPaymentStatusDropdown {
+  width: 148px;
+  min-width: 148px;
+  max-width: 148px;
+}
+
+.adminPaymentTableWrap .adminPaymentStatusTrigger {
+  min-height: 28px;
+  height: 28px;
+  padding: 0 9px 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.adminPaymentTableWrap .adminPaymentStatusTrigger > span:first-child {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adminPaymentTableWrap .adminPaymentStatusTriggerIcon {
+  width: 12px;
+  height: 12px;
+}
+
+.adminPaymentStatusMenuPortal .adminPaymentStatusOption {
+  min-height: 30px;
+  font-size: 12px;
+  line-height: 1;
+}

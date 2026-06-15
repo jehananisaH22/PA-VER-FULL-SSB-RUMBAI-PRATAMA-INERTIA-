@@ -109,12 +109,12 @@ export default function KehadiranOrangTua({
       return item.year === yearText && normalizedMonth === monthText;
     });
     const hadir = matchedRecap?.hadir ?? 0;
+    const alpha = matchedRecap?.alpha ?? 0;
     const sakit = matchedRecap?.sakit ?? 0;
-    const izin = matchedRecap?.izin ?? 0;
     return [
       { label: "Hadir", value: hadir, color: "#5daf2f" },
+      { label: "Alpha", value: alpha, color: "#2f5b23" },
       { label: "Sakit", value: sakit, color: "#468f28" },
-      { label: "Izin", value: izin, color: "#2f5b23" },
     ];
   }, [attendanceRecaps, effectiveSelectedMonth]);
   const circumference = 2 * Math.PI * 42;
@@ -268,15 +268,15 @@ export default function KehadiranOrangTua({
                   onMouseEnter={() => setActiveDonutItem(donutData[1])}
                   onMouseLeave={() => setActiveDonutItem(null)}
                 >
-                  <span className="dot sakit" />
-                  Sakit <b>{donutData[1].value}%</b>
+                  <span className="dot alpha" />
+                  Alpha <b>{donutData[1].value}%</b>
                 </li>
                 <li
                   onMouseEnter={() => setActiveDonutItem(donutData[2])}
                   onMouseLeave={() => setActiveDonutItem(null)}
                 >
-                  <span className="dot izin" />
-                  Izin <b>{donutData[2].value}%</b>
+                  <span className="dot sakit" />
+                  Sakit <b>{donutData[2].value}%</b>
                 </li>
               </ul>
             ) : (
@@ -319,6 +319,5 @@ export default function KehadiranOrangTua({
     </div>
   );
 }
-
 
 

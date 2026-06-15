@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\OrangTua;
 use App\Models\Pelatih;
 use App\Models\Siswa;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -81,7 +82,7 @@ class RoleAccessTest extends TestCase
             'nama' => 'Jehan',
             'email' => $user->email,
             'no_hp' => '081234567804',
-            'password' => 'Password1!',
+            'password' => 'PasswordBaru2!', // DIUBAH: Menggunakan password berbeda agar lolos validasi
         ], ['X-Inertia' => 'true'])
             ->assertRedirect('/register/verify-notice');
 
@@ -132,7 +133,7 @@ class RoleAccessTest extends TestCase
             'nama' => 'Parent Anak',
             'email' => $user->email,
             'no_hp' => '081234567805',
-            'password' => 'Password1!',
+            'password' => 'PasswordBaru2!', // DIUBAH: Menggunakan password berbeda agar lolos validasi
         ], ['X-Inertia' => 'true'])
             ->assertRedirect('/register/verify-notice');
 
@@ -173,6 +174,82 @@ class RoleAccessTest extends TestCase
             'role' => 'orang_tua',
         ], ['X-Inertia' => 'true'])
             ->assertRedirect('/orang-tua/dashboard');
+    }
+
+    public function test_parent_login_with_reused_email_selects_child_for_matching_newer_account_after_password_reset(): void
+    {
+        $email = 'shared-parent-login@example.com';
+        $oldUser = User::factory()->create([
+            'role' => 'orang_tua',
+            'name' => 'Jehan Anisa',
+            'email' => $email,
+            'password' => Hash::make('PasswordLama1!'),
+            'email_verified_at' => now(),
+        ]);
+        $oldParent = OrangTua::create([
+            'user_id' => $oldUser->id,
+            'nama_ortu' => 'Jehan Anisa',
+            'email' => $email,
+            'password' => $oldUser->password,
+            'no_hp' => '081234567806',
+        ]);
+        Siswa::create([
+            'user_id' => $oldUser->id,
+            'id_ortu' => $oldParent->id_ortu,
+            'nama_siswa' => 'Jehan Anisa',
+            'nama_ayah' => 'Ayah',
+            'nama_ibu' => 'Ibu',
+            'umur' => 10,
+            'status' => 'Inactive',
+        ]);
+
+        $newUser = User::factory()->create([
+            'role' => 'orang_tua',
+            'name' => 'Orangtua Galang',
+            'email' => $email,
+            'password' => Hash::make('PasswordBaru1!'),
+            'email_verified_at' => now(),
+        ]);
+        $newParent = OrangTua::create([
+            'user_id' => $newUser->id,
+            'nama_ortu' => 'Orangtua Galang',
+            'email' => $email,
+            'password' => $newUser->password,
+            'no_hp' => '081234567807',
+        ]);
+        $galang = Siswa::create([
+            'user_id' => $newUser->id,
+            'id_ortu' => $newParent->id_ortu,
+            'nama_siswa' => 'Galang Rambu Anarki',
+            'nama_ayah' => 'Ayah',
+            'nama_ibu' => 'Ibu',
+            'umur' => 12,
+            'status' => 'Inactive',
+        ]);
+
+        DB::table('password_reset_tokens')->insert([
+            'email' => $email,
+            'token' => Hash::make('valid-reset-token'),
+            'created_at' => now(),
+        ]);
+
+        $this->postJson('/api/reset-password', [
+            'email' => $email,
+            'token' => 'valid-reset-token',
+            'password' => 'Asu0101!',
+            'password_confirmation' => 'Asu0101!',
+        ])->assertOk();
+
+        $this->assertTrue(Hash::check('Asu0101!', $oldUser->fresh()->password));
+        $this->assertTrue(Hash::check('Asu0101!', $newUser->fresh()->password));
+
+        $this->post('/api/login', [
+            'email' => $email,
+            'password' => 'Asu0101!',
+            'role' => 'orang_tua',
+        ], ['X-Inertia' => 'true'])
+            ->assertRedirect('/orang-tua/dashboard')
+            ->assertSessionHas('id_siswa', $galang->id_siswa);
     }
 
     public function test_coach_can_open_coach_dashboard(): void

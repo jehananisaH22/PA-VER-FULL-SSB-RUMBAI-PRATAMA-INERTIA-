@@ -519,6 +519,17 @@ class AuthController extends Controller
                 ->first();
         }
 
+        if (
+            $user
+            && $user->role === 'orang_tua'
+            && $user->email_verified_at
+            && ! Auth::check()
+            && (int) $request->session()->get('registration.account.userId') === (int) $user->id
+        ) {
+            Auth::login($user);
+            $request->session()->regenerate();
+        }
+
         return response()->json([
             'status' => true,
             'verified' => (bool) $user?->email_verified_at,
@@ -633,6 +644,15 @@ class AuthController extends Controller
                     return redirect('/orang-tua/dashboard');
                 }
 
+                $directChildren = $this->directStudentsForParentUser($user);
+
+                if ($directChildren->count() === 1) {
+                    $request->session()->put('id_siswa', (int) $directChildren->first()->id_siswa);
+                    $request->session()->forget('show_child_picker_after_login');
+
+                    return redirect('/orang-tua/dashboard');
+                }
+
                 if ($anak->count() > 0) {
                     $request->session()->put('show_child_picker_after_login', true);
                     return redirect('/orang-tua/dashboard');
@@ -698,9 +718,11 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        $user = User::whereRaw('LOWER(email) = ?', [$request->email])
+        $users = User::whereRaw('LOWER(email) = ?', [$request->email])
             ->whereIn('role', ['orang_tua', 'admin', 'pelatih'])
-            ->first();
+            ->orderByDesc('id')
+            ->get();
+        $user = $users->first();
 
         if (! $user) {
             throw ValidationException::withMessages([
@@ -811,18 +833,21 @@ class AuthController extends Controller
 
         $hashedPassword = Hash::make($request->password);
 
-        $user->update([
-            'password' => $hashedPassword,
-        ]);
-
         if ($user->role === 'orang_tua') {
+            User::whereRaw('LOWER(email) = ?', [$request->email])
+                ->where('role', 'orang_tua')
+                ->update(['password' => $hashedPassword]);
+
             DB::table('orang_tua')
-                ->where('user_id', $user->id)
-                ->orWhereRaw('LOWER(email) = ?', [$request->email])
+                ->whereRaw('LOWER(email) = ?', [$request->email])
                 ->update(['password' => $hashedPassword]);
         }
 
         if ($user->role === 'admin') {
+            $user->update([
+                'password' => $hashedPassword,
+            ]);
+
             DB::table('admin')
                 ->where('user_id', $user->id)
                 ->orWhereRaw('LOWER(email) = ?', [$request->email])
@@ -830,6 +855,10 @@ class AuthController extends Controller
         }
 
         if ($user->role === 'pelatih') {
+            $user->update([
+                'password' => $hashedPassword,
+            ]);
+
             DB::table('pelatih')
                 ->where('user_id', $user->id)
                 ->orWhereRaw('LOWER(email) = ?', [$request->email])
@@ -901,6 +930,27 @@ class AuthController extends Controller
                 }
             })
             ->orderBy('nama_siswa')
+            ->get();
+    }
+
+    private function directStudentsForParentUser(User $user)
+    {
+        $parentIds = DB::table('orang_tua')
+            ->where('user_id', $user->id)
+            ->pluck('id_ortu')
+            ->filter()
+            ->unique()
+            ->values();
+
+        return DB::table('siswa')
+            ->where(function ($query) use ($user, $parentIds) {
+                $query->where('user_id', $user->id);
+
+                if ($parentIds->isNotEmpty()) {
+                    $query->orWhereIn('id_ortu', $parentIds);
+                }
+            })
+            ->orderByDesc('id_siswa')
             ->get();
     }
 

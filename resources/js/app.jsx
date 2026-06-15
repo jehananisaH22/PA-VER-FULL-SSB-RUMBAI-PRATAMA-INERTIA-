@@ -1225,13 +1225,13 @@ export default function App() {
 
   useEffect(() => {
     if (!logoutSuccess) return undefined;
-    const timeoutId = setTimeout(() => setLogoutSuccess(null), 2200);
+    const timeoutId = setTimeout(() => setLogoutSuccess(null), 5000);
     return () => clearTimeout(timeoutId);
   }, [logoutSuccess]);
 
   useEffect(() => {
     if (!adminScheduleUpdateToast) return undefined;
-    const timeoutId = setTimeout(() => setAdminScheduleUpdateToast(null), 2200);
+    const timeoutId = setTimeout(() => setAdminScheduleUpdateToast(null), 5000);
     return () => clearTimeout(timeoutId);
   }, [adminScheduleUpdateToast]);
 

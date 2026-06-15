@@ -24,7 +24,7 @@ const categoryLabel = {
 
 const paymentAmounts = {
   pendaftaran: 280000,
-  harian: 35000,
+  harian: 0,
 };
 
 const backendPaymentType = {
@@ -103,14 +103,38 @@ function notifyCoachPayment(type, message) {
     id: Date.now(),
     type,
     message,
-    autoCloseMs: type === "error" ? 12000 : 8000,
+    autoCloseMs: 5000,
   });
 }
 
 function getTodayDateLong() {
-  const now = new Date();
-  const dd = String(now.getDate()).padStart(2, "0");
-  const yyyy = now.getFullYear();
+  return formatDateLong(new Date());
+}
+
+function getLocalDateInput(date = new Date()) {
+  const parsedDate = date instanceof Date ? date : new Date(date);
+  const dd = String(parsedDate.getDate()).padStart(2, "0");
+  const mm = String(parsedDate.getMonth() + 1).padStart(2, "0");
+  const yyyy = parsedDate.getFullYear();
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function parseCurrencyInput(value) {
+  const normalized = String(value || "").replace(/[^\d]/g, "");
+  return normalized ? Number(normalized) : 0;
+}
+
+function formatCurrencyInput(value) {
+  const amount = parseCurrencyInput(value);
+  return amount ? amount.toLocaleString("id-ID") : "";
+}
+
+function formatDateLong(value) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return getTodayDateLong();
+
+  const dd = String(date.getDate()).padStart(2, "0");
+  const yyyy = date.getFullYear();
   const monthNames = [
     "Januari",
     "Februari",
@@ -125,7 +149,7 @@ function getTodayDateLong() {
     "November",
     "Desember",
   ];
-  return `${dd} ${monthNames[now.getMonth()]} ${yyyy}`;
+  return `${dd} ${monthNames[date.getMonth()]} ${yyyy}`;
 }
 
 function SearchIcon() {
@@ -229,6 +253,7 @@ export default function PembayaranPelatih({
   const [searchText, setSearchText] = useState("");
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [selectedPaymentType, setSelectedPaymentType] = useState("");
+  const [paymentAmount, setPaymentAmount] = useState("");
   const [isStudentMenuOpen, setIsStudentMenuOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [showConfirmSave, setShowConfirmSave] = useState(false);
@@ -313,7 +338,15 @@ export default function PembayaranPelatih({
       .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
   }, [localPaymentSubmissions, selectedCategory, normalizedSearch]);
 
-  const canSaveUpload = Boolean(selectedFile && selectedStudent && selectedPaymentType);
+  const selectedPaymentAmount = selectedPaymentType === "pendaftaran"
+    ? paymentAmounts.pendaftaran
+    : parseCurrencyInput(paymentAmount);
+  const canSaveUpload = Boolean(
+    selectedFile &&
+    selectedStudent &&
+    selectedPaymentType &&
+    selectedPaymentAmount > 0
+  );
 
   const handleFileChange = (file) => {
     if (!file) {
@@ -345,7 +378,8 @@ export default function PembayaranPelatih({
     const formData = new FormData();
     formData.append("id_siswa", submission.studentId);
     formData.append("jenis", backendPaymentType[submission.paymentType] || submission.paymentTypeLabel);
-    formData.append("tanggal_bukti_bayar", new Date(submission.paidDate).toISOString().slice(0, 10));
+    formData.append("tanggal_bukti_bayar", getLocalDateInput(submission.paidDate));
+    formData.append("jumlah", submission.amount);
     formData.append("bukti_bayar", submission.proofFile);
 
     const response = await window.axios.post("/api/pelatih/bukti-pembayaran/tambah", formData, {
@@ -370,9 +404,9 @@ export default function PembayaranPelatih({
       paymentType: selectedPaymentType,
       paymentTypeLabel:
         paymentTypeOptions.find((item) => item.value === selectedPaymentType)?.label || "",
-      paidDate: new Date().toISOString(),
+      paidDate: getLocalDateInput(),
       paidDateLabel: getTodayDateLong(),
-      amount: paymentAmounts[selectedPaymentType] || 0,
+      amount: selectedPaymentAmount,
       proofFile: selectedFile,
       proofFileName: selectedFile.name,
       proofFileType: selectedFile.type,
@@ -402,6 +436,11 @@ export default function PembayaranPelatih({
                   ? `/storage/${uploadResult.bukti_bayar.replace(/^\/+/, "")}`
                   : nextSubmission.proofFile,
               proofFileName: uploadResult.bukti_bayar || nextSubmission.proofFileName,
+              paidDate: uploadResult.tanggal_bukti_bayar || nextSubmission.paidDate,
+              paidDateLabel: uploadResult.tanggal_bukti_bayar
+                ? formatDateLong(uploadResult.tanggal_bukti_bayar)
+                : nextSubmission.paidDateLabel,
+              amount: Number(uploadResult.pembayaran?.jumlah ?? uploadResult.jumlah ?? nextSubmission.amount),
             }
           : nextSubmission;
 
@@ -422,6 +461,7 @@ export default function PembayaranPelatih({
 
     setSelectedFile(null);
     setSelectedPaymentType("");
+    setPaymentAmount("");
     if (fileInputRef.current) fileInputRef.current.value = "";
     setActiveSection("history");
     setShowConfirmSave(false);
@@ -582,7 +622,10 @@ export default function PembayaranPelatih({
             <SoftSelect
               className="coachPaymentTypeSelect"
               value={selectedPaymentType}
-              onChange={setSelectedPaymentType}
+              onChange={(value) => {
+                setSelectedPaymentType(value);
+                setPaymentAmount("");
+              }}
               options={paymentTypeOptions}
             />
           )}
@@ -598,6 +641,24 @@ export default function PembayaranPelatih({
               className="coachPaymentFileInput"
               onChange={(event) => handleFileChange(event.target.files?.[0] || null)}
             />
+            <label className="coachPaymentAmountField">
+              <span>Nominal Pembayaran</span>
+              <div className="coachPaymentAmountInputWrap">
+                <strong>Rp</strong>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={
+                    selectedPaymentType === "pendaftaran"
+                      ? paymentAmounts.pendaftaran.toLocaleString("id-ID")
+                      : paymentAmount
+                  }
+                  onChange={(event) => setPaymentAmount(formatCurrencyInput(event.target.value))}
+                  placeholder="Contoh: 50.000"
+                  disabled={selectedPaymentType === "pendaftaran"}
+                />
+              </div>
+            </label>
             <button
               type="button"
               className="coachPaymentDropZone"
@@ -618,6 +679,11 @@ export default function PembayaranPelatih({
                       paymentTypeOptions.find((item) => item.value === selectedPaymentType)?.label
                     }`
                   : "Pilih jenis pembayaran terlebih dahulu"}
+              </small>
+              <small>
+                {selectedPaymentAmount > 0
+                  ? `Nominal: Rp${selectedPaymentAmount.toLocaleString("id-ID")},00`
+                  : "Isi nominal sesuai bukti pembayaran"}
               </small>
               <small>JPG, PNG, WEBP, atau PDF. Maks {MAX_UPLOAD_SIZE_MB} MB.</small>
             </button>

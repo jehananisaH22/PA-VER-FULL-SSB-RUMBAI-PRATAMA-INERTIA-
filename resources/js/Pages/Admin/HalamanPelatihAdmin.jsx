@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Pagination from "../../components/Pagination";
+import GreenSelect from "../../components/GreenSelect";
 import { router } from "@inertiajs/react";
 import "./HalamanPelatihAdmin.css";
 
@@ -33,7 +34,7 @@ export default function HalamanPelatihAdmin({
 
   useEffect(() => {
     if (!toast) return undefined;
-    const timerId = window.setTimeout(() => setToast(null), 3200);
+    const timerId = window.setTimeout(() => setToast(null), 5000);
     return () => window.clearTimeout(timerId);
   }, [toast]);
 
@@ -280,17 +281,13 @@ export default function HalamanPelatihAdmin({
       <article className="adminCard adminCatatanPelatihCard">
         <div className="adminCatatanPelatihHead">
           <h3>History Catatan Pelatih</h3>
-          <select
+          <GreenSelect
             value={selectedCoachFilter}
-            onChange={(event) => setSelectedCoachFilter(event.target.value)}
-            aria-label="Filter catatan berdasarkan pelatih"
-          >
-            {coachFilterOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedCoachFilter}
+            ariaLabel="Filter catatan berdasarkan pelatih"
+            className="adminCoachNotesGreenSelect"
+            options={coachFilterOptions}
+          />
         </div>
 
         <div className="adminTableWrap adminCatatanPelatihTableWrap">
@@ -325,7 +322,7 @@ export default function HalamanPelatihAdmin({
         </div>
       </article>
 
-      <div className="adminTablePagination">
+      <div className="adminTablePagination adminCatatanPelatihPagination">
         <Pagination
           total={totalNotes}
           page={notesPage}
@@ -479,5 +476,3 @@ export default function HalamanPelatihAdmin({
     </section>
   );
 }
-
-

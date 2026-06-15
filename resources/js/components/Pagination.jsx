@@ -1,4 +1,5 @@
 import React from "react";
+import GreenSelect from "./GreenSelect";
 
 export default function Pagination({
   total = 0,
@@ -72,18 +73,13 @@ export default function Pagination({
       )}
 
       {onPageSizeChange ? (
-        <select
+        <GreenSelect
           value={pageSize}
-          onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          className="paginationSize"
-          aria-label="Pilih jumlah baris per halaman"
-        >
-          {[5, 10, 20, 50].map((s) => (
-            <option key={s} value={s}>
-              {s} / halaman
-            </option>
-          ))}
-        </select>
+          onChange={(nextValue) => onPageSizeChange(Number(nextValue))}
+          className="paginationSizeSelect"
+          ariaLabel="Pilih jumlah baris per halaman"
+          options={[5, 10, 20, 50].map((s) => ({ value: s, label: `${s} / halaman` }))}
+        />
       ) : null}
     </div>
   );

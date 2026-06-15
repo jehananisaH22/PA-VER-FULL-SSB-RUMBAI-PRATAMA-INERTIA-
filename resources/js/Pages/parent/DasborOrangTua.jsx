@@ -107,7 +107,7 @@ export default function DasborOrangTua({
     selectedChildId,
     openChildPickerOnLoad || canSwitchChild || childrenOptions.length > 1
   );
-  const childHasBeenPicked = Boolean(selectedChildId) && hasSelectedChild && !openChildPickerOnLoad;
+  const childHasBeenPicked = Boolean(selectedChildId) && !openChildPickerOnLoad;
   const displayUserName = childHasBeenPicked ? (activeChildName || userName) : "";
   const profilePhoto = studentProfile?.photo || ProfileIcon;
   const showChildPickerAction = canSwitchChild || childrenOptions.length > 1;
@@ -135,8 +135,8 @@ export default function DasborOrangTua({
   const donutData = useMemo(
     () => [
       { label: "Hadir", value: latestAttendance?.hadir ?? 0, color: "#5daf2f" },
-      { label: "Sakit", value: latestAttendance?.sakit ?? 0, color: "#2f5b23" },
-      { label: "Izin", value: latestAttendance?.izin ?? 0, color: "#468f28" },
+      { label: "Alpha", value: latestAttendance?.alpha ?? 0, color: "#2f5b23" },
+      { label: "Sakit", value: latestAttendance?.sakit ?? 0, color: "#468f28" },
     ],
     [latestAttendance]
   );

@@ -86,7 +86,7 @@ function notifyCoachNotes(type, message) {
     id: Date.now(),
     type,
     message,
-    autoCloseMs: type === "error" ? 12000 : 8000,
+    autoCloseMs: 5000,
   });
 }
 

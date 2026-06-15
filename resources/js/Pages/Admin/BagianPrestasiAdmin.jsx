@@ -115,13 +115,13 @@ export default function BagianPrestasiAdmin({
 
   useEffect(() => {
     if (!statusMessage) return undefined;
-    const timeoutId = setTimeout(() => setStatusMessage(""), 2200);
+    const timeoutId = setTimeout(() => setStatusMessage(""), 5000);
     return () => clearTimeout(timeoutId);
   }, [statusMessage]);
 
   useEffect(() => {
     if (!toast) return undefined;
-    const timeoutId = setTimeout(() => setToast(null), 3200);
+    const timeoutId = setTimeout(() => setToast(null), 5000);
     return () => clearTimeout(timeoutId);
   }, [toast]);
 
@@ -465,4 +465,3 @@ export default function BagianPrestasiAdmin({
     </section>
   );
 }
-

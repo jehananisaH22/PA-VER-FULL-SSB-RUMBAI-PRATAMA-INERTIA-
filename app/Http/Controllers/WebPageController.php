@@ -43,6 +43,8 @@ class WebPageController extends Controller
 
     public function registrationForm(Request $request)
     {
+        $this->restoreVerifiedRegistrationUser($request);
+
         $user = Auth::user();
         $isAddingChildFromRegistration = $request->session()->has('registration.account');
 
@@ -87,6 +89,8 @@ class WebPageController extends Controller
 
     public function paymentProof(Request $request)
     {
+        $this->restoreVerifiedRegistrationUser($request);
+
         $paymentWasSubmitted = (bool) $request->session()->get('registrationPaymentSuccess', false);
         $account = $request->session()->get('registration.account');
         $form = $request->session()->get('registration.form');
@@ -170,6 +174,35 @@ class WebPageController extends Controller
         ]);
     }
 
+    private function restoreVerifiedRegistrationUser(Request $request): void
+    {
+        if (Auth::check()) {
+            return;
+        }
+
+        $account = $request->session()->get('registration.account', []);
+        $userId = $account['userId'] ?? null;
+        $email = strtolower(trim((string) ($account['email'] ?? '')));
+
+        if (! $userId || $email === '') {
+            return;
+        }
+
+        $user = User::query()
+            ->where('id', $userId)
+            ->where('role', 'orang_tua')
+            ->whereRaw('LOWER(email) = ?', [$email])
+            ->whereNotNull('email_verified_at')
+            ->first();
+
+        if (! $user) {
+            return;
+        }
+
+        Auth::login($user);
+        $request->session()->regenerate();
+    }
+
     public function profile(?string $role = null)
     {
         $role = $role ?: 'orangtua';
@@ -187,13 +220,27 @@ class WebPageController extends Controller
             $user = User::query()->whereIn('role', $roleAliases[$role])->first();
         }
 
-        $parent = $role === 'orangtua' && $user
-            ? DB::table('orang_tua')->where('user_id', $user->id)->orWhere('email', $user->email)->first()
+        $parentRows = $role === 'orangtua' && $user
+            ? DB::table('orang_tua')
+                ->where(function ($query) use ($user) {
+                    $query->where('user_id', $user->id)
+                        ->orWhereRaw('LOWER(email) = ?', [strtolower($user->email)]);
+                })
+                ->orderByDesc('user_id')
+                ->get()
+            : collect();
+        $parent = $parentRows->first();
+        $parentIds = $parentRows->pluck('id_ortu')->filter()->unique()->values();
+        $selectedStudentId = $role === 'orangtua' && session('id_siswa')
+            ? (int) session('id_siswa')
             : null;
-        $children = $parent
+        $children = $parentIds->isNotEmpty()
             ? DB::table('siswa')
                 ->leftJoin('profil_siswa', 'siswa.id_siswa', '=', 'profil_siswa.id_siswa')
-                ->where('siswa.id_ortu', $parent->id_ortu)
+                ->whereIn('siswa.id_ortu', $parentIds)
+                ->when($selectedStudentId, function ($query) use ($selectedStudentId) {
+                    $query->where('siswa.id_siswa', $selectedStudentId);
+                })
                 ->orderBy('siswa.nama_siswa')
                 ->select(
                     'siswa.nama_siswa',

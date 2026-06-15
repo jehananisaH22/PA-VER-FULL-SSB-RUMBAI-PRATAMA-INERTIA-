@@ -83,10 +83,6 @@ const dayNameToIndex = {
   saturday: 6,
 };
 const routineScheduleWeekdays = new Set([0, 3]);
-const routineScheduleSlots = new Set([
-  "3|16.30-17.30",
-  "0|07.30-09.30",
-]);
 
 const recapCategoryOptions = [
   { value: "all", label: "Kategori" },
@@ -172,7 +168,7 @@ function renderAttendanceToast(nextToast) {
     attendanceToastTimerId = window.setTimeout(() => {
       storeAttendanceToast(null);
       removeAttendanceToastElement();
-    }, Number(nextToast.autoCloseMs || 30000));
+    }, Number(nextToast.autoCloseMs || 5000));
   }
 }
 
@@ -307,11 +303,12 @@ function isRoutineSchedule(schedule) {
   if (schedule?.isRoutine === false) return false;
 
   const weekday = getScheduleWeekday(schedule);
-  const time = String(schedule?.time || "")
-    .replace(/\s*WIB\s*/i, "")
-    .replace(/\s+/g, "");
+  return routineScheduleWeekdays.has(weekday);
+}
 
-  return routineScheduleWeekdays.has(weekday) && routineScheduleSlots.has(`${weekday}|${time}`);
+function isRoutineAttendanceDate(value) {
+  const date = parseIsoDate(value);
+  return date ? routineScheduleWeekdays.has(date.getDay()) : false;
 }
 
 function scheduleMatchesRecapFilter(schedule, category, scheduleId) {
@@ -770,6 +767,11 @@ export default function KehadiranPelatih(props) {
   useEffect(() => {
     if (!selectedSchedule) {
       setAttendanceDate("");
+      return;
+    }
+
+    if (selectedSchedule.date) {
+      setAttendanceDate(selectedSchedule.date);
     }
   }, [selectedSchedule]);
 
@@ -784,14 +786,33 @@ export default function KehadiranPelatih(props) {
       return;
     }
 
-    setStatuses((prev) => {
+    const existingStatuses = {};
+    if (attendanceDate && selectedSchedule?.id) {
+      const visiblePlayerIds = new Set(visiblePlayers.map((player) => String(player.id)));
+
+      localAttendanceRecaps.forEach((recap) => {
+        const playerId = String(recap.studentId || "");
+        if (!visiblePlayerIds.has(playerId) || !Array.isArray(recap.entries)) return;
+
+        const existingEntry = recap.entries.find((entry) => (
+          entry?.date === attendanceDate &&
+          (!entry.scheduleId || entry.scheduleId === selectedSchedule.id)
+        ));
+        const existingStatus = normalizeAttendanceStatus(existingEntry?.status || existingEntry?.statusLabel);
+        if (existingStatus) {
+          existingStatuses[playerId] = existingStatus;
+        }
+      });
+    }
+
+    setStatuses(() => {
       const nextStatuses = {};
       visiblePlayers.forEach((player) => {
-        nextStatuses[player.id] = prev[player.id] || "hadir";
+        nextStatuses[player.id] = existingStatuses[String(player.id)] || "hadir";
       });
       return nextStatuses;
     });
-  }, [visiblePlayers]);
+  }, [attendanceDate, localAttendanceRecaps, selectedSchedule, visiblePlayers]);
 
   const selectedScheduleSummary = useMemo(() => {
     if (!selectedSchedule) return "";
@@ -862,15 +883,23 @@ export default function KehadiranPelatih(props) {
   }, [localAttendanceRecaps]);
 
   const visibleRecap = useMemo(() => {
+    const recapMode = activeSection === "extraRecap" ? "extra" : "routine";
+    const isEntryInMode = (entry) => {
+      const isRoutineEntry = isRoutineAttendanceDate(entry?.date);
+      return recapMode === "extra" ? !isRoutineEntry : isRoutineEntry;
+    };
+
     return localAttendanceRecaps.filter((item) => {
+      const entries = Array.isArray(item.entries) ? item.entries : [];
+      const modeEntries = entries.filter(isEntryInMode);
+      if (modeEntries.length === 0) return false;
+
       const isMonthYearMatch = item.month === selectedMonth && item.year === selectedYear;
       const isCategoryMatch =
         selectedRecapCategory === "all" || item.category === selectedRecapCategory;
       const isScheduleMatch =
         selectedRecapSchedule === "all" ||
-        item.scheduleId === selectedRecapSchedule ||
-        (Array.isArray(item.scheduleIds) && item.scheduleIds.includes(selectedRecapSchedule)) ||
-        (Array.isArray(item.entries) && item.entries.some((entry) => entry.scheduleId === selectedRecapSchedule));
+        modeEntries.some((entry) => entry.scheduleId === selectedRecapSchedule);
       const itemInputBy = String(item.inputBy || item.coachName || "").trim();
       const isInputByMatch =
         selectedRecapInputBy === "all" || itemInputBy === selectedRecapInputBy;
@@ -879,6 +908,7 @@ export default function KehadiranPelatih(props) {
     });
   }, [
     localAttendanceRecaps,
+    activeSection,
     selectedMonth,
     selectedYear,
     selectedRecapCategory,
@@ -1024,7 +1054,7 @@ export default function KehadiranPelatih(props) {
       const message =
         error?.response?.data?.message ||
         "Kehadiran gagal disubmit. Cek jadwal dan status siswa lalu coba lagi.";
-      showToast({ type: "error", message, autoCloseMs: 30000 });
+      showToast({ type: "error", message, autoCloseMs: 5000 });
       isSuccess = false;
     }
 
@@ -1035,38 +1065,88 @@ export default function KehadiranPelatih(props) {
       const nextMonth = monthOptions[monthIndex]?.value || selectedMonth;
       const nextYear = String(startDate.getFullYear() || selectedYear);
 
-      setLocalAttendanceRecaps((prev) => [
-        ...visiblePlayers.map((player, index) => ({
-          id: `${Date.now()}-${index}`,
-          coachName: currentCoachName,
-          inputBy: currentCoachName,
-          playerName: player.name || player,
-          category: selectedCategory,
-          scheduleId: selectedSchedule?.id || "",
-          scheduleIds: selectedSchedule?.id ? [selectedSchedule.id] : [],
-          scheduleLabel: selectedScheduleSummary,
-          month: nextMonth,
-          year: nextYear,
-          meetingsTotal: meetingsPerMonth,
-          entries: [{
+      setLocalAttendanceRecaps((prev) => {
+        const nextRows = [...prev];
+
+        visiblePlayers.forEach((player) => {
+          const playerId = Number(player.id);
+          const rowId = `${playerId}-${nextYear}${String(monthIndex + 1).padStart(2, "0")}`;
+          const status = normalizeAttendanceStatus(statuses[player.id]);
+          const nextEntry = {
             meeting: 1,
             date: attendanceDate,
             dateLabel: formatDateDisplay(attendanceDate).slice(0, 5),
-            status: normalizeAttendanceStatus(statuses[player.id]),
-            statusLabel: statusOptions.find((status) => status.value === statuses[player.id])?.label || "-",
+            status,
+            statusLabel: statusOptions.find((option) => option.value === status)?.label || "-",
             scheduleId: selectedSchedule?.id || "",
             scheduleLabel: selectedScheduleSummary,
-          }],
-          hadirCount: statuses[player.id] === "hadir" ? 1 : 0,
-          sakitCount: statuses[player.id] === "sakit" ? 1 : 0,
-          alphaCount: statuses[player.id] === "alpha" ? 1 : 0,
-          hadir: toPercent(statuses[player.id] === "hadir" ? 1 : 0),
-          sakit: toPercent(statuses[player.id] === "sakit" ? 1 : 0),
-          alpha: toPercent(statuses[player.id] === "alpha" ? 1 : 0),
-          izin: toPercent(statuses[player.id] === "alpha" ? 1 : 0),
-        })),
-        ...prev,
-      ]);
+          };
+          const existingIndex = nextRows.findIndex((row) => (
+            Number(row.studentId) === playerId &&
+            row.month === nextMonth &&
+            String(row.year) === nextYear
+          ));
+
+          if (existingIndex >= 0) {
+            const existingRow = nextRows[existingIndex];
+            const existingEntries = Array.isArray(existingRow.entries) ? existingRow.entries : [];
+            const mergedEntries = [
+              nextEntry,
+              ...existingEntries.filter((entry) => !(
+                entry?.date === nextEntry.date &&
+                (entry?.scheduleId || "") === (nextEntry.scheduleId || "")
+              )),
+            ].sort((leftItem, rightItem) => String(leftItem.date).localeCompare(String(rightItem.date)));
+            const countStatus = (value) => mergedEntries.filter(
+              (entry) => normalizeAttendanceStatus(entry?.status || entry?.statusLabel) === value
+            ).length;
+            const totalEntries = Math.max(mergedEntries.length, 1);
+            const percent = (value) => Math.round((countStatus(value) / totalEntries) * 100);
+
+            nextRows[existingIndex] = {
+              ...existingRow,
+              scheduleIds: Array.from(new Set([
+                ...(Array.isArray(existingRow.scheduleIds) ? existingRow.scheduleIds : []),
+                ...(selectedSchedule?.id ? [selectedSchedule.id] : []),
+              ])),
+              entries: mergedEntries,
+              hadirCount: countStatus("hadir"),
+              sakitCount: countStatus("sakit"),
+              alphaCount: countStatus("alpha"),
+              hadir: percent("hadir"),
+              sakit: percent("sakit"),
+              alpha: percent("alpha"),
+              izin: percent("alpha"),
+            };
+            return;
+          }
+
+          nextRows.unshift({
+            id: rowId,
+            studentId: playerId,
+            coachName: currentCoachName,
+            inputBy: currentCoachName,
+            playerName: player.name || player,
+            category: selectedCategory || player.category,
+            scheduleId: selectedSchedule?.id || "",
+            scheduleIds: selectedSchedule?.id ? [selectedSchedule.id] : [],
+            scheduleLabel: selectedScheduleSummary,
+            month: nextMonth,
+            year: nextYear,
+            meetingsTotal: meetingsPerMonth,
+            entries: [nextEntry],
+            hadirCount: status === "hadir" ? 1 : 0,
+            sakitCount: status === "sakit" ? 1 : 0,
+            alphaCount: status === "alpha" ? 1 : 0,
+            hadir: toPercent(status === "hadir" ? 1 : 0),
+            sakit: toPercent(status === "sakit" ? 1 : 0),
+            alpha: toPercent(status === "alpha" ? 1 : 0),
+            izin: toPercent(status === "alpha" ? 1 : 0),
+          });
+        });
+
+        return nextRows;
+      });
     }
 
     if (isSuccess) {
@@ -1084,12 +1164,12 @@ export default function KehadiranPelatih(props) {
       showToast({
         type: "success",
         message: "Data kehadiran berhasil disubmit. Rekap kehadiran sudah diperbarui.",
-        autoCloseMs: null,
+        autoCloseMs: 5000,
       });
 
       await new Promise((resolve) => window.setTimeout(resolve, 900));
 
-      setActiveSection("recap");
+      setActiveSection(isRoutineAttendanceDate(attendanceDate) ? "recap" : "extraRecap");
       setSelectedCategory("");
       setSelectedScheduleId("");
       setAttendanceDate("");

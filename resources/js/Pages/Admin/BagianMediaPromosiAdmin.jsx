@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { router } from "@inertiajs/react";
+import GreenSelect from "../../components/GreenSelect";
 import "./BagianMediaPromosiAdmin.css";
 import BeritaFallback from "../../../assets/Berita1.png";
 import GaleriFallback from "../../../assets/Galeri1.png";
@@ -132,7 +133,7 @@ export default function BagianMediaPromosiAdmin({
   const showStatus = (message, type = "success") => {
     setStatusType(type);
     setStatusMessage(message);
-    window.setTimeout(() => setStatusMessage(""), 4200);
+    window.setTimeout(() => setStatusMessage(""), 5000);
   };
 
   const apiErrorMessage = (error, fallback) => {
@@ -389,17 +390,12 @@ export default function BagianMediaPromosiAdmin({
                   <span>Pemain di Berita</span>
                   <div className="adminMediaPlayerTools">
                     <label className="adminMediaPlayerFilter">
-                      <select
+                      <GreenSelect
                         value={playerCategoryFilter}
-                        onChange={(event) => setPlayerCategoryFilter(event.target.value)}
-                        aria-label="Filter kategori pemain"
-                      >
-                        {playerCategoryOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={setPlayerCategoryFilter}
+                        ariaLabel="Filter kategori pemain"
+                        options={playerCategoryOptions}
+                      />
                     </label>
                     <button type="button" onClick={selectAllNewsPlayers} disabled={filteredPlayerOptions.length === 0}>
                       Semua
