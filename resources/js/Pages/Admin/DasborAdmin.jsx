@@ -27,6 +27,11 @@ const ageCategoryStats = [
   { label: "U-11", value: 14 },
 ];
 
+function isActiveStudentStatus(status) {
+  const normalized = String(status || "").trim().toLowerCase();
+  return normalized === "" || normalized === "active" || normalized === "aktif";
+}
+
 const monthNames = [
   "Januari",
   "Februari",
@@ -1262,7 +1267,9 @@ export default function DasborAdmin({
   const currentActiveMenu = activeMenu || inertiaProps.activeMenu || "Home";
   const initialAdminActivityHistory =
     adminActivityHistory.length > 0 ? adminActivityHistory : inertiaProps.adminActivityHistory || [];
-  const resolvedAdminStudents = adminStudents;
+  const resolvedAdminStudents = adminStudents.filter((student) =>
+    isActiveStudentStatus(student?.status)
+  );
   const resolvedAdminCoaches = adminCoaches;
   const resolvedCoachNotes = adminCatatanPelatih;
   const resolvedMediaArticles = mediaArticles;
@@ -1298,6 +1305,7 @@ export default function DasborAdmin({
     normalizeAdminActivityRows(initialAdminActivityHistory)
   );
   const [paymentActiveTab, setPaymentActiveTab] = useState("validation");
+  const [studentNotificationTargetName, setStudentNotificationTargetName] = useState(null);
   const [localNotifications, setLocalNotifications] = useState(notifications);
   const ageMenuRef = useRef(null);
   const yearMenuRef = useRef(null);
@@ -1867,15 +1875,11 @@ export default function DasborAdmin({
   };
 
   const markAdminNotificationsRead = async () => {
-    if (onClearNotifications) {
-      onClearNotifications();
-      setLocalNotifications((prev) => prev.map((item) => ({ ...item, read: true })));
-      return;
-    }
-
     const unreadIds = localNotifications
       .filter((item) => !item?.read && item?.id)
       .map((item) => item.id);
+
+    if (unreadIds.length === 0) return;
 
     setLocalNotifications((prev) => prev.map((item) => ({ ...item, read: true })));
 
@@ -1883,6 +1887,10 @@ export default function DasborAdmin({
       await Promise.allSettled(
         unreadIds.map((id) => window.axios.post(`/api/notifikasi/baca/${id}`))
       );
+    }
+
+    if (onClearNotifications) {
+      onClearNotifications();
     }
 
     router.reload({ only: ["notifications"], preserveScroll: true, preserveState: true });
@@ -1903,7 +1911,16 @@ export default function DasborAdmin({
   const handleAdminNotificationClick = async (notification) => {
     await markSingleAdminNotificationRead(notification);
     setShowNotificationMenu(false);
-    navigateAdminMenu(notification?.actionMenu || "Home");
+    const notificationText = String(notification?.text || "");
+    const isStudentProfileNotification = /profil siswa/i.test(notificationText);
+    const targetMenu = isStudentProfileNotification ? "Siswa" : notification?.actionMenu || "Home";
+
+    if (targetMenu === "Siswa") {
+      const matchedName = notificationText.match(/untuk siswa\s+(.+?)(?:\.|$)/i)?.[1]?.trim();
+      setStudentNotificationTargetName(matchedName || null);
+    }
+
+    navigateAdminMenu(targetMenu);
   };
 
   const openValidationDetail = (docNo) => {
@@ -2373,6 +2390,8 @@ export default function DasborAdmin({
             performanceHistory={adminPerformanceHistory}
             onDeleteStudent={onDeleteStudent}
             onRecordAdminActivity={recordAdminActivity}
+            requestedStudentName={currentActiveMenu === "Siswa" ? studentNotificationTargetName : null}
+            onHandledRequestedStudentName={() => setStudentNotificationTargetName(null)}
           />
         ) : isCoachesPage ? (
           <HalamanPelatihAdminPage

@@ -118,6 +118,7 @@ class CoachToParentFlowTest extends TestCase
             ->post('/api/pelatih/bukti-pembayaran/tambah', [
                 'id_siswa' => $siswa->id_siswa,
                 'jenis' => 'Harian',
+                'jumlah' => 42000,
                 'tanggal_bukti_bayar' => '2026-06-01',
                 'bukti_bayar' => UploadedFile::fake()->create('bukti.pdf', 20, 'application/pdf'),
             ])
@@ -153,6 +154,9 @@ class CoachToParentFlowTest extends TestCase
         $this->assertSame(88, $payload['performanceHistory'][0]['dribbling']);
         $this->assertSame('Perlu latihan finishing.', $payload['coachNotes'][0]['note']);
         $this->assertSame('Menunggu Validasi', $payload['paymentHistory'][0]['status']);
+        $this->assertSame(100000.0, $payload['monthlyPaymentSummary']['targetAmount']);
+        $this->assertSame(42000.0, $payload['monthlyPaymentSummary']['paidAmount']);
+        $this->assertSame(58000.0, $payload['monthlyPaymentSummary']['remainingAmount']);
         $this->assertCount(4, $payload['notifications']);
     }
 
@@ -321,7 +325,8 @@ class CoachToParentFlowTest extends TestCase
         $this->actingAs($coachUser)
             ->post('/api/pelatih/bukti-pembayaran/tambah', [
                 'id_siswa' => $siswa->id_siswa,
-                'jenis' => 'Bulanan',
+                'jenis' => 'Harian',
+                'jumlah' => 100000,
                 'tanggal_bukti_bayar' => '2026-06-01',
                 'bukti_bayar' => UploadedFile::fake()->create('bukti-admin.pdf', 20, 'application/pdf'),
             ])
@@ -334,7 +339,11 @@ class CoachToParentFlowTest extends TestCase
             ->values();
 
         $this->assertCount(1, $coachPaymentRows);
-        $this->assertSame('bulanan', $coachPaymentRows->first()['paymentType']);
+        $this->assertSame('harian', $coachPaymentRows->first()['paymentType']);
+        $this->assertSame(100000.0, $coachPaymentRows->first()['amount']);
+        $this->assertSame(100000.0, $coachPaymentRows->first()['monthlyTarget']);
+        $this->assertSame(100000.0, $coachPaymentRows->first()['monthlyPaidAmount']);
+        $this->assertEquals(0, $coachPaymentRows->first()['monthlyRemainingAmount']);
         $this->assertSame('Menunggu Verifikasi', $coachPaymentRows->first()['status']);
         $this->assertTrue(collect(SsbInertiaData::adminNotifications($admin->id))->contains(
             fn ($notification) => str_contains($notification['text'], 'Bukti Pembayaran Pelatih')
@@ -346,7 +355,9 @@ class CoachToParentFlowTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonFragment([
                 'id_siswa' => $siswa->id_siswa,
-                'jenis' => 'Bulanan',
+                'jenis' => 'Harian',
+                'jumlah' => 100000,
+                'monthly_remaining_amount' => 0,
                 'status' => 'Belum',
             ]);
     }
@@ -410,7 +421,8 @@ class CoachToParentFlowTest extends TestCase
         $this->actingAs($coachUser)
             ->post('/api/pelatih/bukti-pembayaran/tambah', [
                 'id_siswa' => $otherStudent->id_siswa,
-                'jenis' => 'Bulanan',
+                'jenis' => 'Harian',
+                'jumlah' => 125000,
                 'tanggal_bukti_bayar' => '2026-06-02',
                 'bukti_bayar' => UploadedFile::fake()->create('bukti-lain.pdf', 20, 'application/pdf'),
             ])

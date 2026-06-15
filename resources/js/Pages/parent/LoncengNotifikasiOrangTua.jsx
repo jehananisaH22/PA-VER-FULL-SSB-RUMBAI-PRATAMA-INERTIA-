@@ -4,9 +4,15 @@ import "./LoncengNotifikasiOrangTua.css";
 
 export default function LoncengNotifikasiOrangTua({ notifications = [], onClearNotifications }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [localNotifications, setLocalNotifications] = useState(notifications);
+  const [isMarkingRead, setIsMarkingRead] = useState(false);
   const notifRef = useRef(null);
-  const notifCount = notifications.filter((item) => !item.read).length;
-  const hasNotifications = notifications.length > 0;
+  const notifCount = localNotifications.filter((item) => !item.read).length;
+  const hasNotifications = localNotifications.length > 0;
+
+  useEffect(() => {
+    setLocalNotifications(notifications);
+  }, [notifications]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -17,6 +23,31 @@ export default function LoncengNotifikasiOrangTua({ notifications = [], onClearN
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const markAllAsRead = async () => {
+    if (isMarkingRead || notifCount === 0) return;
+
+    const unreadIds = localNotifications
+      .filter((item) => !item.read && item.id)
+      .map((item) => item.id);
+
+    setIsMarkingRead(true);
+    setLocalNotifications((prev) => prev.map((item) => ({ ...item, read: true })));
+
+    try {
+      if (window.axios && unreadIds.length > 0) {
+        await Promise.allSettled(
+          unreadIds.map((id) => window.axios.post(`/api/notifikasi/baca/${id}`))
+        );
+      }
+
+      if (onClearNotifications) {
+        onClearNotifications();
+      }
+    } finally {
+      setIsMarkingRead(false);
+    }
+  };
 
   return (
     <div className="parentNotifWrap" ref={notifRef}>
@@ -36,7 +67,7 @@ export default function LoncengNotifikasiOrangTua({ notifications = [], onClearN
           {hasNotifications ? (
             <>
               <ul className="parentNotifList">
-                {notifications.map((item) => (
+                {localNotifications.map((item) => (
                   <li
                     key={item.id}
                     className={`parentNotifItem ${!item.read ? "isUnread" : "isRead"}`}
@@ -49,13 +80,10 @@ export default function LoncengNotifikasiOrangTua({ notifications = [], onClearN
               <button
                 type="button"
                 className="parentNotifClearBtn"
-                disabled={notifCount === 0}
-                onClick={() => {
-                  if (onClearNotifications) onClearNotifications();
-                  setIsOpen(false);
-                }}
+                disabled={notifCount === 0 || isMarkingRead}
+                onClick={markAllAsRead}
               >
-                Tandai sudah dibaca
+                {isMarkingRead ? "Menandai..." : "Tandai sudah dibaca"}
               </button>
             </>
           ) : (

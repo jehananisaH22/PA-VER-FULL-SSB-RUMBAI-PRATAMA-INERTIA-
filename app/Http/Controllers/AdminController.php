@@ -513,6 +513,31 @@ public function pembayaran_admin(Request $request)
         ->paginate(10)
         ->withQueryString();
 
+    $pembayaran->getCollection()->transform(function ($item) {
+        if (strtolower((string) $item->jenis) !== 'harian') {
+            return $item;
+        }
+
+        $month = substr((string) ($item->periode ?: $item->tanggal_bayar), 0, 7);
+        $monthlyTarget = 100000.0;
+        $monthlyPaid = DB::table('pembayaran')
+            ->leftJoin('bukti_pembayaran', 'pembayaran.id_pembayaran', '=', 'bukti_pembayaran.id_pembayaran')
+            ->where('pembayaran.id_siswa', $item->id_siswa)
+            ->where('pembayaran.jenis', 'Harian')
+            ->where('pembayaran.periode', 'like', $month . '%')
+            ->where(function ($query) {
+                $query->whereNull('bukti_pembayaran.status')
+                    ->orWhereRaw('LOWER(bukti_pembayaran.status) <> ?', ['ditolak']);
+            })
+            ->sum('pembayaran.jumlah');
+
+        $item->monthly_target = $monthlyTarget;
+        $item->monthly_paid_amount = (float) $monthlyPaid;
+        $item->monthly_remaining_amount = max(0, $monthlyTarget - (float) $monthlyPaid);
+
+        return $item;
+    });
+
     return response()->json([
         'success' => true,
         'message' => 'Data pembayaran berhasil diambil',

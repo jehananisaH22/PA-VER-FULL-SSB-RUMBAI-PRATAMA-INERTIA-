@@ -52,6 +52,13 @@ const getPerformanceAverage = (item) => {
   return scores.reduce((sum, score) => sum + score, 0) / scores.length;
 };
 
+const formatCurrency = (amount) => `Rp${Number(amount || 0).toLocaleString("id-ID")},00`;
+const routineTrainingDays = new Set(["rabu", "minggu"]);
+
+function isRoutineTrainingDay(day) {
+  return routineTrainingDays.has(String(day || "").trim().toLowerCase());
+}
+
 function InfoIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -83,6 +90,7 @@ export default function DasborOrangTua({
   childCategoryLabel = "-",
   paymentStatus,
   paymentInfo = null,
+  monthlyPaymentSummary = null,
   trainingSchedules = [],
   achievements = [],
   attendanceRecaps = [],
@@ -169,6 +177,7 @@ export default function DasborOrangTua({
         categoryLabel: item.categoryLabel || item.targetLabel || "Semua Siswa",
         targetLabel: item.targetLabel || "Semua Siswa",
         isRoutine: item.isRoutine === true,
+        isAdditional: item.isRoutine === false || !isRoutineTrainingDay(item.day),
       })),
     [trainingSchedules]
   );
@@ -334,6 +343,40 @@ export default function DasborOrangTua({
             </div>
           </section>
 
+          {childHasBeenPicked && monthlyPaymentSummary && (
+            <section className="parentCard parentMonthlyPaymentCard">
+              <div className="parentMonthlyPaymentHeader">
+                <div>
+                  <span>Pembayaran Bulan Ini</span>
+                  <h2>{monthlyPaymentSummary.periodLabel || "Bulan Ini"}</h2>
+                </div>
+                <strong className={monthlyPaymentSummary.remainingAmount <= 0 ? "is-complete" : ""}>
+                  {monthlyPaymentSummary.remainingAmount <= 0
+                    ? "Lunas"
+                    : `Kurang ${formatCurrency(monthlyPaymentSummary.remainingAmount)}`}
+                </strong>
+              </div>
+              <div className="parentMonthlyPaymentProgress">
+                <span
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      Math.round(
+                        (Number(monthlyPaymentSummary.paidAmount || 0) /
+                          Math.max(Number(monthlyPaymentSummary.targetAmount || 1), 1)) *
+                          100
+                      )
+                    )}%`,
+                  }}
+                />
+              </div>
+              <div className="parentMonthlyPaymentMeta">
+                <p>Sudah dibayar: <strong>{formatCurrency(monthlyPaymentSummary.paidAmount)}</strong></p>
+                <p>Target bulanan: <strong>{formatCurrency(monthlyPaymentSummary.targetAmount)}</strong></p>
+              </div>
+            </section>
+          )}
+
           {paymentInfo?.message && (
             <section className="parentCard parentIdentityNoticeCard">
               <div className="parentIdentityNotice">
@@ -461,16 +504,15 @@ export default function DasborOrangTua({
                         <span className="parentSchedulePin" />
                         <div className="parentScheduleContent">
                           <p>
-                            <strong>{item.day}</strong> ({item.time})
+                            <span>
+                              <strong>{item.day}</strong> ({item.time})
+                            </span>
+                            {item.isAdditional ? (
+                              <span className="parentScheduleBadge">Latihan Tambahan</span>
+                            ) : null}
                           </p>
                           <span>{item.place}</span>
-                          <small>
-                            {item.categoryLabel}
-                            {item.targetLabel !== item.categoryLabel &&
-                            item.targetLabel !== "Semua Siswa"
-                              ? ` - ${item.targetLabel}`
-                              : ""}
-                          </small>
+                          <small>{item.categoryLabel}</small>
                         </div>
                       </article>
                     ))}

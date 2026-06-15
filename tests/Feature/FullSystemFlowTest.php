@@ -319,9 +319,10 @@ class FullSystemFlowTest extends TestCase
         $this->actingAs($coachUser)
             ->post('/api/pelatih/bukti-pembayaran/tambah', [
                 'id_siswa' => $siswa->id_siswa,
-                'jenis' => 'Bulanan',
+                'jenis' => 'Harian',
+                'jumlah' => 100000,
                 'tanggal_bukti_bayar' => '2026-06-01',
-                'bukti_bayar' => UploadedFile::fake()->create('bukti-bulanan.pdf', 20, 'application/pdf'),
+                'bukti_bayar' => UploadedFile::fake()->create('bukti-harian.pdf', 20, 'application/pdf'),
             ])
             ->assertCreated()
             ->assertJsonPath('success', true);
@@ -332,12 +333,14 @@ class FullSystemFlowTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonFragment([
                 'id_siswa' => $siswa->id_siswa,
-                'jenis' => 'Bulanan',
+                'jenis' => 'Harian',
+                'jumlah' => 100000,
+                'monthly_remaining_amount' => 0,
                 'status' => 'Belum',
             ]);
 
         $coachProof = BuktiPembayaran::where('id_siswa', $siswa->id_siswa)
-            ->whereHas('pembayaran', fn ($query) => $query->where('jenis', 'Bulanan'))
+            ->whereHas('pembayaran', fn ($query) => $query->where('jenis', 'Harian'))
             ->latest('id_bukti_pembayaran')
             ->firstOrFail();
 
@@ -360,7 +363,7 @@ class FullSystemFlowTest extends TestCase
         $this->assertSame(80, $parentPayload['performanceHistory'][0]['dribbling']);
         $this->assertSame('Catatan penuh dari pelatih.', $parentPayload['coachNotes'][0]['note']);
         $this->assertTrue(collect($parentPayload['paymentHistory'])->contains(
-            fn ($payment) => $payment['type'] === 'Iuran Bulanan' && $payment['status'] === 'Lunas'
+            fn ($payment) => $payment['type'] === 'Pembayaran Harian' && $payment['status'] === 'Lunas'
         ));
         $this->assertTrue(collect($parentPayload['notifications'])->contains(
             fn ($notification) => str_contains($notification['text'], 'Info Orang Tua Full Flow')

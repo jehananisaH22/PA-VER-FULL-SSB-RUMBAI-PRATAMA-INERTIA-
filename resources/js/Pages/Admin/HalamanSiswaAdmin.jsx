@@ -118,6 +118,8 @@ export default function HalamanSiswaAdmin({
   performanceHistory = [],
   onDeleteStudent,
   onRecordAdminActivity,
+  requestedStudentName = null,
+  onHandledRequestedStudentName,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Semua");
@@ -194,6 +196,23 @@ export default function HalamanSiswaAdmin({
     setStudentPickFxKey((prev) => prev + 1);
     setIsStudentSwitching(true);
   };
+
+  useEffect(() => {
+    const targetName = String(requestedStudentName || "").trim().toLowerCase();
+    if (!targetName) return;
+
+    const matchedStudent = students.find(
+      (student) => String(student.name || "").trim().toLowerCase() === targetName
+    );
+
+    if (matchedStudent) {
+      setSearchQuery("");
+      setSelectedCategory("Semua");
+      handleSelectStudent(matchedStudent.id);
+    }
+
+    onHandledRequestedStudentName?.();
+  }, [requestedStudentName, students, onHandledRequestedStudentName]);
 
   const handleMonthChange = (value) => setSelectedMonth(value);
 

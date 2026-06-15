@@ -442,6 +442,32 @@
   font-weight: 650;
 }
 
+.coachScheduleLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.coachScheduleBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 3px 9px;
+  border: 1px solid #f5c56d;
+  border-radius: 999px;
+  background: #fff7e8;
+  color: #9a5b00;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.coachSchedulePlace {
+  display: block;
+  margin-top: 3px;
+}
+
 .coachEmptyText {
   margin: 0;
   color: #64748b;

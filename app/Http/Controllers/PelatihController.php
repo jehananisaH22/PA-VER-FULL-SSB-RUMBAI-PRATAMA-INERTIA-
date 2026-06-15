@@ -22,6 +22,11 @@ use Illuminate\Support\Facades\Storage;
 
 class PelatihController extends Controller
 {
+  private function activeStatusValues(): array
+  {
+    return ['active', 'aktif'];
+  }
+
   private function currentPelatih(): ?Pelatih
   {
     $user = Auth::user();
@@ -42,7 +47,7 @@ class PelatihController extends Controller
             $query->where('jadwal_latihan.id_pelatih', $pelatih->id_pelatih)
                 ->orWhereNull('jadwal_latihan.id_pelatih');
         })
-        ->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active'])
+        ->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), $this->activeStatusValues())
         ->pluck('jadwal_siswa.id_siswa')
         ->map(fn ($id) => (int) $id)
         ->unique()
@@ -76,7 +81,7 @@ class PelatihController extends Controller
   {
     if ($jadwal instanceof Jadwal_Latihan && $jadwal->relationLoaded('siswa')) {
         $explicitStudentIds = $jadwal->siswa
-            ->filter(fn ($student) => strtolower((string) $student->status) === 'active')
+            ->filter(fn ($student) => in_array(strtolower((string) $student->status), $this->activeStatusValues(), true))
             ->pluck('id_siswa')
             ->map(fn ($id) => (int) $id)
             ->values()
@@ -85,7 +90,7 @@ class PelatihController extends Controller
         $explicitStudentIds = DB::table('jadwal_siswa')
             ->join('siswa', 'jadwal_siswa.id_siswa', '=', 'siswa.id_siswa')
             ->where('jadwal_siswa.id_jadwal', $jadwal->id_jadwal)
-            ->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active'])
+            ->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), $this->activeStatusValues())
             ->pluck('siswa.id_siswa')
             ->map(fn ($id) => (int) $id)
             ->values()
@@ -101,7 +106,7 @@ class PelatihController extends Controller
         : null;
 
     return DB::table('siswa')
-        ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+        ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
         ->select('id_siswa', 'umur')
         ->get()
         ->filter(function ($student) use ($storedCategory) {
@@ -129,7 +134,7 @@ class PelatihController extends Controller
     }
 
     $jadwalQuery = Jadwal_Latihan::with(['siswa' => function ($q) use ($request) {
-        $q->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
+        $q->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues());
 
         // FILTER UMUR (U-12 → 12)
         if ($request->filled('kategori_umur')) {
@@ -139,7 +144,7 @@ class PelatihController extends Controller
         }
 
     }])->whereHas('siswa', function ($query) {
-        $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
+        $query->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues());
     })
     ->where(function ($query) use ($pelatih) {
         $query->where('id_pelatih', $pelatih->id_pelatih)
@@ -160,7 +165,7 @@ class PelatihController extends Controller
     public function getJadwal()
 {
     $jadwal = \App\Models\Jadwal_Latihan::whereHas('siswa', function ($query) {
-        $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
+        $query->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues());
     });
 
     $pelatih = $this->currentPelatih();
@@ -303,7 +308,7 @@ public function Rekap_Absensi(Request $request)
     $pelatih = $this->currentPelatih();
     $studentIds = $pelatih ? $this->studentIdsForPelatih($pelatih) : null;
 
-    $siswa = Siswa::whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+    $siswa = Siswa::whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
         ->when($studentIds !== null, fn ($query) => $query->whereIn('id_siswa', $studentIds))
         ->get();
 
@@ -357,7 +362,7 @@ public function Performa_Siswa(Request $request, $id)
 
     // 🔥 batasi akses hanya milik pelatih
     $jadwal = Jadwal_Latihan::with(['siswa' => function ($query) {
-            $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
+            $query->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues());
         }])
         ->where('id_jadwal', $id)
         ->first();
@@ -389,7 +394,7 @@ public function Input_Performa_Siswa(Request $request, $id)
 
     // 🔥 WAJIB: load relasi siswa
     $jadwal = Jadwal_Latihan::with(['siswa' => function ($query) {
-            $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
+            $query->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues());
         }])
         ->where('id_jadwal', $id)
         ->first();
@@ -508,7 +513,7 @@ public function Catatan_Pelatih(Request $request)
 {
     $query = Catatan_Pelatih::with(['siswa', 'pelatih'])
         ->whereHas('siswa', function ($query) {
-            $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
+            $query->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues());
         });
 
     $pelatih = $this->currentPelatih();
@@ -542,7 +547,7 @@ public function Catatan_perPelatih($id_pelatih)
     $data = Catatan_Pelatih::with(['siswa', 'pelatih'])
         ->where('id_pelatih', $id_pelatih)
         ->whereHas('siswa', function ($query) {
-            $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
+            $query->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues());
         })
         ->orderByDesc('tanggal_catatan')
         ->get();
@@ -585,7 +590,7 @@ public function Tambah_Catatan_Pelatih(Request $request)
                 }
 
                 $isActiveStudent = Siswa::where('id_siswa', $item['id_siswa'])
-                    ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+                    ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
                     ->exists();
 
                 if (! $isActiveStudent) {
@@ -692,7 +697,7 @@ public function Update_Catatan_Pelatih(Request $request, $id)
     }
 
     $isActiveStudent = Siswa::where('id_siswa', $request->id_siswa)
-        ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+        ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
         ->exists();
 
     if (
@@ -772,7 +777,7 @@ public function FormUploadBuktiPembayaran(Request $request)
     $allowedStudentIds = $pelatih ? $this->studentIdsForPelatih($pelatih) : null;
 
     $kategoriUmur = Siswa::select('umur')
-        ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+        ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
         ->when($allowedStudentIds !== null, fn ($query) => $query->whereIn('id_siswa', $allowedStudentIds))
         ->distinct()
         ->orderBy('umur')
@@ -781,7 +786,7 @@ public function FormUploadBuktiPembayaran(Request $request)
         ->values();
 
     $siswaQuery = Siswa::select('id_siswa', 'nama_siswa', 'umur', 'status')
-        ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+        ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
         ->orderBy('nama_siswa');
 
     if ($allowedStudentIds !== null) {
@@ -818,7 +823,7 @@ public function FormUploadBuktiPembayaran(Request $request)
         ],
         'data' => [
             'kategori_umur' => $kategoriUmur,
-            'jenis_pembayaran' => ['Pendaftaran', 'Bulanan', 'Harian'],
+            'jenis_pembayaran' => ['Pendaftaran', 'Harian'],
             'siswa' => $siswa,
         ],
     ]);
@@ -837,7 +842,7 @@ public function Store_Bukti_Pembayaran_Pelatih(Request $request)
 
     $validated = $request->validate([
         'id_siswa' => 'required|exists:siswa,id_siswa',
-        'jenis' => 'required|in:Harian,Bulanan,Pendaftaran',
+        'jenis' => 'required|in:Harian,Pendaftaran',
         'tanggal_bukti_bayar' => 'required|date',
         'jumlah' => 'nullable|numeric|min:1',
         'bukti_bayar' => 'required|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
@@ -854,7 +859,7 @@ public function Store_Bukti_Pembayaran_Pelatih(Request $request)
 
     try {
         $siswa = Siswa::where('id_siswa', $validated['id_siswa'])
-            ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+            ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
             ->first();
 
         if (
@@ -975,7 +980,7 @@ public function History_Bukti_Pembayaran_Pelatih(Request $request)
         'siswa:id_siswa,nama_siswa,umur',
         'pembayaran:id_pembayaran,id_siswa,jenis,status',
     ])->whereHas('siswa', function ($query) {
-        $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
+        $query->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues());
     });
     $pelatih = $this->currentPelatih();
 
@@ -1025,7 +1030,7 @@ public function History_Bukti_Pembayaran_Pelatih(Request $request)
         });
 
     $kategoriUmur = Siswa::select('umur')
-        ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+        ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
         ->when($pelatih, fn ($query) => $query->whereIn('id_siswa', $this->studentIdsForPelatih($pelatih)))
         ->distinct()
         ->orderBy('umur')
@@ -1043,7 +1048,7 @@ public function History_Bukti_Pembayaran_Pelatih(Request $request)
         ],
         'options' => [
             'kategori_umur' => $kategoriUmur,
-            'jenis_pembayaran' => ['Pendaftaran', 'Bulanan', 'Harian'],
+            'jenis_pembayaran' => ['Pendaftaran', 'Harian'],
         ],
         'data' => $history,
     ]);
@@ -1218,3 +1223,4 @@ private function notifyAdmins(string $judul, string $isi): void
 
 
 }
+
