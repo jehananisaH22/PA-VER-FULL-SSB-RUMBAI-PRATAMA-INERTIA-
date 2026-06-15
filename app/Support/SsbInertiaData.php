@@ -9,10 +9,15 @@ use Illuminate\Support\Facades\DB;
 
 class SsbInertiaData
 {
+    private static function activeStatusValues(): array
+    {
+        return ['active', 'aktif'];
+    }
+
     private static function activeStudentIds(): array
     {
         return DB::table('siswa')
-            ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+            ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), self::activeStatusValues())
             ->pluck('id_siswa')
             ->map(fn ($id) => (int) $id)
             ->values()
@@ -59,7 +64,7 @@ class SsbInertiaData
             ->select('siswa.*', 'orang_tua.email as parent_email');
 
         if ($activeOnly) {
-            $query->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active']);
+            $query->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
         }
 
         if ($studentIds !== null) {
@@ -75,6 +80,7 @@ class SsbInertiaData
                     'name' => $student->nama_siswa,
                     'email' => $student->parent_email ?: '-',
                     'category' => self::categoryFromAge((int) $student->umur),
+                    'status' => $student->status,
                 ];
             })
             ->values()
@@ -144,7 +150,7 @@ class SsbInertiaData
                 ->join('siswa', 'jadwal_siswa.id_siswa', '=', 'siswa.id_siswa')
                 ->where('jadwal_siswa.id_jadwal', $schedule->id_jadwal)
                 ->when($activeOnly, function ($query) {
-                    $query->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active']);
+                    $query->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
                 })
                 ->select('siswa.id_siswa', 'siswa.nama_siswa', 'siswa.umur')
                 ->get();
@@ -157,7 +163,7 @@ class SsbInertiaData
 
             if ($isRoutineSchedule && $students->isEmpty()) {
                 $routineStudents = DB::table('siswa')
-                    ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+                    ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), self::activeStatusValues())
                     ->select('id_siswa', 'nama_siswa', 'umur')
                     ->orderBy('nama_siswa')
                     ->get();
@@ -241,7 +247,7 @@ class SsbInertiaData
             );
 
         if ($activeOnly) {
-            $query->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active']);
+            $query->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
         }
 
         if ($studentIds !== null) {
@@ -340,7 +346,7 @@ class SsbInertiaData
             );
 
         if ($activeOnly) {
-            $query->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active']);
+            $query->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
         }
 
         if ($studentIds !== null) {
@@ -403,7 +409,7 @@ class SsbInertiaData
             ->select('catatan_pelatih.*', 'siswa.nama_siswa', 'siswa.umur', 'pelatih.nama_pelatih');
 
         if ($activeOnly) {
-            $query->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active']);
+            $query->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
         }
 
         if ($studentIds !== null) {
@@ -594,24 +600,75 @@ class SsbInertiaData
         $query = DB::table('bukti_pembayaran')
             ->join('pembayaran', 'bukti_pembayaran.id_pembayaran', '=', 'pembayaran.id_pembayaran')
             ->join('siswa', 'bukti_pembayaran.id_siswa', '=', 'siswa.id_siswa')
-            ->select('bukti_pembayaran.*', 'pembayaran.jumlah', 'pembayaran.jenis', 'pembayaran.tanggal_bayar', 'siswa.nama_siswa', 'siswa.umur');
+            ->select(
+                'bukti_pembayaran.*',
+                'pembayaran.jumlah',
+                'pembayaran.jenis',
+                'pembayaran.tanggal_bayar',
+                'pembayaran.periode as periode_pembayaran',
+                'siswa.nama_siswa',
+                'siswa.umur'
+            );
 
         if ($activeOnly) {
-            $query->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active']);
+            $query->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
         }
 
         if ($studentIds !== null) {
             $query->whereIn('bukti_pembayaran.id_siswa', $studentIds);
         }
 
-        return $query
+        $rows = $query
             ->orderByDesc('bukti_pembayaran.tanggal_bukti_bayar')
+            ->get();
+
+        $monthlyDailyQuery = DB::table('pembayaran')
+            ->leftJoin('bukti_pembayaran', 'pembayaran.id_pembayaran', '=', 'bukti_pembayaran.id_pembayaran')
+            ->join('siswa', 'pembayaran.id_siswa', '=', 'siswa.id_siswa')
+            ->select(
+                'pembayaran.id_pembayaran',
+                'pembayaran.id_siswa',
+                'pembayaran.periode',
+                'pembayaran.tanggal_bayar',
+                'pembayaran.jumlah'
+            )
+            ->where('pembayaran.jenis', 'Harian')
+            ->where(function ($builder) {
+                $builder->whereNull('bukti_pembayaran.status')
+                    ->orWhereRaw('LOWER(bukti_pembayaran.status) <> ?', ['ditolak']);
+            });
+
+        if ($activeOnly) {
+            $monthlyDailyQuery->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
+        }
+
+        if ($studentIds !== null) {
+            $monthlyDailyQuery->whereIn('pembayaran.id_siswa', $studentIds);
+        }
+
+        $monthlyDailyTotals = $monthlyDailyQuery
             ->get()
-            ->map(function ($row) {
+            ->unique('id_pembayaran')
+            ->groupBy(function ($row) {
+                $periodSource = $row->periode ?: $row->tanggal_bayar;
+                $month = substr((string) $periodSource, 0, 7);
+
+                return $row->id_siswa . '|' . $month;
+            })
+            ->map(fn ($items) => (float) $items->sum('jumlah'));
+
+        return $rows
+            ->map(function ($row) use ($monthlyDailyTotals) {
                 $paymentType = strtolower(trim((string) $row->jenis));
                 $proofStatus = strtolower(trim((string) $row->status));
                 $isRegistration = $paymentType === 'pendaftaran';
+                $isDaily = $paymentType === 'harian';
                 $hasProofFile = filled($row->bukti_bayar);
+                $periodSource = $row->periode_pembayaran ?: $row->periode ?: $row->tanggal_bayar ?: $row->tanggal_bukti_bayar;
+                $month = substr((string) $periodSource, 0, 7);
+                $monthlyTarget = $isDaily ? 100000.0 : null;
+                $monthlyPaid = $isDaily ? (float) ($monthlyDailyTotals[$row->id_siswa . '|' . $month] ?? 0) : null;
+                $monthlyRemaining = $isDaily ? max(0, $monthlyTarget - $monthlyPaid) : null;
                 $statusLabel = match (true) {
                     in_array($proofStatus, ['diterima', 'lunas', 'sudah dibayar'], true) => 'Sudah Dibayar',
                     in_array($proofStatus, ['ditolak', 'tidak valid'], true) => 'Belum Dibayar',
@@ -629,8 +686,11 @@ class SsbInertiaData
                     'paymentType' => $paymentType,
                     'paymentTypeLabel' => $row->jenis,
                     'amount' => (float) $row->jumlah,
+                    'monthlyTarget' => $monthlyTarget,
+                    'monthlyPaidAmount' => $monthlyPaid,
+                    'monthlyRemainingAmount' => $monthlyRemaining,
                     'paidDate' => $row->tanggal_bayar ?: $row->tanggal_bukti_bayar,
-                    'period' => $row->periode,
+                    'period' => $row->periode_pembayaran ?: $row->periode,
                     'status' => $statusLabel,
                     'proofFile' => $row->bukti_bayar ? asset('storage/' . ltrim($row->bukti_bayar, '/')) : null,
                     'proofFileName' => $row->bukti_bayar,
@@ -695,6 +755,10 @@ class SsbInertiaData
 
         if (str_contains($text, 'pendaftaran') || str_contains($text, 'berkas')) {
             return 'Pendaftaran';
+        }
+
+        if (str_contains($text, 'profil siswa') || str_contains($text, 'profil')) {
+            return 'Siswa';
         }
 
         if (str_contains($text, 'jadwal')) {
@@ -786,6 +850,36 @@ class SsbInertiaData
             })
             ->values()
             ->all();
+    }
+
+    public static function monthlyPaymentSummary(array $studentIds): ?array
+    {
+        if (count($studentIds) === 0) {
+            return null;
+        }
+
+        $period = now()->format('Y-m');
+        $target = 100000.0;
+        $paid = (float) DB::table('pembayaran')
+            ->leftJoin('bukti_pembayaran', 'pembayaran.id_pembayaran', '=', 'bukti_pembayaran.id_pembayaran')
+            ->whereIn('pembayaran.id_siswa', $studentIds)
+            ->where('pembayaran.jenis', 'Harian')
+            ->where('pembayaran.periode', 'like', $period . '%')
+            ->where(function ($query) {
+                $query->whereNull('bukti_pembayaran.status')
+                    ->orWhereRaw('LOWER(bukti_pembayaran.status) <> ?', ['ditolak']);
+            })
+            ->sum('pembayaran.jumlah');
+        $remaining = max(0, $target - $paid);
+
+        return [
+            'targetAmount' => $target,
+            'paidAmount' => $paid,
+            'remainingAmount' => $remaining,
+            'period' => $period,
+            'periodLabel' => now()->locale('id')->translatedFormat('F Y'),
+            'status' => $remaining <= 0 ? 'complete' : 'partial',
+        ];
     }
 
     private static function studentHasApprovedRegistrationPayment(int $studentId): bool
@@ -1068,6 +1162,7 @@ class SsbInertiaData
             'coachNotes' => self::coachNotes($studentIds),
             'notes' => self::coachNotes($studentIds),
             'paymentHistory' => self::paymentHistory($studentIds),
+            'monthlyPaymentSummary' => self::monthlyPaymentSummary($studentIds),
             'notifications' => self::parentNotifications($studentIds, $user?->id),
             'reuploadRequest' => $reuploadRequest,
         ];

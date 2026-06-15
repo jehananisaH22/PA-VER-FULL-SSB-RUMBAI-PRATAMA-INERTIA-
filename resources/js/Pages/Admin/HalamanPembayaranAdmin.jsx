@@ -60,6 +60,9 @@ const dummyPaymentRows = [
     paidDate: "2026-05-04",
     paidDateLabel: "04/05/2026",
     amount: 35000,
+    monthlyTarget: 100000,
+    monthlyPaidAmount: 35000,
+    monthlyRemainingAmount: 65000,
     proofFile: null,
     proofFileName: "dummy-bukti-harian.jpg",
     proofFileType: "image/jpeg",
@@ -162,6 +165,24 @@ function CheckIcon() {
 
 function formatCurrency(amount) {
   return `Rp${Number(amount || 0).toLocaleString("id-ID")},00`;
+}
+
+function MonthlyRemainingCell({ row }) {
+  if (row.paymentType !== "harian" || !row.monthlyTarget) {
+    return <span className="adminPaymentMonthlyDash">-</span>;
+  }
+
+  const remaining = Math.max(0, Number(row.monthlyRemainingAmount || 0));
+  const isComplete = remaining <= 0;
+
+  return (
+    <div className={`adminPaymentMonthlyInfo ${isComplete ? "isComplete" : ""}`}>
+      <strong>{isComplete ? "Lunas bulan ini" : `Kurang ${formatCurrency(remaining)}`}</strong>
+      <small>
+        {formatCurrency(row.monthlyPaidAmount)} / {formatCurrency(row.monthlyTarget)}
+      </small>
+    </div>
+  );
 }
 
 function formatTableDate(value) {
@@ -401,6 +422,9 @@ function buildPaymentRows(registrationPaymentSubmissions, coachPaymentSubmission
     paidDate: item.paidDate || item.createdAt,
     paidDateLabel: formatTableDate(item.paidDate || item.createdAt),
     amount: Number(item.amount) || 0,
+    monthlyTarget: Number(item.monthlyTarget) || null,
+    monthlyPaidAmount: Number(item.monthlyPaidAmount) || 0,
+    monthlyRemainingAmount: Number(item.monthlyRemainingAmount) || null,
     proofFile: item.proofFile || null,
     proofFileName: item.proofFileName || "-",
     proofFileType: item.proofFileType || "",
@@ -420,6 +444,9 @@ function buildPaymentRows(registrationPaymentSubmissions, coachPaymentSubmission
     paidDate: item.paidDate || item.createdAt,
     paidDateLabel: formatTableDate(item.paidDate || item.createdAt),
     amount: Number(item.amount) || 0,
+    monthlyTarget: Number(item.monthlyTarget) || null,
+    monthlyPaidAmount: Number(item.monthlyPaidAmount) || 0,
+    monthlyRemainingAmount: Number(item.monthlyRemainingAmount) || null,
     proofFile: item.proofFile || null,
     proofFileName: item.proofFileName || "-",
     proofFileType: item.proofFileType || "",
@@ -874,6 +901,7 @@ export default function HalamanPembayaranAdmin({
                     <th>Jenis Pembayaran</th>
                     <th>Waktu</th>
                     <th>Nominal</th>
+                    <th>Sisa Bulan Ini</th>
                     <th>Bukti</th>
                     <th>Status</th>
                   </tr>
@@ -888,6 +916,7 @@ export default function HalamanPembayaranAdmin({
                         <td>{row.paymentTypeLabel}</td>
                         <td>{row.paidDateLabel}</td>
                         <td>{formatCurrency(row.amount)}</td>
+                        <td><MonthlyRemainingCell row={row} /></td>
                         <td>
                           <button
                             type="button"
@@ -914,7 +943,7 @@ export default function HalamanPembayaranAdmin({
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" className="adminPaymentEmptyCell">
+                      <td colSpan="7" className="adminPaymentEmptyCell">
                         Data pembayaran belum tersedia.
                       </td>
                     </tr>

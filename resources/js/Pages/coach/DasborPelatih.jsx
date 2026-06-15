@@ -43,6 +43,12 @@ const monthOrder = {
   desember: 12,
 };
 
+const routineTrainingDays = new Set(["rabu", "minggu"]);
+
+function isRoutineTrainingDay(day) {
+  return routineTrainingDays.has(String(day || "").trim().toLowerCase());
+}
+
 function periodScore(item) {
   const year = Number(item.year || 0);
   const month = monthOrder[String(item.month || "").toLowerCase()] || 0;
@@ -202,6 +208,7 @@ export default function DasborPelatih(props) {
       day: item.day,
       time: item.time,
       location: item.place || item.location,
+      isAdditional: item.isRoutine === false || !isRoutineTrainingDay(item.day),
     }));
   const dashboardPerformanceRows = useMemo(() => rawPerformanceHistory.map((item) => ({
       name: item.player || item.studentName,
@@ -405,7 +412,15 @@ export default function DasborPelatih(props) {
               <article key={`${item.day}-${item.time}`} className="coachScheduleItem">
                 <img src={PlaceMarkerIcon} alt="" className="coachScheduleIcon" />
                 <p>
-                  <b>{item.day}</b> ({item.time}) {item.location}
+                  <span className="coachScheduleLine">
+                    <span>
+                      <b>{item.day}</b> ({item.time})
+                    </span>
+                    {item.isAdditional ? (
+                      <span className="coachScheduleBadge">Latihan Tambahan</span>
+                    ) : null}
+                  </span>
+                  <span className="coachSchedulePlace">{item.location}</span>
                 </p>
               </article>
             )) : <p className="coachEmptyText">Belum ada jadwal latihan.</p>}

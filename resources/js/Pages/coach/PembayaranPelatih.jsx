@@ -629,6 +629,34 @@ export default function PembayaranPelatih({
               options={paymentTypeOptions}
             />
           )}
+
+          {activeSection === "upload" && (
+            <label className="coachPaymentAmountField is-inline">
+              <span>Nominal</span>
+              <div className="coachPaymentAmountInputWrap">
+                <strong>Rp</strong>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={
+                    selectedPaymentType === "pendaftaran"
+                      ? paymentAmounts.pendaftaran.toLocaleString("id-ID")
+                      : paymentAmount
+                  }
+                  onChange={(event) => setPaymentAmount(formatCurrencyInput(event.target.value))}
+                  placeholder={selectedPaymentType ? "Contoh: 50.000" : "Pilih jenis dulu"}
+                  disabled={!selectedPaymentType || selectedPaymentType === "pendaftaran"}
+                />
+              </div>
+              <small>
+                {selectedPaymentType === "harian"
+                  ? "Target bulan ini Rp100.000, admin akan melihat sisa kurangnya."
+                  : selectedPaymentType === "pendaftaran"
+                    ? "Nominal pendaftaran tetap."
+                    : "Pilih jenis pembayaran dulu."}
+              </small>
+            </label>
+          )}
         </div>
 
         <div className="coachTabContent" key={`payments-${activeSection}`}>
@@ -641,24 +669,6 @@ export default function PembayaranPelatih({
               className="coachPaymentFileInput"
               onChange={(event) => handleFileChange(event.target.files?.[0] || null)}
             />
-            <label className="coachPaymentAmountField">
-              <span>Nominal Pembayaran</span>
-              <div className="coachPaymentAmountInputWrap">
-                <strong>Rp</strong>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={
-                    selectedPaymentType === "pendaftaran"
-                      ? paymentAmounts.pendaftaran.toLocaleString("id-ID")
-                      : paymentAmount
-                  }
-                  onChange={(event) => setPaymentAmount(formatCurrencyInput(event.target.value))}
-                  placeholder="Contoh: 50.000"
-                  disabled={selectedPaymentType === "pendaftaran"}
-                />
-              </div>
-            </label>
             <button
               type="button"
               className="coachPaymentDropZone"

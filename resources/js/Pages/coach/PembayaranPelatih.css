@@ -256,11 +256,31 @@
   color: #0f172a;
 }
 
+.coachPaymentAmountField.is-inline {
+  flex: 0 1 300px;
+  min-width: 260px;
+  margin-bottom: 0;
+}
+
 .coachPaymentAmountField > span {
   display: block;
   margin-bottom: 8px;
   font-size: 14px;
   font-weight: 700;
+}
+
+.coachPaymentAmountField.is-inline > span {
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: #3f7d23;
+}
+
+.coachPaymentAmountField > small {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  line-height: 1.25;
+  color: #64748b;
 }
 
 .coachPaymentAmountInputWrap {
@@ -650,7 +670,8 @@
   }
 
   .coachPaymentSearch,
-  .coachPaymentTypeSelect {
+  .coachPaymentTypeSelect,
+  .coachPaymentAmountField.is-inline {
     width: 100%;
     min-width: 0;
     flex: none;

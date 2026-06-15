@@ -284,6 +284,85 @@
   font-weight: 400;
 }
 
+.parentMonthlyPaymentCard {
+  margin-top: 12px;
+  padding: 18px 22px;
+}
+
+.parentMonthlyPaymentHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.parentMonthlyPaymentHeader span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #3f7d23;
+}
+
+.parentMonthlyPaymentHeader h2 {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #111827;
+}
+
+.parentMonthlyPaymentHeader > strong {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  background: #ffedd5;
+  color: #7c2d12;
+  font-size: 15px;
+  font-weight: 900;
+  box-shadow: 0 8px 18px rgba(154, 52, 18, 0.1);
+}
+
+.parentMonthlyPaymentHeader > strong.is-complete {
+  background: #edf8e7;
+  color: #2f7d1f;
+}
+
+.parentMonthlyPaymentProgress {
+  margin-top: 14px;
+  height: 10px;
+  border-radius: 999px;
+  background: #eef2f7;
+  overflow: hidden;
+}
+
+.parentMonthlyPaymentProgress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #5daf2f;
+}
+
+.parentMonthlyPaymentMeta {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.parentMonthlyPaymentMeta p {
+  margin: 0;
+  font-size: 14px;
+  color: #475569;
+}
+
+.parentMonthlyPaymentMeta strong {
+  color: #111827;
+  font-weight: 900;
+}
+
 .parentIdentityNoticeCard {
   margin-top: 12px;
   padding: 18px 20px;
@@ -720,6 +799,10 @@
   font-size: 14px;
   line-height: 1.45;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .parentScheduleContent p strong {
@@ -736,6 +819,20 @@
   color: #5f7c58;
   font-size: 12px;
   font-weight: 700;
+}
+
+.parentScheduleContent .parentScheduleBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 3px 9px;
+  border: 1px solid #f5c56d;
+  border-radius: 999px;
+  background: #fff7e8;
+  color: #9a5b00;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .parentEmptyState {
@@ -769,6 +866,28 @@
 
 .parentPanelHead .yearSelect {
   margin-right: 8px;
+}
+
+.parentPanelHead .yearSelectTrigger:hover,
+.parentPanelHead .yearSelectTrigger[aria-expanded="true"] {
+  border-color: #58b947;
+  color: #1f7a1f;
+  background: #fbfff8;
+}
+
+.parentPanelHead .yearSelectMenu {
+  border-color: #cfe5c3;
+}
+
+.parentPanelHead .yearSelectOption:hover {
+  background: #eff9eb;
+  color: #276f20;
+}
+
+.parentPanelHead .yearSelectOption.active {
+  background: #dff2d6;
+  color: #214d17;
+  font-weight: 700;
 }
 
 .parentBars {
