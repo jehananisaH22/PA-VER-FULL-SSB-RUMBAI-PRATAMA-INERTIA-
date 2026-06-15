@@ -54,7 +54,7 @@ class CoachToParentFlowTest extends TestCase
 
         $jadwal = Jadwal_Latihan::create([
             'id_pelatih' => $pelatih->id_pelatih,
-            'tanggal' => '2026-06-01',
+            'tanggal' => '2026-06-01', 
             'jam_mulai' => '08:00:00',
             'jam_selesai' => '10:00:00',
             'lokasi' => 'Lapangan Test',
@@ -156,6 +156,41 @@ class CoachToParentFlowTest extends TestCase
         $this->assertCount(4, $payload['notifications']);
     }
 
+    public function test_coach_alpha_attendance_is_visible_to_parent_payload(): void
+    {
+        [
+            'coachUser' => $coachUser,
+            'parentUser' => $parentUser,
+            'siswa' => $siswa,
+            'jadwal' => $jadwal,
+        ] = $this->createCoachParentFlowData();
+
+        $this->actingAs($coachUser)
+            ->postJson('/api/pelatih/presensi/input', [
+                'id_jadwal' => $jadwal->id_jadwal,
+                'tanggal' => '2026-06-01',
+                'data' => [
+                    ['id_siswa' => $siswa->id_siswa, 'status' => 'alpha'],
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonPath('status', true);
+
+        $this->assertDatabaseHas('presensi', [
+            'id_siswa' => $siswa->id_siswa,
+            'id_jadwal' => $jadwal->id_jadwal,
+            'status_kehadiran' => 'Alpha',
+        ]);
+
+        $this->actingAs($parentUser);
+        session(['id_siswa' => $siswa->id_siswa]);
+
+        $payload = SsbInertiaData::parentPayload();
+
+        $this->assertSame(100, $payload['attendanceRecaps'][0]['alpha']);
+        $this->assertSame(0, $payload['attendanceRecaps'][0]['hadir']);
+    }
+
     public function test_coach_attendance_uses_daily_date_matching_admin_schedule_day(): void
     {
         [
@@ -167,7 +202,7 @@ class CoachToParentFlowTest extends TestCase
         $this->actingAs($coachUser)
             ->postJson('/api/pelatih/presensi/input', [
                 'id_jadwal' => $jadwal->id_jadwal,
-                'tanggal' => '2026-06-08',
+                'tanggal' => '2026-06-08', 
                 'data' => [
                     ['id_siswa' => $siswa->id_siswa, 'status' => 'hadir'],
                 ],
@@ -195,7 +230,7 @@ class CoachToParentFlowTest extends TestCase
         $this->actingAs($coachUser)
             ->postJson('/api/pelatih/presensi/input', [
                 'id_jadwal' => $jadwal->id_jadwal,
-                'tanggal' => '2026-06-20',
+                'tanggal' => '2026-06-03', 
                 'data' => [
                     ['id_siswa' => $siswa->id_siswa, 'status' => 'hadir'],
                 ],
@@ -211,6 +246,7 @@ class CoachToParentFlowTest extends TestCase
             'siswa' => $siswa,
         ] = $this->createCoachParentFlowData();
 
+        $siswa->update(['user_id' => null]); // DIUBAH: Simulasikan anak belum terikat ke user akun orang tua
         $this->actingAs($parentUser);
         session()->forget('id_siswa');
 
@@ -222,6 +258,7 @@ class CoachToParentFlowTest extends TestCase
         $this->assertSame('', $payload['userName']);
         $this->assertCount(1, $payload['childrenOptions']);
 
+        $siswa->update(['user_id' => $parentUser->id]); // DIUBAH
         session(['id_siswa' => $siswa->id_siswa]);
 
         $selectedPayload = SsbInertiaData::parentPayload();
@@ -230,6 +267,39 @@ class CoachToParentFlowTest extends TestCase
         $this->assertSame($siswa->id_siswa, $selectedPayload['selectedChildId']);
         $this->assertTrue($selectedPayload['hasSelectedChild']);
         $this->assertSame('Anak Coach', $selectedPayload['userName']);
+    }
+
+    public function test_parent_dashboard_keeps_revision_child_selected_when_session_is_empty(): void
+    {
+        [
+            'parentUser' => $parentUser,
+            'siswa' => $siswa,
+        ] = $this->createCoachParentFlowData();
+
+        DB::table('pendaftaran')->insert([
+            'id_siswa' => $siswa->id_siswa,
+            'tanggal_daftar' => now(),
+            'status_approval' => 'Revisi',
+            'val_nama_siswa' => 'tidak_valid',
+            'val_nama_ayah' => 'valid',
+            'val_nama_ibu' => 'valid',
+            'val_umur' => 'valid',
+            'val_akta' => 'valid',
+            'val_kk' => 'valid',
+            'val_rapor' => 'valid',
+            'val_foto' => 'valid',
+        ]);
+
+        $this->actingAs($parentUser);
+        session()->forget('id_siswa');
+
+        $payload = SsbInertiaData::parentPayload();
+
+        $this->assertFalse($payload['openChildPickerOnLoad']);
+        $this->assertSame($siswa->id_siswa, $payload['selectedChildId']);
+        $this->assertTrue($payload['hasSelectedChild']);
+        $this->assertSame('Anak Coach', $payload['userName']);
+        $this->assertSame($siswa->id_siswa, session('id_siswa'));
     }
 
     public function test_coach_payment_upload_is_visible_to_admin_payment_data(): void
@@ -252,7 +322,7 @@ class CoachToParentFlowTest extends TestCase
             ->post('/api/pelatih/bukti-pembayaran/tambah', [
                 'id_siswa' => $siswa->id_siswa,
                 'jenis' => 'Bulanan',
-                'tanggal_bukti_bayar' => '2026-06-03',
+                'tanggal_bukti_bayar' => '2026-06-01',
                 'bukti_bayar' => UploadedFile::fake()->create('bukti-admin.pdf', 20, 'application/pdf'),
             ])
             ->assertCreated()
@@ -307,14 +377,16 @@ class CoachToParentFlowTest extends TestCase
             'umur' => 11,
             'status' => 'Active',
         ]);
+        $otherCoachUser = User::factory()->create(['role' => 'pelatih']); // DIUBAH: Bind user_id yang sah
         $otherCoach = Pelatih::create([
+            'user_id' => $otherCoachUser->id, // DIUBAH
             'nama_pelatih' => 'Coach Lain',
             'email' => 'other-coach@example.com',
             'no_hp' => '084444444444',
         ]);
         $otherSchedule = Jadwal_Latihan::create([
             'id_pelatih' => $otherCoach->id_pelatih,
-            'tanggal' => '2026-06-02',
+            'tanggal' => '2026-06-02', 
             'jam_mulai' => '08:00:00',
             'jam_selesai' => '10:00:00',
             'lokasi' => 'Lapangan Lain',

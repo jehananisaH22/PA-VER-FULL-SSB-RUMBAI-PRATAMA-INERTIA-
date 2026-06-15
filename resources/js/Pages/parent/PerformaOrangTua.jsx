@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import "./PerformaOrangTua.css";
 import { parentRoutes, visitOrCall } from "./parentNavigation";
+import GreenSelect from "../../components/GreenSelect";
 import SiteFooter from "../SiteFooter";
 
 import LogoSBB from "../../../assets/LogoSBB.png";
@@ -248,20 +249,17 @@ export default function PerformaOrangTua({
                 <div className="performanceFilters" onClick={(event) => event.stopPropagation()}>
                   <label className="performanceYearWrap">
                     <span>Tahun</span>
-                    <select
+                    <GreenSelect
                       value={effectiveSelectedYear}
-                      onChange={(event) => {
-                        setSelectedYear(event.target.value);
+                      onChange={(nextYear) => {
+                        setSelectedYear(nextYear);
                         setSelectedMonth(null);
                         setMotionKey((prev) => prev + 1);
                       }}
-                    >
-                      {availableYears.map((year) => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      ))}
-                    </select>
+                      ariaLabel="Pilih tahun performa"
+                      className="performanceYearGreenSelect"
+                      options={availableYears}
+                    />
                   </label>
                 </div>
               </div>
@@ -345,20 +343,17 @@ export default function PerformaOrangTua({
               <h3>Performa Per Bulan</h3>
               <label className="performanceYearWrap">
                 <span>Tahun</span>
-                <select
+                <GreenSelect
                   value={effectiveSelectedYear}
-                  onChange={(event) => {
-                    setSelectedYear(event.target.value);
+                  onChange={(nextYear) => {
+                    setSelectedYear(nextYear);
                     setSelectedMonth(null);
                     setMotionKey((prev) => prev + 1);
                   }}
-                >
-                  {availableYears.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
+                  ariaLabel="Pilih tahun performa"
+                  className="performanceYearGreenSelect"
+                  options={availableYears}
+                />
               </label>
             </div>
             <div className="performanceTableScroll">

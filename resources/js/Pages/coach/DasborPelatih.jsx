@@ -23,6 +23,11 @@ function average(rows, key) {
   return Math.round(rows.reduce((sum, row) => sum + Number(row[key] || 0), 0) / rows.length);
 }
 
+function averageAlpha(rows) {
+  const alphaAverage = average(rows, "alpha");
+  return alphaAverage > 0 ? alphaAverage : average(rows, "izin");
+}
+
 const monthOrder = {
   januari: 1,
   februari: 2,
@@ -66,7 +71,7 @@ function buildAttendanceGroups(rows = []) {
     return [
       { label: "Hadir", value: average(filtered, "hadir"), color: "#5dae2f" },
       { label: "Sakit", value: average(filtered, "sakit"), color: "#4d8f2c" },
-      { label: "Izin", value: average(filtered, "izin"), color: "#376d1f" },
+      { label: "Alpha", value: averageAlpha(filtered), color: "#376d1f" },
     ];
   };
 

@@ -169,7 +169,7 @@ export default function HalamanSiswaAdmin({
     }
 
     setStatusToast({ type, title, message });
-    toastTimerRef.current = window.setTimeout(() => setStatusToast(null), 3600);
+    toastTimerRef.current = window.setTimeout(() => setStatusToast(null), 5000);
   };
 
   const getApiErrorMessage = (error) => {
@@ -656,4 +656,3 @@ export default function HalamanSiswaAdmin({
     </section>
   );
 }
-

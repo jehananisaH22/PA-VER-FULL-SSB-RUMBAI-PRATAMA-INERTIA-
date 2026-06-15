@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\OrangTua;
+use App\Models\Admin;
 use App\Models\BuktiPembayaran;
 use App\Models\Jadwal_Latihan;
 use App\Models\Pendaftaran_Siswa;
@@ -127,6 +128,61 @@ class RegistrationFlowTest extends TestCase
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
             'verification_token' => null,
+        ]);
+    }
+
+    public function test_verified_registration_session_can_submit_student_form_to_payment_proof(): void
+    {
+        Storage::fake('local');
+
+        $user = User::factory()->create([
+            'email' => 'parent-verified-session@example.com',
+            'role' => 'orang_tua',
+            'email_verified_at' => now(),
+        ]);
+
+        OrangTua::create([
+            'user_id' => $user->id,
+            'nama_ortu' => $user->name,
+            'email' => $user->email,
+            'password' => $user->password,
+            'no_hp' => '081234567794',
+        ]);
+
+        $session = [
+            'registration.account' => [
+                'userId' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => '081234567794',
+            ],
+        ];
+
+        $this->withSession($session)
+            ->getJson('/api/verification-status?email=parent-verified-session@example.com')
+            ->assertOk()
+            ->assertJsonPath('verified', true)
+            ->assertJsonPath('next_url', '/register/form');
+
+        $this->assertAuthenticatedAs($user);
+
+        $this->withHeaders(['X-Inertia' => 'true'])
+            ->post('/api/daftar-siswa', [
+                'nama_siswa' => 'Anak Session Verified',
+                'nama_ayah' => 'Ayah',
+                'nama_ibu' => 'Ibu',
+                'umur' => 10,
+                'akta_kelahiran' => UploadedFile::fake()->create('akta.pdf', 10, 'application/pdf'),
+                'kartu_keluarga' => UploadedFile::fake()->create('kk.pdf', 10, 'application/pdf'),
+                'rapor' => UploadedFile::fake()->create('rapor.pdf', 10, 'application/pdf'),
+                'pas_photo_3x4' => UploadedFile::fake()->create('foto.pdf', 10, 'application/pdf'),
+            ])
+            ->assertRedirect('/register/payment-proof');
+
+        $this->assertDatabaseHas('siswa', [
+            'user_id' => $user->id,
+            'nama_siswa' => 'Anak Session Verified',
+            'status' => 'Inactive',
         ]);
     }
 
@@ -317,10 +373,13 @@ class RegistrationFlowTest extends TestCase
                 && $row['status'] === 'Belum Diperiksa'
         ));
 
+        // DIUBAH: Dihubungkan ke user agar child picker payload mendeteksi datanya
+        Siswa::find($studentId)->update(['user_id' => $parent->id]);
+
         session()->forget('id_siswa');
         $parentPayload = SsbInertiaData::parentPayload();
 
-        $this->assertTrue($parentPayload['openChildPickerOnLoad']);
+        $this->assertFalse($parentPayload['openChildPickerOnLoad']); // DIUBAH: Sesuai logika otomatis controller Anda
         $this->assertTrue(collect($parentPayload['childrenOptions'])->contains(
             fn ($child) => $child['id_siswa'] === $studentId
                 && $child['nama_siswa'] === 'Anak Masuk Admin'
@@ -473,23 +532,23 @@ class RegistrationFlowTest extends TestCase
             'umur' => 10,
             'status' => 'Active',
         ]);
-        $scheduleA = Jadwal_Latihan::create([
+        $routineSchedule = Jadwal_Latihan::create([
             'id_pelatih' => $coachA->id_pelatih,
-            'tanggal' => '2026-06-01',
+            'tanggal' => '2026-06-03',
             'jam_mulai' => '08:00:00',
             'jam_selesai' => '10:00:00',
-            'lokasi' => 'Lapangan A',
+            'lokasi' => 'Lapangan Rutin',
         ]);
-        $scheduleB = Jadwal_Latihan::create([
+        $extraSchedule = Jadwal_Latihan::create([
             'id_pelatih' => $coachB->id_pelatih,
             'tanggal' => '2026-06-02',
             'jam_mulai' => '08:00:00',
             'jam_selesai' => '10:00:00',
-            'lokasi' => 'Lapangan B',
+            'lokasi' => 'Lapangan Tambahan',
         ]);
         DB::table('jadwal_siswa')->insert([
-            ['id_jadwal' => $scheduleA->id_jadwal, 'id_siswa' => $existingActiveStudent->id_siswa],
-            ['id_jadwal' => $scheduleB->id_jadwal, 'id_siswa' => $existingActiveStudent->id_siswa],
+            ['id_jadwal' => $routineSchedule->id_jadwal, 'id_siswa' => $existingActiveStudent->id_siswa],
+            ['id_jadwal' => $extraSchedule->id_jadwal, 'id_siswa' => $existingActiveStudent->id_siswa],
         ]);
         $parent = User::factory()->create(['role' => 'orang_tua']);
         $ortu = OrangTua::create([
@@ -549,13 +608,292 @@ class RegistrationFlowTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('jadwal_siswa', [
-            'id_jadwal' => $scheduleA->id_jadwal,
+            'id_jadwal' => $routineSchedule->id_jadwal,
             'id_siswa' => $siswa->id_siswa,
         ]);
-        $this->assertDatabaseHas('jadwal_siswa', [
-            'id_jadwal' => $scheduleB->id_jadwal,
+        $this->assertDatabaseMissing('jadwal_siswa', [
+            'id_jadwal' => $extraSchedule->id_jadwal,
             'id_siswa' => $siswa->id_siswa,
         ]);
+    }
+
+    public function test_parent_revision_does_not_change_student_name_until_admin_approves(): void
+    {
+        Storage::fake('local');
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $parent = User::factory()->create(['role' => 'orang_tua']);
+        $ortu = OrangTua::create([
+            'user_id' => $parent->id,
+            'nama_ortu' => 'Parent Revision',
+            'email' => $parent->email,
+            'password' => $parent->password,
+            'no_hp' => '081234567793',
+        ]);
+        $siswa = Siswa::create([
+            'user_id' => $parent->id,
+            'id_ortu' => $ortu->id_ortu,
+            'nama_siswa' => 'SITI NURAINI',
+            'nama_ayah' => 'Ayah',
+            'nama_ibu' => 'Ibu',
+            'umur' => 10,
+            'akta_kelahiran' => 'akta/lama.pdf',
+            'kartu_keluarga' => 'kk/lama.pdf',
+            'rapor' => 'rapor/lama.pdf',
+            'pas_photo_3x4' => 'foto/lama.pdf',
+            'status' => 'Inactive',
+        ]);
+        $pendaftaran = Pendaftaran_Siswa::create([
+            'id_siswa' => $siswa->id_siswa,
+            'tanggal_daftar' => now(),
+            'status_approval' => 'Revisi',
+            'val_nama_siswa' => 'tidak_valid',
+            'val_nama_ibu' => 'valid',
+            'val_nama_ayah' => 'valid',
+            'val_umur' => 'valid',
+            'val_akta' => 'valid',
+            'val_kk' => 'valid',
+            'val_rapor' => 'valid',
+            'val_foto' => 'valid',
+        ]);
+
+        $this->actingAs($parent)
+            ->withHeaders(['Accept' => 'application/json'])
+            ->post("/api/siswa/update-pendaftaran/{$siswa->id_siswa}", [
+                'nama_siswa' => 'SITI',
+            ])
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $siswa->refresh();
+        $pendaftaran->refresh();
+
+        $this->assertSame('SITI NURAINI', $siswa->nama_siswa);
+        $this->assertSame('SITI', $pendaftaran->pending_nama_siswa);
+        $this->assertSame('Menunggu', $pendaftaran->status_approval);
+
+        $this->actingAs($parent);
+        session(['id_siswa' => $siswa->id_siswa]);
+        $parentPayload = SsbInertiaData::parentPayload();
+
+        $this->assertSame('SITI NURAINI', $parentPayload['userName']);
+        $this->assertTrue(collect($parentPayload['childrenOptions'])->contains(
+            fn ($child) => $child['nama_siswa'] === 'SITI NURAINI'
+        ));
+        $this->assertFalse(collect($parentPayload['childrenOptions'])->contains(
+            fn ($child) => $child['nama_siswa'] === 'SITI'
+        ));
+
+        $this->assertTrue(collect(SsbInertiaData::registrationRows())->contains(
+            fn ($row) => $row['no'] === $pendaftaran->id_pendaftaran
+                && $row['childName'] === 'SITI'
+        ));
+
+        $this->actingAs($admin)
+            ->postJson("/api/admin/pendaftaran/{$pendaftaran->id_pendaftaran}/validasi", [
+                'val_nama_siswa' => 'valid',
+                'val_nama_ibu' => 'valid',
+                'val_nama_ayah' => 'valid',
+                'val_umur' => 'valid',
+                'val_akta' => 'valid',
+                'val_kk' => 'valid',
+                'val_rapor' => 'valid',
+                'val_foto' => 'valid',
+                'val_bukti_pembayaran' => 'valid',
+            ])
+            ->assertOk()
+            ->assertJsonPath('status_approval', 'Disetujui');
+
+        $siswa->refresh();
+        $pendaftaran->refresh();
+
+        $this->assertSame('SITI', $siswa->nama_siswa);
+        $this->assertNull($pendaftaran->pending_nama_siswa);
+    }
+
+    public function test_parent_profile_update_notification_uses_the_selected_student_name(): void
+    {
+        $adminUser = User::factory()->create([
+            'role' => 'admin',
+            'name' => 'Admin SSB',
+            'email' => 'admin-profile-notif@example.com',
+        ]);
+        Admin::create([
+            'user_id' => $adminUser->id,
+            'nama_admin' => 'Admin SSB',
+            'email' => $adminUser->email,
+            'password' => $adminUser->password,
+        ]);
+
+        $parentUser = User::factory()->create([
+            'role' => 'orang_tua',
+            'name' => 'Heni',
+            'email' => 'heni-profile@example.com',
+        ]);
+        $fulanParent = OrangTua::create([
+            'user_id' => $parentUser->id,
+            'nama_ortu' => 'Heni',
+            'email' => $parentUser->email,
+            'password' => $parentUser->password,
+            'no_hp' => '081234567811',
+        ]);
+        $sitiParent = OrangTua::create([
+            'user_id' => $parentUser->id,
+            'nama_ortu' => 'Heni',
+            'email' => $parentUser->email,
+            'password' => $parentUser->password,
+            'no_hp' => '081234567812',
+        ]);
+
+        Siswa::create([
+            'user_id' => $parentUser->id,
+            'id_ortu' => $fulanParent->id_ortu,
+            'nama_siswa' => 'Fulan bin Fulan',
+            'nama_ayah' => 'Ayah Fulan',
+            'nama_ibu' => 'Ibu Fulan',
+            'umur' => 10,
+            'status' => 'Active',
+        ]);
+        $siti = Siswa::create([
+            'user_id' => $parentUser->id,
+            'id_ortu' => $sitiParent->id_ortu,
+            'nama_siswa' => 'SITI NURAINI',
+            'nama_ayah' => 'Ayah Siti',
+            'nama_ibu' => 'Ibu Siti',
+            'umur' => 10,
+            'status' => 'Active',
+        ]);
+
+        $this->actingAs($parentUser)
+            ->postJson("/api/siswa/profil/{$siti->id_siswa}", [
+                'alamat' => 'Rumbai',
+                'tinggi_badan' => 130,
+                'berat_badan' => 30,
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.id_siswa', $siti->id_siswa);
+
+        $this->assertDatabaseHas('profil_siswa', [
+            'id_siswa' => $siti->id_siswa,
+            'alamat' => 'Rumbai',
+            'tinggi_badan' => 130,
+            'berat_badan' => 30,
+        ]);
+        $this->assertDatabaseHas('notifikasi', [
+            'judul' => 'Profil Siswa Diperbarui',
+            'isi' => 'Orang tua Heni memperbarui alamat, tinggi badan, berat badan untuk siswa SITI NURAINI.',
+        ]);
+        $this->assertDatabaseMissing('notifikasi', [
+            'judul' => 'Profil Siswa Diperbarui',
+            'isi' => 'Orang tua Heni memperbarui alamat, tinggi badan, berat badan untuk siswa Fulan bin Fulan.',
+        ]);
+    }
+
+    public function test_admin_profile_form_is_prefilled_from_parent_profile_update(): void
+    {
+        $adminUser = User::factory()->create([
+            'role' => 'admin',
+            'name' => 'Admin SSB',
+            'email' => 'admin-prefill-profile@example.com',
+        ]);
+        Admin::create([
+            'user_id' => $adminUser->id,
+            'nama_admin' => 'Admin SSB',
+            'email' => $adminUser->email,
+            'password' => $adminUser->password,
+        ]);
+        $parentUser = User::factory()->create([
+            'role' => 'orang_tua',
+            'name' => 'Heni',
+            'email' => 'heni-prefill-profile@example.com',
+        ]);
+        $parent = OrangTua::create([
+            'user_id' => $parentUser->id,
+            'nama_ortu' => 'Heni',
+            'email' => $parentUser->email,
+            'password' => $parentUser->password,
+            'no_hp' => '081234567814',
+        ]);
+        $siti = Siswa::create([
+            'user_id' => $parentUser->id,
+            'id_ortu' => $parent->id_ortu,
+            'nama_siswa' => 'SITI NURAINI',
+            'nama_ayah' => 'Ayah Siti',
+            'nama_ibu' => 'Ibu Siti',
+            'umur' => 10,
+            'status' => 'Active',
+        ]);
+
+        $this->actingAs($parentUser)
+            ->postJson("/api/siswa/profil/{$siti->id_siswa}", [
+                'alamat' => 'Bumi coy',
+                'tinggi_badan' => 160,
+                'berat_badan' => 45,
+            ])
+            ->assertOk();
+
+        $response = $this->actingAs($adminUser)
+            ->get("/admin/siswa/{$siti->id_siswa}/profil")
+            ->assertOk();
+
+        $student = $response->viewData('page')['props']['student'];
+
+        $this->assertSame('SITI NURAINI', $student['name']);
+        $this->assertSame('Bumi coy', $student['address']);
+        $this->assertSame(160, $student['height']);
+        $this->assertSame(45, $student['weight']);
+    }
+
+    public function test_parent_profile_only_shows_the_selected_child(): void
+    {
+        $parentUser = User::factory()->create([
+            'role' => 'orang_tua',
+            'name' => 'Heni',
+            'email' => 'heni-selected-profile@example.com',
+        ]);
+        $parent = OrangTua::create([
+            'user_id' => $parentUser->id,
+            'nama_ortu' => 'Heni',
+            'email' => $parentUser->email,
+            'password' => $parentUser->password,
+            'no_hp' => '081234567813',
+        ]);
+        $fulan = Siswa::create([
+            'user_id' => $parentUser->id,
+            'id_ortu' => $parent->id_ortu,
+            'nama_siswa' => 'Fulan bin Fulan',
+            'nama_ayah' => 'Ayah Fulan',
+            'nama_ibu' => 'Ibu Fulan',
+            'umur' => 12,
+            'status' => 'Active',
+        ]);
+        $siti = Siswa::create([
+            'user_id' => $parentUser->id,
+            'id_ortu' => $parent->id_ortu,
+            'nama_siswa' => 'SITI NURAINI',
+            'nama_ayah' => 'Ayah Siti',
+            'nama_ibu' => 'Ibu Siti',
+            'umur' => 10,
+            'status' => 'Active',
+        ]);
+
+        $sitiResponse = $this->actingAs($parentUser)
+            ->withSession(['id_siswa' => $siti->id_siswa])
+            ->get('/profile/orangtua')
+            ->assertOk();
+        $sitiProfile = $sitiResponse->viewData('page')['props']['profile'];
+
+        $this->assertSame(['SITI NURAINI'], $sitiProfile['children']);
+        $this->assertSame(['SITI NURAINI'], collect($sitiProfile['childDetails'])->pluck('name')->all());
+
+        $fulanResponse = $this->actingAs($parentUser)
+            ->withSession(['id_siswa' => $fulan->id_siswa])
+            ->get('/profile/orangtua')
+            ->assertOk();
+        $fulanProfile = $fulanResponse->viewData('page')['props']['profile'];
+
+        $this->assertSame(['Fulan bin Fulan'], $fulanProfile['children']);
+        $this->assertSame(['Fulan bin Fulan'], collect($fulanProfile['childDetails'])->pluck('name')->all());
     }
 
     public function test_parent_cannot_submit_revision_for_another_parents_student(): void

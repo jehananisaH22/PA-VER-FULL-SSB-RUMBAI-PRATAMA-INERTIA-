@@ -207,6 +207,18 @@ export default function HalamanFormPendaftaran({
                 />
               </label>
               <label>
+                <span>Umur</span>
+                <input
+                  type="number"
+                  name="age"
+                  min="1"
+                  value={formValues.age}
+                  onChange={handleTextChange}
+                  placeholder="Masukkan Umur"
+                  required
+                />
+              </label>
+              <label>
                 <span>Nama Ayah</span>
                 <input
                   type="text"
@@ -225,18 +237,6 @@ export default function HalamanFormPendaftaran({
                   value={formValues.motherName}
                   onChange={handleTextChange}
                   placeholder="Masukkan Nama"
-                  required
-                />
-              </label>
-              <label>
-                <span>Umur</span>
-                <input
-                  type="number"
-                  name="age"
-                  min="1"
-                  value={formValues.age}
-                  onChange={handleTextChange}
-                  placeholder="Masukkan Umur"
                   required
                 />
               </label>

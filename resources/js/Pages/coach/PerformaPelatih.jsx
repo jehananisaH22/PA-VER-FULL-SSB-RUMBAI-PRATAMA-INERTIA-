@@ -72,10 +72,6 @@ const dayNameToIndex = {
   saturday: 6,
 };
 const routineScheduleWeekdays = new Set([0, 3]);
-const routineScheduleSlots = new Set([
-  "3|16.30-17.30",
-  "0|07.30-09.30",
-]);
 const performanceToastElementId = "ssb-coach-performance-toast";
 
 function normalizeText(value) {
@@ -191,8 +187,10 @@ function showPerformanceToast(nextToast) {
 
   removePerformanceToast();
 
+  const toastId = `${Date.now()}-${Math.random()}`;
   const toastElement = document.createElement("div");
   toastElement.id = performanceToastElementId;
+  toastElement.dataset.toastId = toastId;
   toastElement.className = `coachPerformanceToast ${nextToast.type === "error" ? "isError" : "isSuccess"}`;
   toastElement.setAttribute("role", "status");
 
@@ -215,6 +213,13 @@ function showPerformanceToast(nextToast) {
   textElement.append(titleElement, messageElement);
   toastElement.append(textElement, closeButton);
   document.body.appendChild(toastElement);
+
+  window.setTimeout(() => {
+    const activeToast = document.getElementById(performanceToastElementId);
+    if (activeToast?.dataset.toastId === toastId) {
+      activeToast.remove();
+    }
+  }, 5000);
 }
 
 function getTodayDate() {
@@ -331,11 +336,7 @@ function isRoutineSchedule(schedule) {
   if (schedule?.isRoutine === false) return false;
 
   const weekday = getScheduleWeekday(schedule);
-  const time = String(schedule?.time || "")
-    .replace(/\s*WIB\s*/i, "")
-    .replace(/\s+/g, "");
-
-  return routineScheduleWeekdays.has(weekday) && routineScheduleSlots.has(`${weekday}|${time}`);
+  return routineScheduleWeekdays.has(weekday);
 }
 
 function scheduleMatchesHistoryFilter(schedule, category) {

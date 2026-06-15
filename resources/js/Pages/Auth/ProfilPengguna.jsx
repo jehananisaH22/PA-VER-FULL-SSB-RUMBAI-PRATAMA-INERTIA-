@@ -173,7 +173,7 @@ export default function ProfilPengguna({
               {childDetails.length > 0 && (
                 <div className="userProfileStudentDetails">
                   {childDetails.map((child) => (
-                    <div className="userProfileStudentDetail" key={child.name}>
+                    <div className="userProfileStudentDetail" key={child.id || child.name}>
                       <strong>{child.name}</strong>
                       <dl>
                         {(child.items || []).map((item) => (

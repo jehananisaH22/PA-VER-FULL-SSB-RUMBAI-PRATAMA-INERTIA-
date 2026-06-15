@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import "./DasborOrangTua.css";
 import "./UploadUlangBerkasOrangTua.css";
 import { parentRoutes, visitOrCall } from "./parentNavigation";
@@ -45,11 +45,17 @@ export default function UploadUlangBerkasOrangTua({
   childrenOptions = [],
   selectedChildId = null,
 }) {
+  const { flash = {} } = usePage().props;
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isSubmitSuccessOpen, setIsSubmitSuccessOpen] = useState(false);
+  const [isSubmitSuccessOpen, setIsSubmitSuccessOpen] = useState(() =>
+    String(flash.success || "").toLowerCase().includes("revisi pendaftaran")
+  );
+  const baseDoc = reuploadRequest?.document || {};
+  const hasActiveRequest = Boolean(reuploadRequest);
+  const shouldSuppressChildPicker = isSubmitSuccessOpen || !hasActiveRequest;
   const { activeChildName, openChildPicker, childPickerModal } = useParentChildSwitcher(
     userName,
-    childrenOptions,
+    shouldSuppressChildPicker ? [] : childrenOptions,
     false,
     selectedChildId
   );
@@ -64,7 +70,6 @@ export default function UploadUlangBerkasOrangTua({
     openChildPicker();
   };
   const fileInputRefs = useRef({});
-  const baseDoc = reuploadRequest?.document || {};
   const invalidIdentityKeys = reuploadRequest?.invalidIdentityFields || [];
   const invalidUploadKeys = reuploadRequest?.invalidUploadFields || [];
   const requiredIdentityFields = identityFields.filter((field) =>
@@ -73,7 +78,6 @@ export default function UploadUlangBerkasOrangTua({
   const requiredUploadFields = uploadFields.filter((field) => invalidUploadKeys.includes(field.key));
   const hasPartialTargets = requiredIdentityFields.length > 0 || requiredUploadFields.length > 0;
   const isRevisionLocked = Boolean(reuploadRequest);
-  const hasActiveRequest = Boolean(reuploadRequest);
   const openHome = visitOrCall(onOpenHome, parentRoutes.home);
   const logout = visitOrCall(onLogout, parentRoutes.logout);
   const openProfile = visitOrCall(undefined, parentRoutes.profile);
@@ -360,9 +364,8 @@ export default function UploadUlangBerkasOrangTua({
         <div className="parentReuploadSuccessOverlay" role="dialog" aria-modal="true" aria-label="Upload ulang berhasil">
           <div className="parentReuploadSuccessCard">
             <h3>Berhasil Dikirim</h3>
-            <p>Data dan file baru sudah terkirim ke admin untuk divalidasi ulang.</p>
-            <p>Silakan lakukan pembayaran pendaftaran langsung di lapangan saat latihan.</p>
-            <p>Akun sudah bisa login. Jika belum bayar, status tetap nonaktif.</p>
+            <p>Form perbaikan dan berkas baru berhasil dikirim.</p>
+            <p>Perubahan Anda akan divalidasi ulang oleh admin. Mohon tunggu sampai admin menyelesaikan pemeriksaan.</p>
             <button
               type="button"
               onClick={() => setIsSubmitSuccessOpen(false)}
@@ -372,7 +375,7 @@ export default function UploadUlangBerkasOrangTua({
           </div>
         </div>
       )}
-      {childPickerModal}
+      {hasActiveRequest && !isSubmitSuccessOpen && childPickerModal}
     </div>
   );
 }

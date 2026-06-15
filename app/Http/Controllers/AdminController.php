@@ -199,6 +199,21 @@ public function Admin_validasi_Pendaftaran_siswa($id)
 
     $pendaftaran->setAttribute('bukti_pembayaran_pendaftaran', $buktiPembayaran);
 
+    if ($pendaftaran->siswa) {
+        $displayStudent = $pendaftaran->siswa->replicate();
+        $displayStudent->setAttribute('id_siswa', $pendaftaran->siswa->id_siswa);
+        $displayStudent->setAttribute('nama_siswa', $pendaftaran->pending_nama_siswa ?: $pendaftaran->siswa->nama_siswa);
+        $displayStudent->setAttribute('nama_ayah', $pendaftaran->pending_nama_ayah ?: $pendaftaran->siswa->nama_ayah);
+        $displayStudent->setAttribute('nama_ibu', $pendaftaran->pending_nama_ibu ?: $pendaftaran->siswa->nama_ibu);
+        $displayStudent->setAttribute('umur', $pendaftaran->pending_umur ?: $pendaftaran->siswa->umur);
+        $displayStudent->setAttribute('akta_kelahiran', $pendaftaran->pending_akta_kelahiran ?: $pendaftaran->siswa->akta_kelahiran);
+        $displayStudent->setAttribute('kartu_keluarga', $pendaftaran->pending_kartu_keluarga ?: $pendaftaran->siswa->kartu_keluarga);
+        $displayStudent->setAttribute('rapor', $pendaftaran->pending_rapor ?: $pendaftaran->siswa->rapor);
+        $displayStudent->setAttribute('pas_photo_3x4', $pendaftaran->pending_pas_photo_3x4 ?: $pendaftaran->siswa->pas_photo_3x4);
+        $displayStudent->setRelation('orangtua', $pendaftaran->siswa->orangtua);
+        $pendaftaran->setRelation('siswa', $displayStudent);
+    }
+
     $pendaftaran->setAttribute('files', [
         'birthCert' => array_values(array_filter([$pendaftaran->siswa?->akta_kelahiran])),
         'reportCard' => array_values(array_filter([$pendaftaran->siswa?->rapor])),
@@ -336,6 +351,9 @@ public function submitValidasi(Request $request, $id)
     $paymentData = null;
 
     if ($statusApproval === 'Disetujui') {
+        $this->applyPendingRegistrationRevision($pendaftaran);
+        $pendaftaran->load('siswa.orangtua');
+
         $cekPembayaran = Pembayaran::where('id_siswa', $pendaftaran->id_siswa)
             ->where('jenis', 'Pendaftaran')
             ->first();
@@ -415,6 +433,43 @@ public function submitValidasi(Request $request, $id)
         'siswa_status' => $pendaftaran->siswa?->fresh()?->status,
         'data' => $pendaftaran->fresh()
     ]);
+}
+
+private function applyPendingRegistrationRevision(Pendaftaran_Siswa $pendaftaran): void
+{
+    $siswa = $pendaftaran->siswa;
+
+    if (! $siswa) {
+        return;
+    }
+
+    $studentUpdates = [];
+    $pendingMap = [
+        'pending_nama_siswa' => 'nama_siswa',
+        'pending_nama_ayah' => 'nama_ayah',
+        'pending_nama_ibu' => 'nama_ibu',
+        'pending_umur' => 'umur',
+        'pending_akta_kelahiran' => 'akta_kelahiran',
+        'pending_kartu_keluarga' => 'kartu_keluarga',
+        'pending_rapor' => 'rapor',
+        'pending_pas_photo_3x4' => 'pas_photo_3x4',
+    ];
+
+    foreach ($pendingMap as $pendingColumn => $studentColumn) {
+        $pendingValue = $pendaftaran->{$pendingColumn};
+
+        if ($pendingValue !== null && $pendingValue !== '') {
+            $studentUpdates[$studentColumn] = $pendingValue;
+        }
+
+        $pendaftaran->{$pendingColumn} = null;
+    }
+
+    if (! empty($studentUpdates)) {
+        $siswa->update($studentUpdates);
+    }
+
+    $pendaftaran->save();
 }
 
 
@@ -1271,16 +1326,20 @@ public function Hapus_Pelatih($id)
     DB::beginTransaction();
 
     try {
-        if (\Illuminate\Support\Facades\Schema::hasTable('jadwal_latihan')) {
-            DB::table('jadwal_latihan')
-                ->where('id_pelatih', $pelatih->id_pelatih)
-                ->update(['id_pelatih' => null]);
-        }
-
-        if (\Illuminate\Support\Facades\Schema::hasTable('catatan_pelatih')) {
-            DB::table('catatan_pelatih')
-                ->where('id_pelatih', $pelatih->id_pelatih)
-                ->update(['id_pelatih' => null]);
+        foreach ([
+            'jadwal_latihan',
+            'presensi',
+            'performa_siswa',
+            'catatan_pelatih',
+        ] as $table) {
+            if (
+                \Illuminate\Support\Facades\Schema::hasTable($table) &&
+                \Illuminate\Support\Facades\Schema::hasColumn($table, 'id_pelatih')
+            ) {
+                DB::table($table)
+                    ->where('id_pelatih', $pelatih->id_pelatih)
+                    ->update(['id_pelatih' => null]);
+            }
         }
 
         if (
@@ -1293,6 +1352,27 @@ public function Hapus_Pelatih($id)
         }
 
         if ($userId) {
+            if (
+                \Illuminate\Support\Facades\Schema::hasTable('notifikasi_terkirim') &&
+                \Illuminate\Support\Facades\Schema::hasColumn('notifikasi_terkirim', 'user_id')
+            ) {
+                $notificationUserIdIsNullable = DB::getDriverName() !== 'mysql'
+                    || DB::table('information_schema.COLUMNS')
+                        ->where('TABLE_SCHEMA', DB::getDatabaseName())
+                        ->where('TABLE_NAME', 'notifikasi_terkirim')
+                        ->where('COLUMN_NAME', 'user_id')
+                        ->value('IS_NULLABLE') === 'YES';
+
+                $notificationUserRows = DB::table('notifikasi_terkirim')
+                    ->where('user_id', $userId);
+
+                if ($notificationUserIdIsNullable) {
+                    $notificationUserRows->update(['user_id' => null]);
+                } else {
+                    $notificationUserRows->delete();
+                }
+            }
+
             DB::table('pelatih')
                 ->where('id_pelatih', $pelatih->id_pelatih)
                 ->update(['user_id' => null]);
@@ -1372,6 +1452,7 @@ public function Tambah_Jadwal(Request $request)
         'jam_selesai' => 'required',
         'lokasi' => 'required',
         'kategori_umur' => 'nullable|string',
+        'id_pelatih' => 'nullable|exists:pelatih,id_pelatih',
         'id_siswa' => 'required|array',
         'id_siswa.*' => 'exists:siswa,id_siswa',
     ]);
@@ -1379,6 +1460,17 @@ public function Tambah_Jadwal(Request $request)
     $kategoriUmur = $request->has('kategori_umur')
         ? $this->normalizeScheduleCategoryValue($request->input('kategori_umur'))
         : null;
+
+    if ($this->isWednesdayOrSundayScheduleDate($request->tanggal)) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Latihan tambahan harus dibuat di luar hari Rabu dan Minggu.',
+            'errors' => [
+                'tanggal' => ['Latihan tambahan harus dibuat di luar hari Rabu dan Minggu.'],
+            ],
+        ], 422);
+    }
+
     $categoryMismatchResponse = $this->scheduleStudentCategoryMismatchResponse(
         $request->input('id_siswa', []),
         $kategoriUmur
@@ -1394,6 +1486,7 @@ public function Tambah_Jadwal(Request $request)
         'jam_selesai' => $request->jam_selesai,
         'lokasi' => $request->lokasi,
         'kategori_umur' => $kategoriUmur,
+        'id_pelatih' => $request->id_pelatih,
     ]);
 
     $jadwal->siswa()->attach($request->id_siswa);
@@ -1418,6 +1511,7 @@ public function Update_Jadwal(Request $request, $id)
         'jam_selesai' => 'required',
         'lokasi' => 'required',
         'kategori_umur' => 'nullable|string',
+        'id_pelatih' => 'nullable|exists:pelatih,id_pelatih',
         'id_siswa' => 'required|array',
         'id_siswa.*' => 'exists:siswa,id_siswa',
     ]);
@@ -1436,12 +1530,23 @@ public function Update_Jadwal(Request $request, $id)
 
     $jadwal = \App\Models\Jadwal_Latihan::findOrFail($id);
 
+    if (! $this->isRoutineTrainingSchedule($jadwal) && $this->isWednesdayOrSundayScheduleDate($request->tanggal)) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Latihan tambahan harus dibuat di luar hari Rabu dan Minggu.',
+            'errors' => [
+                'tanggal' => ['Latihan tambahan harus dibuat di luar hari Rabu dan Minggu.'],
+            ],
+        ], 422);
+    }
+
     $jadwal->update([
         'tanggal' => $request->tanggal,
         'jam_mulai' => $request->jam_mulai,
         'jam_selesai' => $request->jam_selesai,
         'lokasi' => $request->lokasi,
         'kategori_umur' => $kategoriUmur,
+        'id_pelatih' => $request->id_pelatih,
     ]);
 
     $jadwal->siswa()->sync($request->id_siswa);
@@ -2241,6 +2346,19 @@ private function normalizeScheduleCategoryValue(?string $category): string
     return 'all';
 }
 
+private function isWednesdayOrSundayScheduleDate($date): bool
+{
+    $dayOfWeek = Carbon::parse($date)->dayOfWeek;
+
+    return in_array($dayOfWeek, [Carbon::WEDNESDAY, Carbon::SUNDAY], true);
+}
+
+private function isRoutineTrainingSchedule(Jadwal_Latihan $jadwal): bool
+{
+    $scheduleDate = Carbon::parse($jadwal->tanggal);
+    return in_array($scheduleDate->dayOfWeek, [Carbon::WEDNESDAY, Carbon::SUNDAY], true);
+}
+
 private function scheduleStudentCategoryMismatchResponse(array $studentIds, ?string $category)
 {
     $normalizedCategory = $this->normalizeScheduleCategoryValue($category);
@@ -2281,7 +2399,9 @@ private function syncActiveStudentToCategorySchedules(?Siswa $siswa): void
 
     $schedules = Jadwal_Latihan::with('siswa:id_siswa,umur')
         ->orderBy('id_jadwal')
-        ->get();
+        ->get()
+        ->filter(fn (Jadwal_Latihan $jadwal) => $this->isRoutineTrainingSchedule($jadwal))
+        ->values();
 
     if ($schedules->isEmpty()) {
         return;

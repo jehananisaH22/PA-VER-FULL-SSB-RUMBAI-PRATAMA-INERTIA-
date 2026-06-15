@@ -162,6 +162,23 @@
   box-shadow: 0 0 0 3px rgba(79, 152, 43, 0.16);
 }
 
+.regPaymentGreenSelect {
+  width: 100%;
+}
+
+.regPaymentGreenSelect .greenSelectTrigger {
+  min-height: 44px;
+  border-radius: 12px;
+  border-color: #b9d3b4;
+  background: #f9fcf8;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.regPaymentDateGrid .regPaymentGreenSelect {
+  min-width: 0;
+}
+
 .regPaymentDateGroup {
   display: grid;
   gap: 6px;

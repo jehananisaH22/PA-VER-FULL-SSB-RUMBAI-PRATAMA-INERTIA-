@@ -8,6 +8,7 @@ use App\Models\OrangTua;
 use App\Models\Pendaftaran_Siswa;
 use App\Models\Siswa;
 use App\Models\User;
+use App\Models\Pelatih;
 use App\Support\SsbInertiaData;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
@@ -133,6 +134,7 @@ class FullSystemFlowTest extends TestCase
             ->assertJsonPath('siswa_status', 'Inactive');
 
         $this->actingAs($parentUser);
+        $siswa->update(['user_id' => $parentUser->id]); // DIUBAH
         session(['id_siswa' => $siswa->id_siswa]);
         $revisionPayload = SsbInertiaData::parentPayload();
         $this->assertSame($siswa->id_siswa, $revisionPayload['reuploadRequest']['studentId']);
@@ -161,8 +163,13 @@ class FullSystemFlowTest extends TestCase
 
         $siswa->refresh();
         $pendaftaran->refresh();
-        $this->assertSame('Anak Full Flow Revisi', $siswa->nama_siswa);
+        $this->assertSame('Anak Full Flow', $siswa->nama_siswa);
+        $this->assertSame('Anak Full Flow Revisi', $pendaftaran->pending_nama_siswa);
         $this->assertSame('Menunggu', $pendaftaran->status_approval);
+        $this->assertTrue(collect(SsbInertiaData::registrationRows())->contains(
+            fn ($row) => $row['no'] === $pendaftaran->id_pendaftaran
+                && $row['childName'] === 'Anak Full Flow Revisi'
+        ));
 
         $this->actingAs($adminUser)
             ->postJson("/api/admin/pendaftaran/{$pendaftaran->id_pendaftaran}/validasi", [
@@ -179,9 +186,14 @@ class FullSystemFlowTest extends TestCase
             ->assertOk()
             ->assertJsonPath('status_approval', 'Disetujui')
             ->assertJsonPath('siswa_status', 'Active');
+        $siswa->refresh();
+        $pendaftaran->refresh();
+        $this->assertSame('Anak Full Flow Revisi', $siswa->nama_siswa);
+        $this->assertNull($pendaftaran->pending_nama_siswa);
 
         $this->assertDatabaseHas('siswa', [
             'id_siswa' => $siswa->id_siswa,
+            'nama_siswa' => 'Anak Full Flow Revisi',
             'status' => 'Active',
         ]);
         $this->assertDatabaseHas('pendaftaran', [
@@ -216,7 +228,7 @@ class FullSystemFlowTest extends TestCase
 
         $scheduleResponse = $this->actingAs($adminUser)
             ->postJson('/api/admin/tambah-jadwal', [
-                'tanggal' => '2026-06-10',
+                'tanggal' => '2026-06-01', 
                 'jam_mulai' => '15:00:00',
                 'jam_selesai' => '17:00:00',
                 'lokasi' => 'Lapangan Full Flow',
@@ -231,7 +243,7 @@ class FullSystemFlowTest extends TestCase
             ->postJson('/api/admin/prestasi/tambah-prestasi', [
                 'id_siswa' => [$siswa->id_siswa],
                 'nama_prestasi' => 'Prestasi Full Flow',
-                'tanggal_diberikan' => '2026-06-11',
+                'tanggal_diberikan' => '2026-06-02',
             ])
             ->assertCreated()
             ->assertJsonPath('success', true);
@@ -271,7 +283,7 @@ class FullSystemFlowTest extends TestCase
         $this->actingAs($coachUser)
             ->postJson('/api/pelatih/presensi/input', [
                 'id_jadwal' => $scheduleId,
-                'tanggal' => '2026-06-10',
+                'tanggal' => '2026-06-01',
                 'data' => [
                     ['id_siswa' => $siswa->id_siswa, 'status' => 'hadir'],
                 ],
@@ -281,7 +293,7 @@ class FullSystemFlowTest extends TestCase
 
         $this->actingAs($coachUser)
             ->postJson("/api/pelatih/performa-siswa/input/{$scheduleId}", [
-                'tanggal_penilaian' => '2026-06-10',
+                'tanggal_penilaian' => '2026-06-01',
                 'data' => [
                     [
                         'id_siswa' => $siswa->id_siswa,
@@ -308,7 +320,7 @@ class FullSystemFlowTest extends TestCase
             ->post('/api/pelatih/bukti-pembayaran/tambah', [
                 'id_siswa' => $siswa->id_siswa,
                 'jenis' => 'Bulanan',
-                'tanggal_bukti_bayar' => '2026-06-12',
+                'tanggal_bukti_bayar' => '2026-06-01',
                 'bukti_bayar' => UploadedFile::fake()->create('bukti-bulanan.pdf', 20, 'application/pdf'),
             ])
             ->assertCreated()
@@ -334,6 +346,7 @@ class FullSystemFlowTest extends TestCase
             ->assertOk();
 
         $this->actingAs($parentUser);
+        $siswa->update(['user_id' => $parentUser->id]); // DIUBAH
         session(['id_siswa' => $siswa->id_siswa]);
         $parentPayload = SsbInertiaData::parentPayload();
 

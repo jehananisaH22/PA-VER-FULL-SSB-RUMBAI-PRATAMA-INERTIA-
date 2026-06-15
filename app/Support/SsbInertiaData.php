@@ -139,9 +139,7 @@ class SsbInertiaData
             ->orderByDesc('jadwal_latihan.tanggal')
             ->get();
 
-        $allActiveStudentIds = self::activeStudentIds();
-
-        return $rows->map(function ($schedule) use ($studentIds, $activeOnly, $allActiveStudentIds) {
+        return $rows->map(function ($schedule) use ($studentIds, $activeOnly) {
             $students = DB::table('jadwal_siswa')
                 ->join('siswa', 'jadwal_siswa.id_siswa', '=', 'siswa.id_siswa')
                 ->where('jadwal_siswa.id_jadwal', $schedule->id_jadwal)
@@ -150,6 +148,32 @@ class SsbInertiaData
                 })
                 ->select('siswa.id_siswa', 'siswa.nama_siswa', 'siswa.umur')
                 ->get();
+
+            $storedCategory = $schedule->kategori_umur !== null
+                ? self::categoryValue((string) $schedule->kategori_umur)
+                : null;
+            $date = Carbon::parse($schedule->tanggal)->locale('id');
+            $isRoutineSchedule = in_array($date->dayOfWeek, [Carbon::WEDNESDAY, Carbon::SUNDAY], true);
+
+            if ($isRoutineSchedule && $students->isEmpty()) {
+                $routineStudents = DB::table('siswa')
+                    ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+                    ->select('id_siswa', 'nama_siswa', 'umur')
+                    ->orderBy('nama_siswa')
+                    ->get();
+
+                if ($storedCategory && $storedCategory !== 'all') {
+                    $routineStudents = $routineStudents
+                        ->filter(fn ($student) => self::categoryValue(self::categoryFromAge((int) $student->umur)) === $storedCategory)
+                        ->values();
+                }
+
+                if ($activeOnly && $routineStudents->isEmpty()) {
+                    return null;
+                }
+
+                $students = $routineStudents;
+            }
 
             if ($activeOnly && $students->isEmpty()) {
                 return null;
@@ -170,24 +194,11 @@ class SsbInertiaData
                 ->map(fn ($student) => self::categoryValue(self::categoryFromAge((int) $student->umur)))
                 ->unique()
                 ->values();
-            $storedCategory = $schedule->kategori_umur !== null
-                ? self::categoryValue((string) $schedule->kategori_umur)
-                : null;
             $firstCategory = $storedCategory
                 ?: ($studentCategories->count() === 1 ? $studentCategories->first() : 'all');
             $studentNames = $students->pluck('nama_siswa')->values()->all();
             $selectedStudentIds = $students->pluck('id_siswa')->values()->all();
-            $targetsAllActiveStudents = ! empty($selectedStudentIds)
-                && empty(array_diff($allActiveStudentIds, array_map('intval', $selectedStudentIds)));
-            $displayStudentNames = $targetsAllActiveStudents ? [] : $studentNames;
-            $date = Carbon::parse($schedule->tanggal)->locale('id');
-            $routineSlotKey = (int) $date->dayOfWeek . '|' .
-                Carbon::parse($schedule->jam_mulai)->format('H:i:s') . '-' .
-                Carbon::parse($schedule->jam_selesai)->format('H:i:s');
-            $isRoutineSchedule = in_array($routineSlotKey, [
-                Carbon::WEDNESDAY . '|16:30:00-17:30:00',
-                Carbon::SUNDAY . '|07:30:00-09:30:00',
-            ], true);
+            $displayStudentNames = $studentNames;
 
             return [
                 'id' => 'schedule-' . $schedule->id_jadwal,
@@ -244,6 +255,7 @@ class SsbInertiaData
                 $first = $rows->first();
                 $date = Carbon::parse(self::attendanceDateValue($first));
                 $expectedMeetings = 8;
+                $actualMeetings = max($rows->count(), 1);
                 $countStatus = fn ($status) => $rows->filter(
                     fn ($row) => strtolower(trim((string) $row->status_kehadiran)) === strtolower($status)
                 )->count();
@@ -298,10 +310,10 @@ class SsbInertiaData
                     'hadirCount' => $countStatus('Hadir'),
                     'sakitCount' => $countStatus('Sakit'),
                     'alphaCount' => $alphaCount,
-                    'hadir' => (int) round(($countStatus('Hadir') / $expectedMeetings) * 100),
-                    'sakit' => (int) round(($countStatus('Sakit') / $expectedMeetings) * 100),
-                    'alpha' => (int) round(($alphaCount / $expectedMeetings) * 100),
-                    'izin' => (int) round(($alphaCount / $expectedMeetings) * 100),
+                    'hadir' => (int) round(($countStatus('Hadir') / $actualMeetings) * 100),
+                    'sakit' => (int) round(($countStatus('Sakit') / $actualMeetings) * 100),
+                    'alpha' => (int) round(($alphaCount / $actualMeetings) * 100),
+                    'izin' => (int) round(($alphaCount / $actualMeetings) * 100),
                     'createdAt' => self::timestamp($date),
                 ];
             })
@@ -342,16 +354,8 @@ class SsbInertiaData
             ->map(function ($row) {
                 $date = Carbon::parse($row->tanggal_penilaian);
                 $average = round(((float) $row->dribbling + (float) $row->passing + (float) $row->shooting) / 3, 2);
-                $routineSlotKey = $row->jadwal_tanggal && $row->jam_mulai && $row->jam_selesai
-                    ? (int) Carbon::parse($row->jadwal_tanggal)->dayOfWeek . '|' .
-                        Carbon::parse($row->jam_mulai)->format('H:i:s') . '-' .
-                        Carbon::parse($row->jam_selesai)->format('H:i:s')
-                    : null;
-                $isRoutineSchedule = $routineSlotKey
-                    ? in_array($routineSlotKey, [
-                        Carbon::WEDNESDAY . '|16:30:00-17:30:00',
-                        Carbon::SUNDAY . '|07:30:00-09:30:00',
-                    ], true)
+                $isRoutineSchedule = $row->jadwal_tanggal
+                    ? in_array(Carbon::parse($row->jadwal_tanggal)->dayOfWeek, [Carbon::WEDNESDAY, Carbon::SUNDAY], true)
                     : true;
 
                 return [
@@ -522,11 +526,19 @@ class SsbInertiaData
                 $paymentProofUrl = $paymentProofPath
                     ? url('/api/admin/lihat-bukti/' . dirname($paymentProofPath) . '/' . basename($paymentProofPath))
                     : null;
+                $displayName = $row->pending_nama_siswa ?: $row->nama_siswa;
+                $displayFatherName = $row->pending_nama_ayah ?: $row->nama_ayah;
+                $displayMotherName = $row->pending_nama_ibu ?: $row->nama_ibu;
+                $displayAge = $row->pending_umur ?: $row->umur;
+                $displayBirthCert = $row->pending_akta_kelahiran ?: $row->akta_kelahiran;
+                $displayReportCard = $row->pending_rapor ?: $row->rapor;
+                $displayFamilyCard = $row->pending_kartu_keluarga ?: $row->kartu_keluarga;
+                $displayPhoto = $row->pending_pas_photo_3x4 ?: $row->pas_photo_3x4;
                 $documentFileUrls = [
-                    'birthCert' => $row->akta_kelahiran ? url('/api/admin/file-pendaftaran-siswa/akta/' . basename($row->akta_kelahiran)) : null,
-                    'reportCard' => $row->rapor ? url('/api/admin/file-pendaftaran-siswa/rapor/' . basename($row->rapor)) : null,
-                    'familyCard' => $row->kartu_keluarga ? url('/api/admin/file-pendaftaran-siswa/kk/' . basename($row->kartu_keluarga)) : null,
-                    'photo' => $row->pas_photo_3x4 ? url('/api/admin/file-pendaftaran-siswa/foto/' . basename($row->pas_photo_3x4)) : null,
+                    'birthCert' => $displayBirthCert ? url('/api/admin/file-pendaftaran-siswa/akta/' . basename($displayBirthCert)) : null,
+                    'reportCard' => $displayReportCard ? url('/api/admin/file-pendaftaran-siswa/rapor/' . basename($displayReportCard)) : null,
+                    'familyCard' => $displayFamilyCard ? url('/api/admin/file-pendaftaran-siswa/kk/' . basename($displayFamilyCard)) : null,
+                    'photo' => $displayPhoto ? url('/api/admin/file-pendaftaran-siswa/foto/' . basename($displayPhoto)) : null,
                     'paymentProof' => $paymentProofUrl,
                 ];
                 $invalidIdentityFields = [];
@@ -545,8 +557,8 @@ class SsbInertiaData
                 return [
                     'no' => $row->id_pendaftaran,
                     'createdAt' => self::timestamp($row->tanggal_daftar) + (int) $row->id_pendaftaran,
-                    'name' => $row->nama_siswa,
-                    'childName' => $row->nama_siswa,
+                    'name' => $displayName,
+                    'childName' => $displayName,
                     'email' => $row->email ?: '-',
                     'phone' => $row->no_hp ?: '-',
                     'status' => match ($row->status_approval) {
@@ -555,14 +567,14 @@ class SsbInertiaData
                         'Revisi' => 'Perlu Perbaikan',
                         default => 'Belum Diperiksa',
                     },
-                    'motherName' => $row->nama_ibu ?: '-',
-                    'fatherName' => $row->nama_ayah ?: '-',
-                    'age' => $row->umur ?: '-',
+                    'motherName' => $displayMotherName ?: '-',
+                    'fatherName' => $displayFatherName ?: '-',
+                    'age' => $displayAge ?: '-',
                     'files' => [
-                        'birthCert' => array_filter([$row->akta_kelahiran]),
-                        'reportCard' => array_filter([$row->rapor]),
-                        'familyCard' => array_filter([$row->kartu_keluarga]),
-                        'photo' => array_filter([$row->pas_photo_3x4]),
+                        'birthCert' => array_filter([$displayBirthCert]),
+                        'reportCard' => array_filter([$displayReportCard]),
+                        'familyCard' => array_filter([$displayFamilyCard]),
+                        'photo' => array_filter([$displayPhoto]),
                         'paymentProof' => array_filter([$paymentProofPath]),
                     ],
                     'fileObjects' => array_map(
@@ -655,14 +667,45 @@ class SsbInertiaData
             ->orderByDesc('notifikasi_terkirim.id_notifikasi_terkirim')
             ->limit(30)
             ->get()
-            ->map(fn ($row) => [
-                'id' => $row->id_notifikasi_terkirim,
-                'text' => trim(($row->judul ? "[{$row->judul}] " : '') . ($row->isi ?? '')),
-                'read' => strtolower((string) $row->status_baca) === 'sudah dibaca',
-                'createdAt' => $row->created_at,
-            ])
+            ->map(function ($row) {
+                $title = trim((string) ($row->judul ?? ''));
+                $message = trim((string) ($row->isi ?? ''));
+
+                return [
+                    'id' => $row->id_notifikasi_terkirim,
+                    'title' => $title,
+                    'message' => $message,
+                    'text' => trim(($title ? "[{$title}] " : '') . $message),
+                    'read' => strtolower((string) $row->status_baca) === 'sudah dibaca',
+                    'createdAt' => $row->created_at,
+                    'actionMenu' => self::adminNotificationMenu($title, $message),
+                ];
+            })
             ->values()
             ->all();
+    }
+
+    private static function adminNotificationMenu(?string $title, ?string $message): string
+    {
+        $text = strtolower(trim(($title ?? '') . ' ' . ($message ?? '')));
+
+        if (str_contains($text, 'pembayaran') || str_contains($text, 'bukti bayar')) {
+            return 'Pembayaran';
+        }
+
+        if (str_contains($text, 'pendaftaran') || str_contains($text, 'berkas')) {
+            return 'Pendaftaran';
+        }
+
+        if (str_contains($text, 'jadwal')) {
+            return 'Jadwal Latihan';
+        }
+
+        if (str_contains($text, 'prestasi')) {
+            return 'Prestasi';
+        }
+
+        return 'Home';
     }
 
     public static function coachNotifications(?int $coachUserId = null): array
@@ -830,18 +873,25 @@ class SsbInertiaData
             session()->forget('id_siswa');
         }
 
-        if (! $selectedStudentId && $students->count() === 1) {
-            $selectedStudentId = (int) $students->first()->id_siswa;
+        $directStudents = $user
+            ? $students->filter(fn ($student) => (int) ($student->user_id ?? 0) === (int) $user->id)->values()
+            : collect();
+        if (! $selectedStudentId && $directStudents->count() === 1) {
+            $selectedStudentId = (int) $directStudents->first()->id_siswa;
             session(['id_siswa' => $selectedStudentId]);
             $mustChooseChildAfterLogin = false;
         }
 
-        $shouldOpenChildPicker = $students->count() > 0 && (
-            $mustChooseChildAfterLogin
-            || ! $selectedStudentId
-        );
-
-        session()->forget('show_child_picker_after_login');
+        if (
+            ! $selectedStudentId
+            && $students->count() === 1
+            && $user
+            && (int) ($students->first()->user_id ?? 0) === (int) $user->id
+        ) {
+            $selectedStudentId = (int) $students->first()->id_siswa;
+            session(['id_siswa' => $selectedStudentId]);
+            $mustChooseChildAfterLogin = false;
+        }
 
         $activeStudent = $selectedStudentId
             ? $students->firstWhere('id_siswa', (int) $selectedStudentId)
@@ -872,8 +922,20 @@ class SsbInertiaData
             if ($revisionStudentId) {
                 $activeStudent = $students->firstWhere('id_siswa', (int) $revisionStudentId);
                 $selectedStudentId = $activeStudent ? (int) $activeStudent->id_siswa : $selectedStudentId;
+
+                if ($selectedStudentId) {
+                    session(['id_siswa' => $selectedStudentId]);
+                    $mustChooseChildAfterLogin = false;
+                }
             }
         }
+
+        $shouldOpenChildPicker = $students->count() > 0 && (
+            $mustChooseChildAfterLogin
+            || ! $selectedStudentId
+        );
+
+        session()->forget('show_child_picker_after_login');
 
         $firstStudent = $activeStudent;
         $studentIds = $firstStudent ? [$firstStudent->id_siswa] : [];

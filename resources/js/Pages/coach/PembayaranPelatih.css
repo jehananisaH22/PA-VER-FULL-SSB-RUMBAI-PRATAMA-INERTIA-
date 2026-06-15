@@ -250,6 +250,55 @@
   color: #2f7d1f;
 }
 
+.coachPaymentAmountField {
+  margin-bottom: 14px;
+  display: block;
+  color: #0f172a;
+}
+
+.coachPaymentAmountField > span {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.coachPaymentAmountInputWrap {
+  height: 46px;
+  border: 1px solid #cfd9c9;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  background: #ffffff;
+}
+
+.coachPaymentAmountInputWrap:focus-within {
+  border-color: #77b957;
+  box-shadow: 0 0 0 3px rgba(123, 201, 76, 0.14);
+}
+
+.coachPaymentAmountInputWrap strong {
+  font-size: 14px;
+  color: #3f7d23;
+}
+
+.coachPaymentAmountInputWrap input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #102033;
+  background: transparent;
+}
+
+.coachPaymentAmountInputWrap input:disabled {
+  color: #64748b;
+  cursor: not-allowed;
+}
+
 .coachPaymentFileInput {
   display: none;
 }

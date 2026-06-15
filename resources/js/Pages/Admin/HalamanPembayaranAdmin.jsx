@@ -589,7 +589,7 @@ export default function HalamanPembayaranAdmin({
 
     const timerId = window.setTimeout(() => {
       setSuccessMessage("");
-    }, 2800);
+    }, 5000);
 
     return () => window.clearTimeout(timerId);
   }, [successMessage]);
@@ -748,6 +748,16 @@ export default function HalamanPembayaranAdmin({
             <span className="adminPaymentTabLabel">Validasi Pembayaran</span>
             <span className="adminPaymentTabIcon" aria-hidden="true">
               <ValidationTabIcon />
+            </span>
+          </button>
+          <button
+            type="button"
+            className={activeTab === "history" ? "is-active" : ""}
+            onClick={() => setActiveTab("history")}
+          >
+            <span className="adminPaymentTabLabel">History Pembayaran</span>
+            <span className="adminPaymentTabIcon" aria-hidden="true">
+              <HistoryTabIcon />
             </span>
           </button>
         </div>
@@ -961,4 +971,3 @@ export default function HalamanPembayaranAdmin({
     </section>
   );
 }
-

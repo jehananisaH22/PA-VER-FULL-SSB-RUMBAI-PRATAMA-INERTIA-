@@ -11,6 +11,133 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
+select {
+  accent-color: #5dae2f;
+}
+
+select option {
+  background: #ffffff;
+  color: #111827;
+}
+
+select option:checked {
+  background: #5dae2f;
+  color: #ffffff;
+  box-shadow: 0 0 0 100vmax #5dae2f inset;
+}
+
+select option:hover,
+select option:focus {
+  background: #e9f7df;
+  color: #2f6f1f;
+}
+
+.greenSelect {
+  position: relative;
+  display: inline-block;
+  min-width: 118px;
+}
+
+.greenSelectTrigger {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid #bfe4b0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2a3d;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.greenSelectTrigger:hover,
+.greenSelect.is-open .greenSelectTrigger {
+  border-color: #5dae2f;
+  box-shadow: 0 0 0 3px rgba(93, 174, 47, 0.14);
+}
+
+.greenSelectTrigger:disabled {
+  cursor: not-allowed;
+  color: #9ca3af;
+  background: #f8fafc;
+  border-color: #e5e7eb;
+  box-shadow: none;
+}
+
+.greenSelectChevron {
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid #4f6f44;
+  border-bottom: 2px solid #4f6f44;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.18s ease;
+  flex: 0 0 auto;
+}
+
+.greenSelect.is-open .greenSelectChevron {
+  transform: rotate(225deg) translate(-2px, -1px);
+}
+
+.greenSelectMenu {
+  position: absolute;
+  z-index: 1200;
+  top: calc(100% + 8px);
+  left: 0;
+  width: max(100%, 132px);
+  max-height: 230px;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid #cdebc4;
+  border-radius: 8px;
+  background: #f7fff3;
+  box-shadow: 0 14px 30px rgba(21, 57, 16, 0.13);
+}
+
+.greenSelectPortalMenu {
+  position: fixed;
+  top: auto;
+  bottom: auto;
+  right: auto;
+  z-index: 99999;
+}
+
+.greenSelect.is-up .greenSelectMenu {
+  top: auto;
+  bottom: calc(100% + 8px);
+}
+
+.greenSelectOption {
+  width: 100%;
+  min-height: 34px;
+  display: block;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #07360f;
+  text-align: left;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.greenSelectOption:hover,
+.greenSelectOption:focus-visible {
+  background: #e2f4d9;
+  outline: none;
+}
+
+.greenSelectOption.is-selected {
+  background: #5dae2f;
+  color: #ffffff;
+}
+
 .appOverlay {
   position: fixed;
   inset: 0;
@@ -418,6 +545,10 @@ html body :where(.adminPaymentToastIcon, .trainingScheduleToastDot) {
 .paginationSize:focus {
   border-color: #5dae2f;
   box-shadow: 0 0 0 3px rgba(93, 174, 47, 0.15);
+}
+
+.paginationSizeSelect {
+  min-width: 144px;
 }
 
 @media (max-width: 768px) {

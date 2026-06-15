@@ -1,6 +1,7 @@
 .adminCoachesPage {
   display: grid;
   gap: 12px;
+  padding-bottom: 18px;
 }
 
 .adminCoachesCard,
@@ -117,6 +118,25 @@
   color: #334155;
   padding: 0 10px;
   font-size: 12px;
+}
+
+.adminCoachNotesGreenSelect {
+  min-width: 150px;
+}
+
+.adminCoachNotesGreenSelect .greenSelectTrigger {
+  min-height: 34px;
+  border-color: #d6dfcf;
+  border-radius: 10px;
+  color: #334155;
+  font-size: 12px;
+  padding: 0 10px;
+}
+
+.adminCatatanPelatihPagination {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 24px;
 }
 
 .adminCoachesModalOverlay {

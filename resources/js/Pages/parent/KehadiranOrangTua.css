@@ -386,6 +386,7 @@
   background: #468f28;
 }
 
+.attendanceLegend .dot.alpha,
 .attendanceLegend .dot.izin {
   background: #2f5b23;
 }

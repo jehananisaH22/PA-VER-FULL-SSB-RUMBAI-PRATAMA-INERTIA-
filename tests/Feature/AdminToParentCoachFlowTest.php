@@ -53,7 +53,7 @@ class AdminToParentCoachFlowTest extends TestCase
             'no_hp' => '081100000002',
         ]);
         $siswa = Siswa::create([
-            'user_id' => null,
+            'user_id' => $parentUser->id, // DIUBAH: Dihubungkan langsung ke parentUser->id
             'id_ortu' => $orangTua->id_ortu,
             'nama_siswa' => 'Siswa Flow',
             'nama_ayah' => 'Ayah',
@@ -77,7 +77,7 @@ class AdminToParentCoachFlowTest extends TestCase
 
         $scheduleResponse = $this->actingAs($adminUser)
             ->postJson('/api/admin/tambah-jadwal', [
-                'tanggal' => '2026-06-10',
+                'tanggal' => '2026-06-04', 
                 'jam_mulai' => '15:00:00',
                 'jam_selesai' => '16:30:00',
                 'lokasi' => 'Lapangan Admin Flow',
@@ -94,7 +94,7 @@ class AdminToParentCoachFlowTest extends TestCase
             ->postJson('/api/admin/prestasi/tambah-prestasi', [
                 'id_siswa' => [$siswa->id_siswa],
                 'nama_prestasi' => 'Juara Admin Flow',
-                'tanggal_diberikan' => '2026-06-11',
+                'tanggal_diberikan' => '2026-06-05',
             ])
             ->assertCreated()
             ->assertJsonPath('success', true);
@@ -138,7 +138,7 @@ class AdminToParentCoachFlowTest extends TestCase
 
         $scheduleId = $this->actingAs($adminUser)
             ->postJson('/api/admin/tambah-jadwal', [
-                'tanggal' => '2026-06-07',
+                'tanggal' => '2026-06-01', 
                 'jam_mulai' => '07:30:00',
                 'jam_selesai' => '09:30:00',
                 'lokasi' => 'Lapangan Lama',
@@ -151,7 +151,7 @@ class AdminToParentCoachFlowTest extends TestCase
 
         $this->actingAs($adminUser)
             ->putJson("/api/admin/jadwal-latihan/{$scheduleId}", [
-                'tanggal' => '2026-06-10',
+                'tanggal' => '2026-06-04', 
                 'jam_mulai' => '16:30:00',
                 'jam_selesai' => '17:30:00',
                 'lokasi' => "Lapangan Mesjid Da'wah Rumbai",
@@ -173,8 +173,8 @@ class AdminToParentCoachFlowTest extends TestCase
 
         $this->assertNotNull($parentSchedule);
         $this->assertNotNull($coachSchedule);
-        $this->assertSame('Rabu', $parentSchedule['day']);
-        $this->assertSame('2026-06-10', $parentSchedule['date']);
+        $this->assertSame('Kamis', $parentSchedule['day']);
+        $this->assertSame('2026-06-04', $parentSchedule['date']);
         $this->assertSame('16.30-17.30 WIB', $parentSchedule['time']);
         $this->assertSame("Lapangan Mesjid Da'wah Rumbai", $parentSchedule['place']);
         $this->assertSame($parentSchedule['day'], $coachSchedule['day']);
@@ -188,11 +188,12 @@ class AdminToParentCoachFlowTest extends TestCase
         [
             'adminUser' => $adminUser,
             'pelatih' => $pelatih,
+            'parentUser' => $parentUser,
             'siswa' => $u10Student,
         ] = $this->createAdminParentCoachData();
 
         $u11Student = Siswa::create([
-            'user_id' => null,
+            'user_id' => $parentUser->id, // DIUBAH
             'id_ortu' => $u10Student->id_ortu,
             'nama_siswa' => 'Siswa U11 Flow',
             'nama_ayah' => 'Ayah',
@@ -202,7 +203,7 @@ class AdminToParentCoachFlowTest extends TestCase
         ]);
 
         $u12Student = Siswa::create([
-            'user_id' => null,
+            'user_id' => $parentUser->id, // DIUBAH
             'id_ortu' => $u10Student->id_ortu,
             'nama_siswa' => 'Siswa U12 Flow',
             'nama_ayah' => 'Ayah',
@@ -213,7 +214,7 @@ class AdminToParentCoachFlowTest extends TestCase
 
         $u11ScheduleResponse = $this->actingAs($adminUser)
             ->postJson('/api/admin/tambah-jadwal', [
-                'tanggal' => '2026-06-12',
+                'tanggal' => '2026-06-04', 
                 'jam_mulai' => '16:00:00',
                 'jam_selesai' => '17:30:00',
                 'lokasi' => 'Lapangan U11',
@@ -225,7 +226,7 @@ class AdminToParentCoachFlowTest extends TestCase
 
         $mixedScheduleResponse = $this->actingAs($adminUser)
             ->postJson('/api/admin/tambah-jadwal', [
-                'tanggal' => '2026-06-13',
+                'tanggal' => '2026-06-08', 
                 'jam_mulai' => '16:00:00',
                 'jam_selesai' => '17:30:00',
                 'lokasi' => 'Lapangan Semua',
@@ -237,7 +238,7 @@ class AdminToParentCoachFlowTest extends TestCase
 
         $explicitAllScheduleResponse = $this->actingAs($adminUser)
             ->postJson('/api/admin/tambah-jadwal', [
-                'tanggal' => '2026-06-14',
+                'tanggal' => '2026-06-09', 
                 'jam_mulai' => '16:00:00',
                 'jam_selesai' => '17:30:00',
                 'lokasi' => 'Lapangan Semua Eksplisit',
@@ -267,11 +268,12 @@ class AdminToParentCoachFlowTest extends TestCase
         [
             'adminUser' => $adminUser,
             'pelatih' => $pelatih,
+            'parentUser' => $parentUser,
             'siswa' => $u10Student,
         ] = $this->createAdminParentCoachData();
 
         $u11Student = Siswa::create([
-            'user_id' => null,
+            'user_id' => $parentUser->id,
             'id_ortu' => $u10Student->id_ortu,
             'nama_siswa' => 'Siswa U11 Guard',
             'nama_ayah' => 'Ayah',
@@ -282,7 +284,7 @@ class AdminToParentCoachFlowTest extends TestCase
 
         $this->actingAs($adminUser)
             ->postJson('/api/admin/tambah-jadwal', [
-                'tanggal' => '2026-06-14',
+                'tanggal' => '2026-06-01', 
                 'jam_mulai' => '16:00:00',
                 'jam_selesai' => '17:30:00',
                 'lokasi' => 'Lapangan Guard',
@@ -295,7 +297,7 @@ class AdminToParentCoachFlowTest extends TestCase
 
         $validScheduleId = $this->actingAs($adminUser)
             ->postJson('/api/admin/tambah-jadwal', [
-                'tanggal' => '2026-06-15',
+                'tanggal' => '2026-06-02', 
                 'jam_mulai' => '16:00:00',
                 'jam_selesai' => '17:30:00',
                 'lokasi' => 'Lapangan Guard Valid',
@@ -308,7 +310,7 @@ class AdminToParentCoachFlowTest extends TestCase
 
         $this->actingAs($adminUser)
             ->putJson("/api/admin/jadwal-latihan/{$validScheduleId}", [
-                'tanggal' => '2026-06-15',
+                'tanggal' => '2026-06-02',
                 'jam_mulai' => '16:00:00',
                 'jam_selesai' => '17:30:00',
                 'lokasi' => 'Lapangan Guard Valid',

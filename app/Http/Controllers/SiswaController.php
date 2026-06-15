@@ -30,20 +30,24 @@ public function updateProfilSiswaMandiri(Request $request, $id_siswa)
         ], 403);
     }
 
-    $ortu = OrangTua::where('user_id', $user->id)
-        ->orWhere('email', $user->email)
+    $siswa = Siswa::query()
+        ->join('orang_tua', 'siswa.id_ortu', '=', 'orang_tua.id_ortu')
+        ->where('siswa.id_siswa', $id_siswa)
+        ->where(function ($query) use ($user) {
+            $query->where('orang_tua.user_id', $user->id)
+                ->orWhereRaw('LOWER(orang_tua.email) = ?', [strtolower($user->email)]);
+        })
+        ->select('siswa.*')
         ->first();
 
-    if (! $ortu) {
+    if (! $siswa) {
         return response()->json([
             'status' => false,
-            'message' => 'Data orang tua tidak ditemukan',
+            'message' => 'Data siswa tidak ditemukan untuk akun orang tua ini',
         ], 404);
     }
 
-    $siswa = Siswa::where('id_siswa', $id_siswa)
-        ->where('id_ortu', $ortu->id_ortu)
-        ->firstOrFail();
+    $ortu = OrangTua::where('id_ortu', $siswa->id_ortu)->firstOrFail();
 
     $validated = $request->validate([
         'alamat' => 'nullable|string|max:255',
@@ -587,19 +591,19 @@ public function update_pendaftaran(Request $request, $id_siswa)
         // UPDATE TEXT (HANYA JIKA ADA FIELD & REQUIRED)
         // =========================
         if ($pendaftaran->val_nama_siswa === 'tidak_valid' && $request->filled('nama_siswa')) {
-            $siswa->nama_siswa = $request->nama_siswa;
+            $pendaftaran->pending_nama_siswa = $request->nama_siswa;
         }
 
         if ($pendaftaran->val_nama_ayah === 'tidak_valid' && $request->filled('nama_ayah')) {
-            $siswa->nama_ayah = $request->nama_ayah;
+            $pendaftaran->pending_nama_ayah = $request->nama_ayah;
         }
 
         if ($pendaftaran->val_nama_ibu === 'tidak_valid' && $request->filled('nama_ibu')) {
-            $siswa->nama_ibu = $request->nama_ibu;
+            $pendaftaran->pending_nama_ibu = $request->nama_ibu;
         }
 
         if ($pendaftaran->val_umur === 'tidak_valid' && $request->filled('umur')) {
-            $siswa->umur = $request->umur;
+            $pendaftaran->pending_umur = (int) $request->umur;
         }
 
         // =========================
@@ -607,22 +611,22 @@ public function update_pendaftaran(Request $request, $id_siswa)
         // =========================
         if ($pendaftaran->val_akta === 'tidak_valid' && $request->hasFile('akta_kelahiran')) {
             $path = $request->file('akta_kelahiran')->store('akta');
-            $siswa->akta_kelahiran = basename($path);
+            $pendaftaran->pending_akta_kelahiran = $path;
         }
 
         if ($pendaftaran->val_kk === 'tidak_valid' && $request->hasFile('kartu_keluarga')) {
             $path = $request->file('kartu_keluarga')->store('kk');
-            $siswa->kartu_keluarga = basename($path);
+            $pendaftaran->pending_kartu_keluarga = $path;
         }
 
         if ($pendaftaran->val_rapor === 'tidak_valid' && $request->hasFile('rapor')) {
             $path = $request->file('rapor')->store('rapor');
-            $siswa->rapor = basename($path);
+            $pendaftaran->pending_rapor = $path;
         }
 
         if ($pendaftaran->val_foto === 'tidak_valid' && $request->hasFile('pas_photo_3x4')) {
             $path = $request->file('pas_photo_3x4')->store('foto');
-            $siswa->pas_photo_3x4 = basename($path);
+            $pendaftaran->pending_pas_photo_3x4 = $path;
         }
 
         if ($buktiPembayaranDitolak && ($request->hasFile('bukti_bayar') || $request->hasFile('paymentProof'))) {
@@ -647,7 +651,6 @@ public function update_pendaftaran(Request $request, $id_siswa)
         // =========================
         // SAVE
         // =========================
-        $siswa->save();
         $pendaftaran->status_approval = 'Menunggu';
         $pendaftaran->tanggal_daftar = now();
         $pendaftaran->save();
@@ -662,7 +665,7 @@ public function update_pendaftaran(Request $request, $id_siswa)
         $response = [
             'success' => true,
             'message' => 'Revisi pendaftaran berhasil diperbarui',
-            'data' => $siswa
+            'data' => $pendaftaran->fresh()
         ];
 
         if ($request->header('X-Inertia')) {

@@ -14,6 +14,7 @@ use App\Models\Performa_Siswa;
 use App\Models\Pembayaran;
 use App\Models\BuktiPembayaran;
 use App\Models\Notifikasi;
+use App\Support\SsbInertiaData;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
@@ -34,7 +35,7 @@ class PelatihController extends Controller
 
   private function studentIdsForPelatih(Pelatih $pelatih): array
   {
-    return DB::table('jadwal_siswa')
+    $explicitStudentIds = DB::table('jadwal_siswa')
         ->join('jadwal_latihan', 'jadwal_siswa.id_jadwal', '=', 'jadwal_latihan.id_jadwal')
         ->join('siswa', 'jadwal_siswa.id_siswa', '=', 'siswa.id_siswa')
         ->where(function ($query) use ($pelatih) {
@@ -45,6 +46,73 @@ class PelatihController extends Controller
         ->pluck('jadwal_siswa.id_siswa')
         ->map(fn ($id) => (int) $id)
         ->unique()
+        ->values()
+        ->all();
+
+    $routineStudentIds = DB::table('jadwal_latihan')
+        ->where(function ($query) use ($pelatih) {
+            $query->where('id_pelatih', $pelatih->id_pelatih)
+                ->orWhereNull('id_pelatih');
+        })
+        ->get()
+        ->flatMap(fn ($schedule) => $this->activeStudentIdsForSchedule($schedule))
+        ->map(fn ($id) => (int) $id)
+        ->all();
+
+    return collect($explicitStudentIds)
+        ->merge($routineStudentIds)
+        ->unique()
+        ->values()
+        ->all();
+  }
+
+  private function isRoutineSchedule(object $jadwal): bool
+  {
+    $scheduleDate = Carbon::parse($jadwal->tanggal);
+    return in_array($scheduleDate->dayOfWeek, [Carbon::WEDNESDAY, Carbon::SUNDAY], true);
+  }
+
+  private function activeStudentIdsForSchedule(object $jadwal): array
+  {
+    if ($jadwal instanceof Jadwal_Latihan && $jadwal->relationLoaded('siswa')) {
+        $explicitStudentIds = $jadwal->siswa
+            ->filter(fn ($student) => strtolower((string) $student->status) === 'active')
+            ->pluck('id_siswa')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+    } else {
+        $explicitStudentIds = DB::table('jadwal_siswa')
+            ->join('siswa', 'jadwal_siswa.id_siswa', '=', 'siswa.id_siswa')
+            ->where('jadwal_siswa.id_jadwal', $jadwal->id_jadwal)
+            ->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active'])
+            ->pluck('siswa.id_siswa')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+    }
+
+    if (! empty($explicitStudentIds) || ! $this->isRoutineSchedule($jadwal)) {
+        return $explicitStudentIds;
+    }
+
+    $storedCategory = $jadwal->kategori_umur !== null
+        ? SsbInertiaData::categoryValue((string) $jadwal->kategori_umur)
+        : null;
+
+    return DB::table('siswa')
+        ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+        ->select('id_siswa', 'umur')
+        ->get()
+        ->filter(function ($student) use ($storedCategory) {
+            if (! $storedCategory || $storedCategory === 'all') {
+                return true;
+            }
+
+            return SsbInertiaData::categoryValue(SsbInertiaData::categoryFromAge((int) $student->umur)) === $storedCategory;
+        })
+        ->pluck('id_siswa')
+        ->map(fn ($id) => (int) $id)
         ->values()
         ->all();
   }
@@ -139,23 +207,14 @@ public function Input_Presensi(Request $request)
         })
         ->firstOrFail();
 
-    $validStudentIds = $jadwal->siswa
-        ->filter(fn ($student) => strtolower((string) $student->status) === 'active')
-        ->pluck('id_siswa')
-        ->all();
     $attendanceDate = $request->filled('tanggal')
         ? Carbon::parse($request->tanggal)
         : now();
     $scheduleDate = Carbon::parse($jadwal->tanggal);
-    $routineSlotKey = (int) $scheduleDate->dayOfWeek . '|' .
-        Carbon::parse($jadwal->jam_mulai)->format('H:i:s') . '-' .
-        Carbon::parse($jadwal->jam_selesai)->format('H:i:s');
-    $isRoutineSchedule = in_array($routineSlotKey, [
-        Carbon::WEDNESDAY . '|16:30:00-17:30:00',
-        Carbon::SUNDAY . '|07:30:00-09:30:00',
-    ], true);
+    $isRoutineSchedule = $this->isRoutineSchedule($jadwal);
+    $validStudentIds = $this->activeStudentIdsForSchedule($jadwal);
 
-    if ($isRoutineSchedule && $attendanceDate->dayOfWeek !== $scheduleDate->dayOfWeek) {
+    if ($attendanceDate->dayOfWeek !== $scheduleDate->dayOfWeek) {
         return response()->json([
             'status' => false,
             'message' => 'Tanggal absensi tidak sesuai dengan hari jadwal latihan yang dipilih.',
@@ -164,14 +223,6 @@ public function Input_Presensi(Request $request)
         ], 422);
     }
 
-    if (! $isRoutineSchedule && ! $attendanceDate->isSameDay($scheduleDate)) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Tanggal absensi latihan tambahan harus sama dengan tanggal jadwal dari admin.',
-            'schedule_date' => $scheduleDate->toDateString(),
-            'attendance_date' => $attendanceDate->toDateString(),
-        ], 422);
-    }
     $savedCount = 0;
     $savedStudentIds = [];
 
@@ -309,10 +360,6 @@ public function Performa_Siswa(Request $request, $id)
             $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
         }])
         ->where('id_jadwal', $id)
-        ->where(function ($query) use ($pelatih) {
-            $query->where('id_pelatih', $pelatih->id_pelatih)
-                ->orWhereNull('id_pelatih');
-        })
         ->first();
 
     if (!$jadwal) {
@@ -345,10 +392,6 @@ public function Input_Performa_Siswa(Request $request, $id)
             $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']);
         }])
         ->where('id_jadwal', $id)
-        ->where(function ($query) use ($pelatih) {
-            $query->where('id_pelatih', $pelatih->id_pelatih)
-                ->orWhereNull('id_pelatih');
-        })
         ->first();
 
     if (!$jadwal) {
@@ -371,22 +414,9 @@ public function Input_Performa_Siswa(Request $request, $id)
         ? Carbon::parse($request->tanggal_penilaian)
         : now();
     $scheduleDate = Carbon::parse($jadwal->tanggal);
-    $routineSlotKey = (int) $scheduleDate->dayOfWeek . '|' .
-        Carbon::parse($jadwal->jam_mulai)->format('H:i:s') . '-' .
-        Carbon::parse($jadwal->jam_selesai)->format('H:i:s');
-    $isRoutineSchedule = in_array($routineSlotKey, [
-        Carbon::WEDNESDAY . '|16:30:00-17:30:00',
-        Carbon::SUNDAY . '|07:30:00-09:30:00',
-    ], true);
+    $isRoutineSchedule = $this->isRoutineSchedule($jadwal);
 
-    if (! $isRoutineSchedule) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Input nilai performa hanya untuk jadwal latihan tetap.',
-        ], 422);
-    }
-
-    if ($isRoutineSchedule && $tanggal->dayOfWeek !== $scheduleDate->dayOfWeek) {
+    if ($tanggal->dayOfWeek !== $scheduleDate->dayOfWeek) {
         return response()->json([
             'status' => false,
             'message' => 'Tanggal input performa tidak sesuai dengan hari jadwal latihan yang dipilih.',
@@ -395,9 +425,10 @@ public function Input_Performa_Siswa(Request $request, $id)
         ], 422);
     }
 
+    $validStudentIds = $this->activeStudentIdsForSchedule($jadwal);
     $savedStudentIds = [];
 
-    DB::transaction(function () use ($request, $jadwal, $pelatih, $tanggal, &$savedStudentIds) {
+    DB::transaction(function () use ($request, $jadwal, $pelatih, $tanggal, $validStudentIds, &$savedStudentIds) {
         $nextId = ((int) DB::table('performa_siswa')
             ->lockForUpdate()
             ->orderByDesc('id_performa')
@@ -406,9 +437,7 @@ public function Input_Performa_Siswa(Request $request, $id)
         foreach ($request->data as $item) {
 
         // 🔥 cek siswa di jadwal (lebih aman pakai contains)
-        $siswa = $jadwal->siswa->where('id_siswa', $item['id_siswa'])->first();
-
-        if (!$siswa) {
+        if (! in_array((int) $item['id_siswa'], $validStudentIds, true)) {
             continue;
         }
 
@@ -810,8 +839,16 @@ public function Store_Bukti_Pembayaran_Pelatih(Request $request)
         'id_siswa' => 'required|exists:siswa,id_siswa',
         'jenis' => 'required|in:Harian,Bulanan,Pendaftaran',
         'tanggal_bukti_bayar' => 'required|date',
+        'jumlah' => 'nullable|numeric|min:1',
         'bukti_bayar' => 'required|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
     ]);
+
+    if ($validated['jenis'] !== 'Pendaftaran' && ! $request->filled('jumlah')) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Nominal pembayaran wajib diisi sesuai bukti pembayaran.',
+        ], 422);
+    }
 
     DB::beginTransaction();
 
@@ -833,12 +870,9 @@ public function Store_Bukti_Pembayaran_Pelatih(Request $request)
         $periode = $validated['jenis'] === 'Harian'
             ? $tanggal->format('Y-m-d')
             : $tanggal->format('Y-m');
-        $jumlah = match ($validated['jenis']) {
-            'Pendaftaran' => 280000,
-            'Bulanan' => 150000,
-            'Harian' => 35000,
-            default => 0,
-        };
+        $jumlah = $validated['jenis'] === 'Pendaftaran'
+            ? 280000
+            : (float) $validated['jumlah'];
 
         $pembayaran = Pembayaran::where('id_siswa', $siswa->id_siswa)
             ->where('jenis', $validated['jenis'])
