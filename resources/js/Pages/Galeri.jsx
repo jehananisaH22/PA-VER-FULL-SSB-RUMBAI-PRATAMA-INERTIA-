@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Head, router } from "@inertiajs/react";
+import { usePage,Head, router } from "@inertiajs/react";
 import "../../css/Galeri.css";
 
 import LogoSBB from "../../assets/LogoSBB.png";
@@ -22,12 +22,9 @@ import SiteFooter from "./SiteFooter";
 export default function Galeri({
   galleryItems = [],
   onOpenHome,
-  onOpenDaftar,
   onOpenBerita,
   onOpenLogin,
   onOpenProfile,
-  isLoggedIn,
-  userRole,
   notifications = [],
   onClearNotifications,
   onLogout,
@@ -51,7 +48,6 @@ export default function Galeri({
   const profileMenuRef = useRef(null);
   const notifMenuRef = useRef(null);
   const openHome = () => (onOpenHome ? onOpenHome() : router.visit("/"));
-  const openDaftar = () => (onOpenDaftar ? onOpenDaftar() : router.visit("/register"));
   const openBerita = () => (onOpenBerita ? onOpenBerita() : router.visit("/berita"));
   const openLogin = () => (onOpenLogin ? onOpenLogin() : router.visit("/login"));
   const openProfile = () => {
@@ -62,16 +58,23 @@ export default function Galeri({
 
     router.visit("/login");
   };
-  const handleLogout = () => {
-    setIsProfileMenuOpen(false);
-    setIsNotifMenuOpen(false);
-    if (onLogout) {
-      onLogout();
-      return;
-    }
-
-    router.visit("/");
-  };
+  const { auth } = usePage().props;
+ const user = auth?.user;
+ const isLoggedIn = !!user;
+ const userRole = user?.role;
+ 
+ console.log(auth);
+ console.log(auth?.user);
+ 
+ const openDaftar = (event) => {
+   event.preventDefault();
+ 
+   if (user) {
+     router.visit("/orang-tua/daftar-anak");
+   } else {
+     router.visit("/register");
+   }
+ };
 
   useEffect(() => {
     const onKeyDown = (event) => {
