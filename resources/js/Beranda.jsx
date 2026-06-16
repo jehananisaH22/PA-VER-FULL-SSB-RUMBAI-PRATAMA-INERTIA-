@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { router } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import "../css/Beranda.css";
 
 import FotoBeranda from "../assets/FotoLanding.png";
@@ -29,14 +29,11 @@ import { resolveArticles } from "./data/defaultArticles";
 export default function Beranda({
   articles = [],
   galleryItems = [],
-  onOpenDaftar,
   onOpenLogin,
   onOpenProfile,
   onOpenBeritaList,
   onOpenBeritaDetail,
   onOpenGaleri,
-  isLoggedIn,
-  userRole,
   notifications = [],
   onClearNotifications,
   onLogout,
@@ -59,14 +56,32 @@ export default function Beranda({
   const [isNotifMenuOpen, setIsNotifMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
   const notifMenuRef = useRef(null);
-  const openDaftar = (event) => {
-    event.preventDefault();
-    if (onOpenDaftar) {
-      onOpenDaftar();
-      return;
+
+
+const page = usePage();
+
+const user = page.props?.auth?.user ?? null;
+const isLoggedIn = !!user;
+const userRole = user?.role;
+
+console.log("AUTH:", page.props.auth);
+console.log("USER:", page.props.auth?.user);
+
+const openDaftar = () => {
+  const user = page.props?.auth?.user;
+
+  console.log("CLICK USER:", user);
+
+  router.visit(
+    user ? "/orang-tua/daftar-anak" : "/register",
+    {
+      replace: true,
+      preserveState: false,
     }
-    router.visit("/register");
-  };
+  );
+};
+
+
   const openLogin = (event) => {
     event.preventDefault();
     setIsProfileMenuOpen(false);
@@ -77,16 +92,13 @@ export default function Beranda({
     }
     router.visit("/login");
   };
-  const handleLogout = () => {
-    setIsProfileMenuOpen(false);
-    setIsNotifMenuOpen(false);
-    if (onLogout) {
-      onLogout();
-      return;
-    }
 
-    router.visit("/");
-  };
+
+const handleLogout = () => {
+  router.post("/logout");
+};
+
+   
   const openBeritaList = (event) => {
     event.preventDefault();
     if (onOpenBeritaList) {
@@ -162,9 +174,15 @@ export default function Beranda({
             <a href="/" onClick={(event) => handleSectionScroll(event, "#beranda")}>
               Beranda
             </a>
-            <a href="/register" onClick={openDaftar}>
-              Daftar
-            </a>
+           <a
+  href="#"
+  onClick={(e) => {
+    e.preventDefault();
+    openDaftar();
+  }}
+>
+  Daftar
+</a>
             <a href="/berita" onClick={openBeritaList}>
               Berita
             </a>
@@ -212,49 +230,62 @@ export default function Beranda({
                 </div>
               )}
             </div>
-            <div className="navProfileWrap" ref={profileMenuRef}>
-              <button
-                className="navIconBtn"
-                type="button"
-                aria-label="Profile"
-                onClick={() => {
-                  setIsNotifMenuOpen(false);
-                  setIsProfileMenuOpen((prev) => !prev);
-                }}
-              >
-                <img src={ProfileIcon} alt="Profile" />
-              </button>
-              {isProfileMenuOpen && (
-                <div className="navProfileMenu">
-                  {isLoggedIn ? (
-                    <>
-                      <div className="navRoleInfo">Login sebagai: {userRole}</div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsProfileMenuOpen(false);
-                          if (onOpenProfile) onOpenProfile();
-                        }}
-                      >
-                        Profil
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleLogout();
-                        }}
-                      >
-                        Logout
-                      </button>
-                    </>
-                  ) : (
-                    <button type="button" onClick={openLogin}>
-                      Login
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
+          <div className="navProfileWrap" ref={profileMenuRef}>
+<div className="profileWrapper">
+  <button
+    className="navIconBtn"
+    type="button"
+    aria-label="Profile"
+    onClick={() => {
+      setIsNotifMenuOpen(false);
+      setIsProfileMenuOpen((prev) => !prev);
+    }}
+  >
+    <img src={ProfileIcon} alt="Profile" />
+
+    {user && (
+      <span className="userName">
+        {user.name}
+      </span>
+    )}
+  </button>
+</div>
+
+
+  {isProfileMenuOpen && (
+    <div className="navProfileMenu">
+      {user ? (
+        <>
+          <div className="navRoleInfo">
+            Login sebagai: {user.role}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsProfileMenuOpen(false);
+              onOpenProfile?.();
+            }}
+          >
+            Profil
+          </button>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </>
+      ) : (
+        <button type="button" onClick={openLogin}>
+          Login
+        </button>
+      )}
+    </div>
+  )}
+</div>
+
           </div>
         </div>
       </div>
@@ -281,10 +312,10 @@ export default function Beranda({
             </p>
           </div>
 
-          <a href="/register" className="btnHero" onClick={openDaftar}>
-            <span className="btnHeroText">Daftar Sekarang</span>
-            <img className="btnHeroIcon" src={NextPageIcon} alt="" />
-          </a>
+          <button type="button" className="btnHero" onClick={openDaftar}>
+  <span className="btnHeroText">Daftar Sekarang</span>
+  <img className="btnHeroIcon" src={NextPageIcon} alt="" />
+</button>
         </div>
       </section>
 
