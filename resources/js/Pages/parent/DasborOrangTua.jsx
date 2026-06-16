@@ -1,7 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./DasborOrangTua.css";
 import { parentRoutes, visitOrCall } from "./parentNavigation";
 import SiteFooter from "../SiteFooter";
+import { router } from '@inertiajs/react';
+
 
 import LogoSBB from "../../../assets/LogoSBB.png";
 import ProfileIcon from "../../../assets/Profile.png";
@@ -9,6 +11,55 @@ import CoachNoteIcon from "../../../assets/CatatanP_.png";
 import PilihTahun from "./PilihTahun";
 import LoncengNotifikasiOrangTua from "./LoncengNotifikasiOrangTua";
 import useParentChildSwitcher from "./useParentChildSwitcher";
+
+const performanceMonthLabels = [
+  { key: "januari", number: "01", label: "Jan" },
+  { key: "februari", number: "02", label: "Feb" },
+  { key: "maret", number: "03", label: "Mar" },
+  { key: "april", number: "04", label: "Apr" },
+  { key: "mei", number: "05", label: "Mei" },
+  { key: "juni", number: "06", label: "Jun" },
+  { key: "juli", number: "07", label: "Jul" },
+  { key: "agustus", number: "08", label: "Agu" },
+  { key: "september", number: "09", label: "Sep" },
+  { key: "oktober", number: "10", label: "Okt" },
+  { key: "november", number: "11", label: "Nov" },
+  { key: "desember", number: "12", label: "Des" },
+];
+
+const performanceMonthLookup = performanceMonthLabels.reduce((lookup, month, index) => {
+  const numeric = String(index + 1);
+  lookup[month.key] = month.key;
+  lookup[month.number] = month.key;
+  lookup[numeric] = month.key;
+  return lookup;
+}, {});
+
+const normalizePerformanceMonth = (month) => {
+  const rawMonth = String(month || "").trim().toLowerCase();
+  if (!rawMonth) return "";
+  return performanceMonthLookup[rawMonth] || performanceMonthLookup[rawMonth.padStart(2, "0")] || rawMonth;
+};
+
+const getPerformanceAverage = (item) => {
+  const directAverage = Number(item.rata_rata ?? item.average ?? item.rataRata);
+  if (Number.isFinite(directAverage) && directAverage > 0) {
+    return directAverage;
+  }
+
+  const scores = [Number(item.dribbling), Number(item.passing), Number(item.shooting)].filter(
+    (score) => Number.isFinite(score)
+  );
+  if (scores.length === 0) return null;
+  return scores.reduce((sum, score) => sum + score, 0) / scores.length;
+};
+
+const formatCurrency = (amount) => `Rp${Number(amount || 0).toLocaleString("id-ID")},00`;
+const routineTrainingDays = new Set(["rabu", "minggu"]);
+
+function isRoutineTrainingDay(day) {
+  return routineTrainingDays.has(String(day || "").trim().toLowerCase());
+}
 
 function InfoIcon() {
   return (
@@ -41,6 +92,7 @@ export default function DasborOrangTua({
   childCategoryLabel = "-",
   paymentStatus,
   paymentInfo = null,
+  monthlyPaymentSummary = null,
   trainingSchedules = [],
   achievements = [],
   attendanceRecaps = [],
@@ -57,17 +109,18 @@ export default function DasborOrangTua({
 }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [activeDonutItem, setActiveDonutItem] = useState(null);
+  const [selectedPerformanceYear, setSelectedPerformanceYear] = useState("");
   const { activeChildName, openChildPicker, childPickerModal } = useParentChildSwitcher(
     userName,
     childrenOptions,
     openChildPickerOnLoad,
     selectedChildId,
-    openChildPickerOnLoad || canSwitchChild || childrenOptions.length > 0
+    openChildPickerOnLoad || canSwitchChild || childrenOptions.length > 1
   );
-  const childHasBeenPicked = Boolean(selectedChildId) && hasSelectedChild && !openChildPickerOnLoad;
+  const childHasBeenPicked = Boolean(selectedChildId) && !openChildPickerOnLoad;
   const displayUserName = childHasBeenPicked ? (activeChildName || userName) : "";
   const profilePhoto = studentProfile?.photo || ProfileIcon;
-  const showChildPickerAction = canSwitchChild || childrenOptions.length > 0;
+  const showChildPickerAction = canSwitchChild || childrenOptions.length > 1;
   const openSelectChild = () => {
     if (onSelectChild) {
       onSelectChild();
@@ -92,8 +145,8 @@ export default function DasborOrangTua({
   const donutData = useMemo(
     () => [
       { label: "Hadir", value: latestAttendance?.hadir ?? 0, color: "#5daf2f" },
-      { label: "Sakit", value: latestAttendance?.sakit ?? 0, color: "#2f5b23" },
-      { label: "Izin", value: latestAttendance?.izin ?? 0, color: "#468f28" },
+      { label: "Alpha", value: latestAttendance?.alpha ?? 0, color: "#2f5b23" },
+      { label: "Sakit", value: latestAttendance?.sakit ?? 0, color: "#468f28" },
     ],
     [latestAttendance]
   );
@@ -125,52 +178,86 @@ export default function DasborOrangTua({
         place: item.place,
         categoryLabel: item.categoryLabel || item.targetLabel || "Semua Siswa",
         targetLabel: item.targetLabel || "Semua Siswa",
+        isRoutine: item.isRoutine === true,
+        isAdditional: item.isRoutine === false || !isRoutineTrainingDay(item.day),
       })),
     [trainingSchedules]
   );
 
+  const routineScheduleItems = useMemo(
+    () => scheduleItems.filter((item) => item.isRoutine),
+    [scheduleItems]
+  );
+
+  const routinePaymentSchedules = useMemo(
+    () =>
+      routineScheduleItems.length > 0
+        ? routineScheduleItems
+        : [
+            { id: "fallback-minggu", day: "Minggu", time: "07.30-09.30 WIB" },
+            { id: "fallback-rabu", day: "Rabu", time: "16.30-17.30 WIB" },
+          ],
+    [routineScheduleItems]
+  );
+
+  const routinePerformanceHistory = useMemo(
+    () => performanceHistory.filter((item) => item?.isRoutine !== false),
+    [performanceHistory]
+  );
+
   const performanceYears = useMemo(() => {
-    const years = Array.from(new Set(performanceHistory.map((item) => Number(item.year)))).sort(
+    const years = Array.from(
+      new Set(
+        routinePerformanceHistory
+          .map((item) => Number(item.year))
+          .filter((year) => Number.isFinite(year) && year > 0)
+      )
+    ).sort(
       (leftItem, rightItem) => rightItem - leftItem
     );
     return years.length > 0 ? years : [new Date().getFullYear()];
-  }, [performanceHistory]);
-  const latestPerformanceYear = String(performanceYears[0]);
+  }, [routinePerformanceHistory]);
+
+  useEffect(() => {
+    const defaultYear = String(performanceYears[0] || new Date().getFullYear());
+    if (!selectedPerformanceYear || !performanceYears.map(String).includes(selectedPerformanceYear)) {
+      setSelectedPerformanceYear(defaultYear);
+    }
+  }, [performanceYears, selectedPerformanceYear]);
+
+  const activePerformanceYear = selectedPerformanceYear || String(performanceYears[0]);
 
   const perfMonths = useMemo(() => {
-    const monthShortLabels = [
-      { key: "januari", label: "Jan" },
-      { key: "februari", label: "Feb" },
-      { key: "maret", label: "Mar" },
-      { key: "april", label: "Apr" },
-      { key: "mei", label: "Mei" },
-      { key: "juni", label: "Jun" },
-      { key: "juli", label: "Jul" },
-      { key: "agustus", label: "Agu" },
-      { key: "september", label: "Sep" },
-      { key: "oktober", label: "Okt" },
-      { key: "november", label: "Nov" },
-      { key: "desember", label: "Des" },
-    ];
-
     const performanceMap = new Map();
-    performanceHistory.forEach((item) => {
-      const key = `${item.year}-${item.month}`;
-      if (!performanceMap.has(key)) {
-        performanceMap.set(
-          key,
-          Math.round(
-            (Number(item.dribbling) + Number(item.passing) + Number(item.shooting)) / 3
-          )
-        );
+    routinePerformanceHistory.forEach((item) => {
+      const monthKey = normalizePerformanceMonth(item.month);
+      const yearKey = String(item.year || "");
+      const average = getPerformanceAverage(item);
+      if (!monthKey || !yearKey || average === null) {
+        return;
       }
+
+      const mapKey = `${yearKey}-${monthKey}`;
+      const bucket = performanceMap.get(mapKey) || { total: 0, count: 0 };
+      bucket.total += average;
+      bucket.count += 1;
+      performanceMap.set(mapKey, bucket);
     });
 
-    return monthShortLabels.map((month) => ({
+    return performanceMonthLabels.map((month) => {
+      const bucket = performanceMap.get(`${activePerformanceYear}-${month.key}`);
+      const value = bucket ? Math.round(bucket.total / bucket.count) : 0;
+      return {
       label: month.label,
-      value: performanceMap.get(`${latestPerformanceYear}-${month.key}`) || 0,
-    }));
-  }, [latestPerformanceYear, performanceHistory]);
+      value,
+      hasData: Boolean(bucket),
+      };
+    });
+  }, [activePerformanceYear, routinePerformanceHistory]);
+
+const daftarAnak = () => {
+    router.visit('/orang-tua/daftar-anak');
+};
 
   return (
     <div className="parentPage">
@@ -222,6 +309,11 @@ export default function DasborOrangTua({
                   <button type="button" onClick={openProfile}>
                     Profil
                   </button>
+
+<button type="button" onClick={daftarAnak}>
+    Daftar Anak
+</button>
+
                   {showChildPickerAction && (
                     <button
                       type="button"
@@ -261,6 +353,40 @@ export default function DasborOrangTua({
               </div>
             </div>
           </section>
+
+          {childHasBeenPicked && monthlyPaymentSummary && (
+            <section className="parentCard parentMonthlyPaymentCard">
+              <div className="parentMonthlyPaymentHeader">
+                <div>
+                  <span>Pembayaran Bulan Ini</span>
+                  <h2>{monthlyPaymentSummary.periodLabel || "Bulan Ini"}</h2>
+                </div>
+                <strong className={monthlyPaymentSummary.remainingAmount <= 0 ? "is-complete" : ""}>
+                  {monthlyPaymentSummary.remainingAmount <= 0
+                    ? "Lunas"
+                    : `Kurang ${formatCurrency(monthlyPaymentSummary.remainingAmount)}`}
+                </strong>
+              </div>
+              <div className="parentMonthlyPaymentProgress">
+                <span
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      Math.round(
+                        (Number(monthlyPaymentSummary.paidAmount || 0) /
+                          Math.max(Number(monthlyPaymentSummary.targetAmount || 1), 1)) *
+                          100
+                      )
+                    )}%`,
+                  }}
+                />
+              </div>
+              <div className="parentMonthlyPaymentMeta">
+                <p>Sudah dibayar: <strong>{formatCurrency(monthlyPaymentSummary.paidAmount)}</strong></p>
+                <p>Target bulanan: <strong>{formatCurrency(monthlyPaymentSummary.targetAmount)}</strong></p>
+              </div>
+            </section>
+          )}
 
           {paymentInfo?.message && (
             <section className="parentCard parentIdentityNoticeCard">
@@ -302,14 +428,12 @@ export default function DasborOrangTua({
               <div className="parentPaymentSchedule" aria-label="Jadwal pembayaran langsung">
                 <span>Jadwal latihan</span>
                 <ul>
-                  <li>
-                    <b>Minggu</b>
-                    <small>07.15-09.30 WIB</small>
-                  </li>
-                  <li>
-                    <b>Rabu</b>
-                    <small>16.25-17.55 WIB</small>
-                  </li>
+                  {routinePaymentSchedules.map((item) => (
+                    <li key={item.id || `${item.day}-${item.time}`}>
+                      <b>{item.day}</b>
+                      <small>{item.time}</small>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </section>
@@ -391,16 +515,15 @@ export default function DasborOrangTua({
                         <span className="parentSchedulePin" />
                         <div className="parentScheduleContent">
                           <p>
-                            <strong>{item.day}</strong> ({item.time})
+                            <span>
+                              <strong>{item.day}</strong> ({item.time})
+                            </span>
+                            {item.isAdditional ? (
+                              <span className="parentScheduleBadge">Latihan Tambahan</span>
+                            ) : null}
                           </p>
                           <span>{item.place}</span>
-                          <small>
-                            {item.categoryLabel}
-                            {item.targetLabel !== item.categoryLabel &&
-                            item.targetLabel !== "Semua Siswa"
-                              ? ` • ${item.targetLabel}`
-                              : ""}
-                          </small>
+                          <small>{item.categoryLabel}</small>
                         </div>
                       </article>
                     ))}
@@ -419,16 +542,23 @@ export default function DasborOrangTua({
           <section className="parentCard parentPanel parentTall parentPerformanceSection">
             <div className="parentPanelHead">
               <h3>Performa Latihan</h3>
-              <PilihTahun options={performanceYears} />
+              <PilihTahun
+                options={performanceYears}
+                value={activePerformanceYear}
+                onChange={setSelectedPerformanceYear}
+              />
             </div>
             {isActive ? (
-              performanceHistory.length > 0 ? (
+              routinePerformanceHistory.length > 0 ? (
                 <div className="parentBars">
                   {perfMonths.map((month, idx) => (
                     <div className="barWrap" key={month.label}>
+                      <span className={`barValue ${month.hasData ? "hasData" : ""}`}>
+                        {month.hasData ? month.value : "-"}
+                      </span>
                       <span
                         className={`bar ${idx % 2 === 0 ? "barPrimary" : "barAccent"}`}
-                        style={{ height: `${month.value}%` }}
+                        style={{ height: `${Math.max(month.value, month.hasData ? 10 : 4)}%` }}
                       />
                       <small>{month.label}</small>
                     </div>
@@ -449,11 +579,13 @@ export default function DasborOrangTua({
               <h3>Prestasi</h3>
               {isActive ? (
                 achievements.length > 0 ? (
-                  <ul className="parentAchievements">
-                    {achievements.map((item) => (
-                      <li key={item.id}>{item.title}</li>
-                    ))}
-                  </ul>
+                  <div className="parentScrollableCardBody">
+                    <ul className="parentAchievements">
+                      {achievements.map((item) => (
+                        <li key={item.id}>{item.title}</li>
+                      ))}
+                    </ul>
+                  </div>
                 ) : (
                   <div className="parentEmptyState">
                     Belum ada data prestasi untuk anak ini.
@@ -467,7 +599,7 @@ export default function DasborOrangTua({
               <h3>Catatan Pelatih</h3>
               {isActive ? (
                 coachNotes.length > 0 ? (
-                  <div className="parentCoachNoteList">
+                  <div className="parentScrollableCardBody parentCoachNoteList">
                     {coachNotes.map((note, idx) => (
                       <article className="parentCoachNote" key={`${note.id || note.date}-${idx}`}>
                         <img src={CoachNoteIcon} alt="" className="parentCoachNoteIcon" />
@@ -490,10 +622,10 @@ export default function DasborOrangTua({
         </div>
       </main>
 
-      <SiteFooter />
+      <div className="parentFooterWrap">
+        <SiteFooter />
+      </div>
       {childPickerModal}
     </div>
   );
 }
-
-
