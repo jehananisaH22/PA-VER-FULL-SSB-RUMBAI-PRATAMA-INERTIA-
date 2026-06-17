@@ -118,6 +118,8 @@ export default function HalamanSiswaAdmin({
   performanceHistory = [],
   onDeleteStudent,
   onRecordAdminActivity,
+  requestedStudentName = null,
+  onHandledRequestedStudentName,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Semua");
@@ -169,7 +171,7 @@ export default function HalamanSiswaAdmin({
     }
 
     setStatusToast({ type, title, message });
-    toastTimerRef.current = window.setTimeout(() => setStatusToast(null), 3600);
+    toastTimerRef.current = window.setTimeout(() => setStatusToast(null), 5000);
   };
 
   const getApiErrorMessage = (error) => {
@@ -194,6 +196,23 @@ export default function HalamanSiswaAdmin({
     setStudentPickFxKey((prev) => prev + 1);
     setIsStudentSwitching(true);
   };
+
+  useEffect(() => {
+    const targetName = String(requestedStudentName || "").trim().toLowerCase();
+    if (!targetName) return;
+
+    const matchedStudent = students.find(
+      (student) => String(student.name || "").trim().toLowerCase() === targetName
+    );
+
+    if (matchedStudent) {
+      setSearchQuery("");
+      setSelectedCategory("Semua");
+      handleSelectStudent(matchedStudent.id);
+    }
+
+    onHandledRequestedStudentName?.();
+  }, [requestedStudentName, students, onHandledRequestedStudentName]);
 
   const handleMonthChange = (value) => setSelectedMonth(value);
 
@@ -656,4 +675,3 @@ export default function HalamanSiswaAdmin({
     </section>
   );
 }
-
