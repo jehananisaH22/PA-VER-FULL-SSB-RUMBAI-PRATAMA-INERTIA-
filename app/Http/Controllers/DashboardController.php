@@ -84,14 +84,14 @@ public function coachSection(?string $section = null)
         'userName' => $coachName,
         'currentCoachName' => $coachName,
         'notifications' => SsbInertiaData::coachNotifications($coach?->id),
-        'studentDirectory' => SsbInertiaData::studentDirectory(true),
-        'trainingSchedules' => SsbInertiaData::schedules(null, true),
+        'studentDirectory' => SsbInertiaData::studentDirectory(true, $coachStudentIds),
+        'trainingSchedules' => SsbInertiaData::schedules(null, true, $coachProfile?->id_pelatih),
         'attendanceRecaps' => $attendanceRecaps,
         'history' => $performanceHistory,
         'performanceHistory' => $performanceHistory,
         'notes' => $coachNotes,
         'coachNotes' => $coachNotes,
-        'paymentSubmissions' => SsbInertiaData::paymentRows(true),
+        'paymentSubmissions' => SsbInertiaData::paymentRows(true, $coachStudentIds),
     ]);
 }
 
@@ -108,11 +108,56 @@ private function currentCoachProfile(?User $user = null): ?Pelatih
 
 private function studentIdsForCoach(int $coachId): array
 {
-    return DB::table('jadwal_siswa')
+    $explicitStudentIds = DB::table('jadwal_siswa')
+        ->join('jadwal_latihan', 'jadwal_siswa.id_jadwal', '=', 'jadwal_latihan.id_jadwal')
         ->join('siswa', 'jadwal_siswa.id_siswa', '=', 'siswa.id_siswa')
+        ->where(function ($query) use ($coachId) {
+            $query->where('jadwal_latihan.id_pelatih', $coachId)
+                ->orWhereNull('jadwal_latihan.id_pelatih');
+        })
         ->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active'])
         ->pluck('jadwal_siswa.id_siswa')
         ->map(fn ($id) => (int) $id)
+        ->unique()
+        ->values()
+        ->all();
+
+    $routineStudentIds = DB::table('jadwal_latihan')
+        ->where(function ($query) use ($coachId) {
+            $query->where('id_pelatih', $coachId)
+                ->orWhereNull('id_pelatih');
+        })
+        ->get()
+        ->flatMap(function ($schedule) {
+            $scheduleDate = Carbon::parse($schedule->tanggal);
+            $isRoutineSchedule = in_array($scheduleDate->dayOfWeek, [Carbon::WEDNESDAY, Carbon::SUNDAY], true);
+
+            if (! $isRoutineSchedule) {
+                return [];
+            }
+
+            $storedCategory = $schedule->kategori_umur !== null
+                ? SsbInertiaData::categoryValue((string) $schedule->kategori_umur)
+                : null;
+
+            return DB::table('siswa')
+                ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+                ->select('id_siswa', 'umur')
+                ->get()
+                ->filter(function ($student) use ($storedCategory) {
+                    if (! $storedCategory || $storedCategory === 'all') {
+                        return true;
+                    }
+
+                    return SsbInertiaData::categoryValue(SsbInertiaData::categoryFromAge((int) $student->umur)) === $storedCategory;
+                })
+                ->pluck('id_siswa');
+        })
+        ->map(fn ($id) => (int) $id)
+        ->all();
+
+    return collect($explicitStudentIds)
+        ->merge($routineStudentIds)
         ->unique()
         ->values()
         ->all();
@@ -182,16 +227,16 @@ public function adminSection(?string $section = null)
                 'children' => $rows->pluck('nama_siswa')->filter()->values()->all(),
             ])
             ->all(),
-        'adminStudents' => SsbInertiaData::students(),
+        'adminStudents' => SsbInertiaData::students(true),
         'adminCoaches' => SsbInertiaData::coaches(),
-        'adminCatatanPelatih' => SsbInertiaData::coachNotes(),
-        'adminAttendanceRecaps' => SsbInertiaData::attendanceRecaps(),
-        'adminPerformanceHistory' => SsbInertiaData::performanceHistory(),
-        'trainingSchedules' => SsbInertiaData::schedules(),
+        'adminCatatanPelatih' => SsbInertiaData::coachNotes(null, true),
+        'adminAttendanceRecaps' => SsbInertiaData::attendanceRecaps(null, true),
+        'adminPerformanceHistory' => SsbInertiaData::performanceHistory(null, true),
+        'trainingSchedules' => SsbInertiaData::schedules(null, true),
         'mediaArticles' => SsbInertiaData::mediaArticles(),
         'achievements' => SsbInertiaData::achievements(),
         'adminActivityHistory' => $this->adminActivityHistoryRows(),
-        'scheduleStudentDirectory' => SsbInertiaData::students(),
+        'scheduleStudentDirectory' => SsbInertiaData::students(true),
     ]);
 }
 
@@ -277,16 +322,16 @@ public function adminDashboard()
                     'children' => $rows->pluck('nama_siswa')->filter()->values()->all(),
                 ])
                 ->all(),
-            'adminStudents' => SsbInertiaData::students(),
+            'adminStudents' => SsbInertiaData::students(true),
             'adminCoaches' => SsbInertiaData::coaches(),
-            'adminCatatanPelatih' => SsbInertiaData::coachNotes(),
-            'adminAttendanceRecaps' => SsbInertiaData::attendanceRecaps(),
-            'adminPerformanceHistory' => SsbInertiaData::performanceHistory(),
-            'trainingSchedules' => SsbInertiaData::schedules(),
+            'adminCatatanPelatih' => SsbInertiaData::coachNotes(null, true),
+            'adminAttendanceRecaps' => SsbInertiaData::attendanceRecaps(null, true),
+            'adminPerformanceHistory' => SsbInertiaData::performanceHistory(null, true),
+            'trainingSchedules' => SsbInertiaData::schedules(null, true),
             'mediaArticles' => SsbInertiaData::mediaArticles(),
             'achievements' => SsbInertiaData::achievements(),
             'adminActivityHistory' => $this->adminActivityHistoryRows(),
-            'scheduleStudentDirectory' => SsbInertiaData::students(),
+            'scheduleStudentDirectory' => SsbInertiaData::students(true),
         ]);
     }
 
@@ -340,7 +385,8 @@ public function adminDashboard()
     $kehadiran = [
         'hadir' => (int) ($kehadiranRaw['Hadir'] ?? 0),
         'sakit' => (int) ($kehadiranRaw['Sakit'] ?? 0),
-        'izin'  => (int) ($kehadiranRaw['Izin'] ?? 0),
+        'alpha' => (int) (($kehadiranRaw['Alpha'] ?? 0) + ($kehadiranRaw['Izin'] ?? 0)),
+        'izin'  => (int) (($kehadiranRaw['Alpha'] ?? 0) + ($kehadiranRaw['Izin'] ?? 0)),
     ];
 
     // 🔥 HISTORY PEMBAYARAN
@@ -416,22 +462,25 @@ public function pelatihDashboard()
         $coachProfile = $this->currentCoachProfile($coach);
         $coachName = $coachProfile?->nama_pelatih ?? $coach?->name ?? 'Pelatih';
 
-        $attendanceRecaps = SsbInertiaData::attendanceRecaps(null, true);
-        $performanceHistory = SsbInertiaData::performanceHistory(null, true);
-        $coachNotes = SsbInertiaData::coachNotes(null, true);
+        $coachStudentIds = $coachProfile
+            ? $this->studentIdsForCoach((int) $coachProfile->id_pelatih)
+            : [];
+        $attendanceRecaps = SsbInertiaData::attendanceRecaps($coachStudentIds, true);
+        $performanceHistory = SsbInertiaData::performanceHistory($coachStudentIds, true);
+        $coachNotes = SsbInertiaData::coachNotes($coachStudentIds, true);
 
         return Inertia::render('coach/DasborPelatih', [
             'userName' => $coachName,
             'currentCoachName' => $coachName,
             'notifications' => SsbInertiaData::coachNotifications($coach?->id),
-            'studentDirectory' => SsbInertiaData::studentDirectory(true),
-            'trainingSchedules' => SsbInertiaData::schedules(null, true),
+            'studentDirectory' => SsbInertiaData::studentDirectory(true, $coachStudentIds),
+            'trainingSchedules' => SsbInertiaData::schedules(null, true, $coachProfile?->id_pelatih),
             'attendanceRecaps' => $attendanceRecaps,
             'history' => $performanceHistory,
             'performanceHistory' => $performanceHistory,
             'notes' => $coachNotes,
             'coachNotes' => $coachNotes,
-            'paymentSubmissions' => SsbInertiaData::paymentRows(true),
+            'paymentSubmissions' => SsbInertiaData::paymentRows(true, $coachStudentIds),
         ]);
     }
 
@@ -446,9 +495,11 @@ public function pelatihDashboard()
 
     // 🔥 PROFIL
     $pelatih = Pelatih::where('user_id', $user->id)->first();
+    $coachStudentIds = $pelatih ? $this->studentIdsForCoach((int) $pelatih->id_pelatih) : [];
 
     // 🔥 KEHADIRAN MINGGU INI
-    $kehadiranRaw = Presensi::whereBetween('created_at', [
+    $kehadiranRaw = Presensi::whereIn('id_siswa', $coachStudentIds)
+        ->whereBetween('created_at', [
             now()->startOfWeek(),
             now()->endOfWeek()
         ])
@@ -459,12 +510,14 @@ public function pelatihDashboard()
     $kehadiran = [
         'hadir' => (int) ($kehadiranRaw['Hadir'] ?? 0),
         'sakit' => (int) ($kehadiranRaw['Sakit'] ?? 0),
-        'izin'  => (int) ($kehadiranRaw['Izin'] ?? 0),
+        'alpha' => (int) (($kehadiranRaw['Alpha'] ?? 0) + ($kehadiranRaw['Izin'] ?? 0)),
+        'izin'  => (int) (($kehadiranRaw['Alpha'] ?? 0) + ($kehadiranRaw['Izin'] ?? 0)),
         'total' => (int) $kehadiranRaw->sum()
     ];
 
     // 🔥 RATA-RATA PERFORMA BULAN INI (FIX: tambah year)
-    $avg = Performa_Siswa::whereMonth('tanggal_penilaian', now()->month)
+    $avg = Performa_Siswa::whereIn('id_siswa', $coachStudentIds)
+        ->whereMonth('tanggal_penilaian', now()->month)
         ->whereYear('tanggal_penilaian', now()->year)
         ->selectRaw('
             AVG(dribbling) as dribbling,
@@ -484,7 +537,8 @@ public function pelatihDashboard()
         ? "CAST(strftime('%m', tanggal_penilaian) AS INTEGER)"
         : 'MONTH(tanggal_penilaian)';
 
-    $performaBulananRaw = Performa_Siswa::whereYear('tanggal_penilaian', now()->year)
+    $performaBulananRaw = Performa_Siswa::whereIn('id_siswa', $coachStudentIds)
+        ->whereYear('tanggal_penilaian', now()->year)
         ->selectRaw("
             {$monthExpression} as bulan,
             AVG(dribbling) as dribbling,
