@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import "./KehadiranOrangTua.css";
 import { parentRoutes, visitOrCall } from "./parentNavigation";
 import SiteFooter from "../SiteFooter";
+import { router } from '@inertiajs/react';
+
 
 import LogoSBB from "../../../assets/LogoSBB.png";
 import ProfileIcon from "../../../assets/Profile.png";
@@ -64,6 +66,11 @@ export default function KehadiranOrangTua({
 
     openChildPicker();
   };
+
+  const daftarAnak = () => {
+      router.visit('/orang-tua/daftar-anak');
+  };
+
   const isActive = paymentStatus === "paid";
   const openHome = visitOrCall(onOpenHome, parentRoutes.home);
   const logout = visitOrCall(onLogout, parentRoutes.logout);
@@ -136,6 +143,8 @@ export default function KehadiranOrangTua({
     [donutData, circumference]
   );
 
+  
+
   return (
     <div className="attendancePage">
       <header className="attendanceTopbar">
@@ -171,6 +180,12 @@ export default function KehadiranOrangTua({
                   <button type="button" onClick={openProfile}>
                     Profil
                   </button>
+                  
+
+                  <button type="button" onClick={daftarAnak}>
+    Daftar Anak
+</button>
+
                   {showChildPickerAction && (
                     <button
                       type="button"
@@ -182,6 +197,8 @@ export default function KehadiranOrangTua({
                       Pilih Anak
                     </button>
                   )}
+
+                  
                   <button type="button" onClick={logout}>
                     Logout
                   </button>
