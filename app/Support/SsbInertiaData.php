@@ -9,10 +9,15 @@ use Illuminate\Support\Facades\DB;
 
 class SsbInertiaData
 {
+    private static function activeStatusValues(): array
+    {
+        return ['active', 'aktif'];
+    }
+
     private static function activeStudentIds(): array
     {
         return DB::table('siswa')
-            ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+            ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), self::activeStatusValues())
             ->pluck('id_siswa')
             ->map(fn ($id) => (int) $id)
             ->values()
@@ -59,7 +64,7 @@ class SsbInertiaData
             ->select('siswa.*', 'orang_tua.email as parent_email');
 
         if ($activeOnly) {
-            $query->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active']);
+            $query->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
         }
 
         if ($studentIds !== null) {
@@ -75,6 +80,7 @@ class SsbInertiaData
                     'name' => $student->nama_siswa,
                     'email' => $student->parent_email ?: '-',
                     'category' => self::categoryFromAge((int) $student->umur),
+                    'status' => $student->status,
                 ];
             })
             ->values()
@@ -89,6 +95,13 @@ class SsbInertiaData
                 'category' => self::categoryValue($student['category']),
             ])
             ->all();
+    }
+
+    private static function attendanceDateValue(object $row): mixed
+    {
+        $attendanceDate = property_exists($row, 'tanggal_presensi') ? $row->tanggal_presensi : null;
+
+        return $attendanceDate ?: ($row->created_at ?: $row->tanggal);
     }
 
     public static function coaches(): array
@@ -137,10 +150,36 @@ class SsbInertiaData
                 ->join('siswa', 'jadwal_siswa.id_siswa', '=', 'siswa.id_siswa')
                 ->where('jadwal_siswa.id_jadwal', $schedule->id_jadwal)
                 ->when($activeOnly, function ($query) {
-                    $query->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active']);
+                    $query->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
                 })
                 ->select('siswa.id_siswa', 'siswa.nama_siswa', 'siswa.umur')
                 ->get();
+
+            $storedCategory = $schedule->kategori_umur !== null
+                ? self::categoryValue((string) $schedule->kategori_umur)
+                : null;
+            $date = Carbon::parse($schedule->tanggal)->locale('id');
+            $isRoutineSchedule = in_array($date->dayOfWeek, [Carbon::WEDNESDAY, Carbon::SUNDAY], true);
+
+            if ($isRoutineSchedule && $students->isEmpty()) {
+                $routineStudents = DB::table('siswa')
+                    ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), self::activeStatusValues())
+                    ->select('id_siswa', 'nama_siswa', 'umur')
+                    ->orderBy('nama_siswa')
+                    ->get();
+
+                if ($storedCategory && $storedCategory !== 'all') {
+                    $routineStudents = $routineStudents
+                        ->filter(fn ($student) => self::categoryValue(self::categoryFromAge((int) $student->umur)) === $storedCategory)
+                        ->values();
+                }
+
+                if ($activeOnly && $routineStudents->isEmpty()) {
+                    return null;
+                }
+
+                $students = $routineStudents;
+            }
 
             if ($activeOnly && $students->isEmpty()) {
                 return null;
@@ -161,14 +200,11 @@ class SsbInertiaData
                 ->map(fn ($student) => self::categoryValue(self::categoryFromAge((int) $student->umur)))
                 ->unique()
                 ->values();
-            $storedCategory = $schedule->kategori_umur !== null
-                ? self::categoryValue((string) $schedule->kategori_umur)
-                : null;
             $firstCategory = $storedCategory
                 ?: ($studentCategories->count() === 1 ? $studentCategories->first() : 'all');
             $studentNames = $students->pluck('nama_siswa')->values()->all();
             $selectedStudentIds = $students->pluck('id_siswa')->values()->all();
-            $date = Carbon::parse($schedule->tanggal)->locale('id');
+            $displayStudentNames = $studentNames;
 
             return [
                 'id' => 'schedule-' . $schedule->id_jadwal,
@@ -182,12 +218,13 @@ class SsbInertiaData
                 'location' => $schedule->lokasi ?: '-',
                 'category' => $firstCategory,
                 'categoryLabel' => $firstCategory === 'all' ? 'Semua Kategori' : strtoupper(str_replace('u', 'U-', $firstCategory)),
-                'targetLabel' => count($studentNames) > 0 ? implode(', ', array_slice($studentNames, 0, 2)) : 'Semua Siswa',
-                'studentName' => count($studentNames) === 1 ? $studentNames[0] : (count($studentNames) > 1 ? 'multiple' : 'all'),
-                'studentNames' => $studentNames,
+                'targetLabel' => count($displayStudentNames) > 0 ? implode(', ', array_slice($displayStudentNames, 0, 2)) : 'Semua Siswa',
+                'studentName' => count($displayStudentNames) === 1 ? $displayStudentNames[0] : (count($displayStudentNames) > 1 ? 'multiple' : 'all'),
+                'studentNames' => $displayStudentNames,
                 'studentIds' => $selectedStudentIds,
                 'coachId' => $schedule->id_pelatih ? (int) $schedule->id_pelatih : null,
                 'coachName' => $schedule->nama_pelatih ?: '-',
+                'isRoutine' => $isRoutineSchedule,
             ];
         })->filter()->values()->all();
     }
@@ -198,25 +235,62 @@ class SsbInertiaData
             ->join('siswa', 'presensi.id_siswa', '=', 'siswa.id_siswa')
             ->leftJoin('jadwal_latihan', 'presensi.id_jadwal', '=', 'jadwal_latihan.id_jadwal')
             ->leftJoin('pelatih', 'presensi.id_pelatih', '=', 'pelatih.id_pelatih')
-            ->select('presensi.*', 'siswa.nama_siswa', 'siswa.umur', 'jadwal_latihan.tanggal', 'pelatih.nama_pelatih');
+            ->select(
+                'presensi.*',
+                'siswa.nama_siswa',
+                'siswa.umur',
+                'jadwal_latihan.tanggal',
+                'jadwal_latihan.jam_mulai',
+                'jadwal_latihan.jam_selesai',
+                'jadwal_latihan.lokasi',
+                'pelatih.nama_pelatih'
+            );
 
         if ($activeOnly) {
-            $query->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active']);
+            $query->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
         }
 
-        if ($studentIds) {
+        if ($studentIds !== null) {
             $query->whereIn('presensi.id_siswa', $studentIds);
         }
 
         return $query->get()
-            ->groupBy(fn ($row) => $row->id_siswa . '-' . Carbon::parse($row->created_at ?: $row->tanggal)->format('Y-m'))
+            ->groupBy(fn ($row) => $row->id_siswa . '-' . Carbon::parse(self::attendanceDateValue($row))->format('Y-m'))
             ->map(function ($rows) {
+                $rows = $rows->sortBy(fn ($row) => Carbon::parse(self::attendanceDateValue($row))->format('Y-m-d'))->values();
                 $first = $rows->first();
-                $date = Carbon::parse($first->created_at ?: $first->tanggal);
-                $total = max($rows->count(), 1);
+                $date = Carbon::parse(self::attendanceDateValue($first));
+                $expectedMeetings = 8;
+                $actualMeetings = max($rows->count(), 1);
                 $countStatus = fn ($status) => $rows->filter(
                     fn ($row) => strtolower(trim((string) $row->status_kehadiran)) === strtolower($status)
                 )->count();
+                $alphaCount = $rows->filter(
+                    fn ($row) => in_array(strtolower(trim((string) $row->status_kehadiran)), ['alpha', 'izin'], true)
+                )->count();
+                $meetingEntries = $rows
+                    ->take($expectedMeetings)
+                    ->values()
+                    ->map(function ($row, $index) {
+                        $meetingDate = Carbon::parse(self::attendanceDateValue($row));
+                        $status = strtolower(trim((string) $row->status_kehadiran));
+
+                        return [
+                            'meeting' => $index + 1,
+                            'date' => $meetingDate->format('Y-m-d'),
+                            'dateLabel' => $meetingDate->locale('id')->translatedFormat('d M'),
+                            'status' => $status === 'izin' ? 'alpha' : $status,
+                            'statusLabel' => $status === 'izin' ? 'Alpha' : ucfirst($status),
+                            'scheduleId' => $row->id_jadwal ? 'schedule-' . $row->id_jadwal : null,
+                            'scheduleLabel' => $row->tanggal
+                                ? Carbon::parse($row->tanggal)->locale('id')->translatedFormat('l') . ' | ' .
+                                    Carbon::parse($row->jam_mulai)->format('H.i') . '-' .
+                                    Carbon::parse($row->jam_selesai)->format('H.i') . ' WIB | ' .
+                                    ($row->lokasi ?: '-')
+                                : '-',
+                        ];
+                    })
+                    ->all();
 
                 return [
                     'id' => $first->id_siswa . '-' . $date->format('Ym'),
@@ -227,15 +301,29 @@ class SsbInertiaData
                     'month' => self::monthKey($date),
                     'year' => $date->format('Y'),
                     'scheduleId' => $first->id_jadwal ? 'schedule-' . $first->id_jadwal : null,
+                    'scheduleIds' => $rows
+                        ->pluck('id_jadwal')
+                        ->filter()
+                        ->map(fn ($id) => 'schedule-' . $id)
+                        ->unique()
+                        ->values()
+                        ->all(),
                     'scheduleLabel' => $first->tanggal ? Carbon::parse($first->tanggal)->locale('id')->translatedFormat('l, d F Y') : '-',
                     'coachName' => $first->nama_pelatih ?: 'Pelatih',
                     'inputBy' => $first->nama_pelatih ?: 'Pelatih',
-                    'hadir' => (int) round(($countStatus('Hadir') / $total) * 100),
-                    'sakit' => (int) round(($countStatus('Sakit') / $total) * 100),
-                    'izin' => (int) round(($countStatus('Izin') / $total) * 100),
+                    'meetingsTotal' => $expectedMeetings,
+                    'entries' => $meetingEntries,
+                    'hadirCount' => $countStatus('Hadir'),
+                    'sakitCount' => $countStatus('Sakit'),
+                    'alphaCount' => $alphaCount,
+                    'hadir' => (int) round(($countStatus('Hadir') / $actualMeetings) * 100),
+                    'sakit' => (int) round(($countStatus('Sakit') / $actualMeetings) * 100),
+                    'alpha' => (int) round(($alphaCount / $actualMeetings) * 100),
+                    'izin' => (int) round(($alphaCount / $actualMeetings) * 100),
                     'createdAt' => self::timestamp($date),
                 ];
             })
+            ->sortByDesc('createdAt')
             ->values()
             ->all();
     }
@@ -244,32 +332,68 @@ class SsbInertiaData
     {
         $query = DB::table('performa_siswa')
             ->join('siswa', 'performa_siswa.id_siswa', '=', 'siswa.id_siswa')
-            ->select('performa_siswa.*', 'siswa.nama_siswa', 'siswa.umur');
+            ->leftJoin('jadwal_latihan', 'performa_siswa.id_jadwal', '=', 'jadwal_latihan.id_jadwal')
+            ->leftJoin('pelatih', 'performa_siswa.id_pelatih', '=', 'pelatih.id_pelatih')
+            ->select(
+                'performa_siswa.*',
+                'siswa.nama_siswa',
+                'siswa.umur',
+                'jadwal_latihan.tanggal as jadwal_tanggal',
+                'jadwal_latihan.jam_mulai',
+                'jadwal_latihan.jam_selesai',
+                'jadwal_latihan.lokasi',
+                'pelatih.nama_pelatih'
+            );
 
         if ($activeOnly) {
-            $query->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active']);
+            $query->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
         }
 
-        if ($studentIds) {
+        if ($studentIds !== null) {
             $query->whereIn('performa_siswa.id_siswa', $studentIds);
         }
 
-        return $query->orderByDesc('tanggal_penilaian')->get()
+        return $query
+            ->orderByDesc('tanggal_penilaian')
+            ->orderByDesc('id_performa')
+            ->get()
             ->map(function ($row) {
                 $date = Carbon::parse($row->tanggal_penilaian);
+                $average = round(((float) $row->dribbling + (float) $row->passing + (float) $row->shooting) / 3, 2);
+                $isRoutineSchedule = $row->jadwal_tanggal
+                    ? in_array(Carbon::parse($row->jadwal_tanggal)->dayOfWeek, [Carbon::WEDNESDAY, Carbon::SUNDAY], true)
+                    : true;
 
                 return [
                     'id' => $row->id_performa,
                     'studentId' => $row->id_siswa,
                     'studentName' => $row->nama_siswa,
                     'player' => $row->nama_siswa,
-                    'category' => self::categoryFromAge((int) $row->umur),
+                    'category' => self::categoryValue(self::categoryFromAge((int) $row->umur)),
+                    'rawScheduleId' => $row->id_jadwal ? (int) $row->id_jadwal : null,
+                    'scheduleId' => $row->id_jadwal ? 'schedule-' . $row->id_jadwal : null,
+                    'scheduleLabel' => $row->jadwal_tanggal
+                        ? Carbon::parse($row->jadwal_tanggal)->locale('id')->translatedFormat('l') . ' | ' .
+                            Carbon::parse($row->jam_mulai)->format('H.i') . '-' .
+                            Carbon::parse($row->jam_selesai)->format('H.i') . ' WIB | ' .
+                            ($row->lokasi ?: '-')
+                        : '-',
+                    'scheduleDate' => $row->jadwal_tanggal ? Carbon::parse($row->jadwal_tanggal)->toDateString() : null,
+                    'scheduleTime' => $row->jam_mulai && $row->jam_selesai
+                        ? Carbon::parse($row->jam_mulai)->format('H.i') . '-' . Carbon::parse($row->jam_selesai)->format('H.i') . ' WIB'
+                        : null,
+                    'scheduleLocation' => $row->lokasi ?: null,
+                    'isRoutine' => $isRoutineSchedule,
+                    'coach' => $row->nama_pelatih ?: 'Pelatih',
+                    'coachName' => $row->nama_pelatih ?: 'Pelatih',
                     'month' => self::monthKey($date),
                     'year' => $date->format('Y'),
                     'date' => self::dateSlash($date),
                     'dribbling' => (int) $row->dribbling,
                     'passing' => (int) $row->passing,
                     'shooting' => (int) $row->shooting,
+                    'average' => $row->rata_rata !== null ? round((float) $row->rata_rata, 2) : $average,
+                    'rataRata' => $row->rata_rata !== null ? round((float) $row->rata_rata, 2) : $average,
                     'createdAt' => self::timestamp($date),
                 ];
             })
@@ -285,14 +409,17 @@ class SsbInertiaData
             ->select('catatan_pelatih.*', 'siswa.nama_siswa', 'siswa.umur', 'pelatih.nama_pelatih');
 
         if ($activeOnly) {
-            $query->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active']);
+            $query->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
         }
 
-        if ($studentIds) {
+        if ($studentIds !== null) {
             $query->whereIn('catatan_pelatih.id_siswa', $studentIds);
         }
 
-        return $query->orderByDesc('tanggal_catatan')->get()
+        return $query
+            ->orderByDesc('tanggal_catatan')
+            ->orderByDesc('id_catatan')
+            ->get()
             ->map(fn ($row) => [
                 'id' => $row->id_catatan,
                 'coachName' => $row->nama_pelatih ?: 'Pelatih',
@@ -315,7 +442,7 @@ class SsbInertiaData
             ->join('siswa', 'pencapaian.id_siswa', '=', 'siswa.id_siswa')
             ->select('pencapaian.*', 'siswa.nama_siswa', 'siswa.umur');
 
-        if ($studentIds) {
+        if ($studentIds !== null) {
             $query->whereIn('pencapaian.id_siswa', $studentIds);
         }
 
@@ -405,11 +532,19 @@ class SsbInertiaData
                 $paymentProofUrl = $paymentProofPath
                     ? url('/api/admin/lihat-bukti/' . dirname($paymentProofPath) . '/' . basename($paymentProofPath))
                     : null;
+                $displayName = $row->pending_nama_siswa ?: $row->nama_siswa;
+                $displayFatherName = $row->pending_nama_ayah ?: $row->nama_ayah;
+                $displayMotherName = $row->pending_nama_ibu ?: $row->nama_ibu;
+                $displayAge = $row->pending_umur ?: $row->umur;
+                $displayBirthCert = $row->pending_akta_kelahiran ?: $row->akta_kelahiran;
+                $displayReportCard = $row->pending_rapor ?: $row->rapor;
+                $displayFamilyCard = $row->pending_kartu_keluarga ?: $row->kartu_keluarga;
+                $displayPhoto = $row->pending_pas_photo_3x4 ?: $row->pas_photo_3x4;
                 $documentFileUrls = [
-                    'birthCert' => $row->akta_kelahiran ? url('/api/admin/file-pendaftaran-siswa/akta/' . basename($row->akta_kelahiran)) : null,
-                    'reportCard' => $row->rapor ? url('/api/admin/file-pendaftaran-siswa/rapor/' . basename($row->rapor)) : null,
-                    'familyCard' => $row->kartu_keluarga ? url('/api/admin/file-pendaftaran-siswa/kk/' . basename($row->kartu_keluarga)) : null,
-                    'photo' => $row->pas_photo_3x4 ? url('/api/admin/file-pendaftaran-siswa/foto/' . basename($row->pas_photo_3x4)) : null,
+                    'birthCert' => $displayBirthCert ? url('/api/admin/file-pendaftaran-siswa/akta/' . basename($displayBirthCert)) : null,
+                    'reportCard' => $displayReportCard ? url('/api/admin/file-pendaftaran-siswa/rapor/' . basename($displayReportCard)) : null,
+                    'familyCard' => $displayFamilyCard ? url('/api/admin/file-pendaftaran-siswa/kk/' . basename($displayFamilyCard)) : null,
+                    'photo' => $displayPhoto ? url('/api/admin/file-pendaftaran-siswa/foto/' . basename($displayPhoto)) : null,
                     'paymentProof' => $paymentProofUrl,
                 ];
                 $invalidIdentityFields = [];
@@ -428,8 +563,8 @@ class SsbInertiaData
                 return [
                     'no' => $row->id_pendaftaran,
                     'createdAt' => self::timestamp($row->tanggal_daftar) + (int) $row->id_pendaftaran,
-                    'name' => $row->nama_siswa,
-                    'childName' => $row->nama_siswa,
+                    'name' => $displayName,
+                    'childName' => $displayName,
                     'email' => $row->email ?: '-',
                     'phone' => $row->no_hp ?: '-',
                     'status' => match ($row->status_approval) {
@@ -438,14 +573,14 @@ class SsbInertiaData
                         'Revisi' => 'Perlu Perbaikan',
                         default => 'Belum Diperiksa',
                     },
-                    'motherName' => $row->nama_ibu ?: '-',
-                    'fatherName' => $row->nama_ayah ?: '-',
-                    'age' => $row->umur ?: '-',
+                    'motherName' => $displayMotherName ?: '-',
+                    'fatherName' => $displayFatherName ?: '-',
+                    'age' => $displayAge ?: '-',
                     'files' => [
-                        'birthCert' => array_filter([$row->akta_kelahiran]),
-                        'reportCard' => array_filter([$row->rapor]),
-                        'familyCard' => array_filter([$row->kartu_keluarga]),
-                        'photo' => array_filter([$row->pas_photo_3x4]),
+                        'birthCert' => array_filter([$displayBirthCert]),
+                        'reportCard' => array_filter([$displayReportCard]),
+                        'familyCard' => array_filter([$displayFamilyCard]),
+                        'photo' => array_filter([$displayPhoto]),
                         'paymentProof' => array_filter([$paymentProofPath]),
                     ],
                     'fileObjects' => array_map(
@@ -465,24 +600,75 @@ class SsbInertiaData
         $query = DB::table('bukti_pembayaran')
             ->join('pembayaran', 'bukti_pembayaran.id_pembayaran', '=', 'pembayaran.id_pembayaran')
             ->join('siswa', 'bukti_pembayaran.id_siswa', '=', 'siswa.id_siswa')
-            ->select('bukti_pembayaran.*', 'pembayaran.jumlah', 'pembayaran.jenis', 'pembayaran.tanggal_bayar', 'siswa.nama_siswa', 'siswa.umur');
+            ->select(
+                'bukti_pembayaran.*',
+                'pembayaran.jumlah',
+                'pembayaran.jenis',
+                'pembayaran.tanggal_bayar',
+                'pembayaran.periode as periode_pembayaran',
+                'siswa.nama_siswa',
+                'siswa.umur'
+            );
 
         if ($activeOnly) {
-            $query->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active']);
+            $query->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
         }
 
         if ($studentIds !== null) {
             $query->whereIn('bukti_pembayaran.id_siswa', $studentIds);
         }
 
-        return $query
+        $rows = $query
             ->orderByDesc('bukti_pembayaran.tanggal_bukti_bayar')
+            ->get();
+
+        $monthlyDailyQuery = DB::table('pembayaran')
+            ->leftJoin('bukti_pembayaran', 'pembayaran.id_pembayaran', '=', 'bukti_pembayaran.id_pembayaran')
+            ->join('siswa', 'pembayaran.id_siswa', '=', 'siswa.id_siswa')
+            ->select(
+                'pembayaran.id_pembayaran',
+                'pembayaran.id_siswa',
+                'pembayaran.periode',
+                'pembayaran.tanggal_bayar',
+                'pembayaran.jumlah'
+            )
+            ->where('pembayaran.jenis', 'Harian')
+            ->where(function ($builder) {
+                $builder->whereNull('bukti_pembayaran.status')
+                    ->orWhereRaw('LOWER(bukti_pembayaran.status) <> ?', ['ditolak']);
+            });
+
+        if ($activeOnly) {
+            $monthlyDailyQuery->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
+        }
+
+        if ($studentIds !== null) {
+            $monthlyDailyQuery->whereIn('pembayaran.id_siswa', $studentIds);
+        }
+
+        $monthlyDailyTotals = $monthlyDailyQuery
             ->get()
-            ->map(function ($row) {
+            ->unique('id_pembayaran')
+            ->groupBy(function ($row) {
+                $periodSource = $row->periode ?: $row->tanggal_bayar;
+                $month = substr((string) $periodSource, 0, 7);
+
+                return $row->id_siswa . '|' . $month;
+            })
+            ->map(fn ($items) => (float) $items->sum('jumlah'));
+
+        return $rows
+            ->map(function ($row) use ($monthlyDailyTotals) {
                 $paymentType = strtolower(trim((string) $row->jenis));
                 $proofStatus = strtolower(trim((string) $row->status));
                 $isRegistration = $paymentType === 'pendaftaran';
+                $isDaily = $paymentType === 'harian';
                 $hasProofFile = filled($row->bukti_bayar);
+                $periodSource = $row->periode_pembayaran ?: $row->periode ?: $row->tanggal_bayar ?: $row->tanggal_bukti_bayar;
+                $month = substr((string) $periodSource, 0, 7);
+                $monthlyTarget = $isDaily ? 100000.0 : null;
+                $monthlyPaid = $isDaily ? (float) ($monthlyDailyTotals[$row->id_siswa . '|' . $month] ?? 0) : null;
+                $monthlyRemaining = $isDaily ? max(0, $monthlyTarget - $monthlyPaid) : null;
                 $statusLabel = match (true) {
                     in_array($proofStatus, ['diterima', 'lunas', 'sudah dibayar'], true) => 'Sudah Dibayar',
                     in_array($proofStatus, ['ditolak', 'tidak valid'], true) => 'Belum Dibayar',
@@ -500,8 +686,11 @@ class SsbInertiaData
                     'paymentType' => $paymentType,
                     'paymentTypeLabel' => $row->jenis,
                     'amount' => (float) $row->jumlah,
+                    'monthlyTarget' => $monthlyTarget,
+                    'monthlyPaidAmount' => $monthlyPaid,
+                    'monthlyRemainingAmount' => $monthlyRemaining,
                     'paidDate' => $row->tanggal_bayar ?: $row->tanggal_bukti_bayar,
-                    'period' => $row->periode,
+                    'period' => $row->periode_pembayaran ?: $row->periode,
                     'status' => $statusLabel,
                     'proofFile' => $row->bukti_bayar ? asset('storage/' . ltrim($row->bukti_bayar, '/')) : null,
                     'proofFileName' => $row->bukti_bayar,
@@ -538,14 +727,49 @@ class SsbInertiaData
             ->orderByDesc('notifikasi_terkirim.id_notifikasi_terkirim')
             ->limit(30)
             ->get()
-            ->map(fn ($row) => [
-                'id' => $row->id_notifikasi_terkirim,
-                'text' => trim(($row->judul ? "[{$row->judul}] " : '') . ($row->isi ?? '')),
-                'read' => strtolower((string) $row->status_baca) === 'sudah dibaca',
-                'createdAt' => $row->created_at,
-            ])
+            ->map(function ($row) {
+                $title = trim((string) ($row->judul ?? ''));
+                $message = trim((string) ($row->isi ?? ''));
+
+                return [
+                    'id' => $row->id_notifikasi_terkirim,
+                    'title' => $title,
+                    'message' => $message,
+                    'text' => trim(($title ? "[{$title}] " : '') . $message),
+                    'read' => strtolower((string) $row->status_baca) === 'sudah dibaca',
+                    'createdAt' => $row->created_at,
+                    'actionMenu' => self::adminNotificationMenu($title, $message),
+                ];
+            })
             ->values()
             ->all();
+    }
+
+    private static function adminNotificationMenu(?string $title, ?string $message): string
+    {
+        $text = strtolower(trim(($title ?? '') . ' ' . ($message ?? '')));
+
+        if (str_contains($text, 'pembayaran') || str_contains($text, 'bukti bayar')) {
+            return 'Pembayaran';
+        }
+
+        if (str_contains($text, 'pendaftaran') || str_contains($text, 'berkas')) {
+            return 'Pendaftaran';
+        }
+
+        if (str_contains($text, 'profil siswa') || str_contains($text, 'profil')) {
+            return 'Siswa';
+        }
+
+        if (str_contains($text, 'jadwal')) {
+            return 'Jadwal Latihan';
+        }
+
+        if (str_contains($text, 'prestasi')) {
+            return 'Prestasi';
+        }
+
+        return 'Home';
     }
 
     public static function coachNotifications(?int $coachUserId = null): array
@@ -610,9 +834,12 @@ class SsbInertiaData
                     'date' => $paymentDate
                         ? Carbon::parse($paymentDate)->locale('id')->translatedFormat('d F Y')
                         : '-',
-                    'type' => $row->jenis === 'Pendaftaran'
-                        ? 'Uang Pendaftaran'
-                        : ($row->jenis === 'Harian' ? 'Pembayaran Harian' : 'Iuran Bulanan'),
+                    'type' => match ($row->jenis) {
+                        'Pendaftaran' => 'Uang Pendaftaran',
+                        'Bulanan' => 'Iuran Bulanan',
+                        'Harian' => 'Pembayaran Harian',
+                        default => 'Pembayaran',
+                    },
                     'status' => match (true) {
                         $row->status === 'Lunas' => 'Lunas',
                         $proofStatus === 'menunggu validasi' => 'Menunggu Validasi',
@@ -623,6 +850,56 @@ class SsbInertiaData
             })
             ->values()
             ->all();
+    }
+
+    public static function monthlyPaymentSummary(array $studentIds): ?array
+    {
+        if (count($studentIds) === 0) {
+            return null;
+        }
+
+        $period = now()->format('Y-m');
+        $target = 100000.0;
+        $paid = (float) DB::table('pembayaran')
+            ->leftJoin('bukti_pembayaran', 'pembayaran.id_pembayaran', '=', 'bukti_pembayaran.id_pembayaran')
+            ->whereIn('pembayaran.id_siswa', $studentIds)
+            ->where('pembayaran.jenis', 'Harian')
+            ->where('pembayaran.periode', 'like', $period . '%')
+            ->where(function ($query) {
+                $query->whereNull('bukti_pembayaran.status')
+                    ->orWhereRaw('LOWER(bukti_pembayaran.status) <> ?', ['ditolak']);
+            })
+            ->sum('pembayaran.jumlah');
+        $remaining = max(0, $target - $paid);
+
+        return [
+            'targetAmount' => $target,
+            'paidAmount' => $paid,
+            'remainingAmount' => $remaining,
+            'period' => $period,
+            'periodLabel' => now()->locale('id')->translatedFormat('F Y'),
+            'status' => $remaining <= 0 ? 'complete' : 'partial',
+        ];
+    }
+
+    private static function studentHasApprovedRegistrationPayment(int $studentId): bool
+    {
+        $registrationIsApproved = DB::table('pendaftaran')
+            ->where('id_siswa', $studentId)
+            ->where('status_approval', 'Disetujui')
+            ->exists();
+
+        if (! $registrationIsApproved) {
+            return false;
+        }
+
+        return DB::table('pembayaran')
+            ->join('bukti_pembayaran', 'pembayaran.id_pembayaran', '=', 'bukti_pembayaran.id_pembayaran')
+            ->where('pembayaran.id_siswa', $studentId)
+            ->where('pembayaran.jenis', 'Pendaftaran')
+            ->where('pembayaran.status', 'Lunas')
+            ->whereRaw('LOWER(bukti_pembayaran.status) = ?', ['diterima'])
+            ->exists();
     }
 
     public static function parentPayload(): array
@@ -690,6 +967,63 @@ class SsbInertiaData
             session()->forget('id_siswa');
         }
 
+        $directStudents = $user
+            ? $students->filter(fn ($student) => (int) ($student->user_id ?? 0) === (int) $user->id)->values()
+            : collect();
+        if (! $selectedStudentId && $directStudents->count() === 1) {
+            $selectedStudentId = (int) $directStudents->first()->id_siswa;
+            session(['id_siswa' => $selectedStudentId]);
+            $mustChooseChildAfterLogin = false;
+        }
+
+        if (
+            ! $selectedStudentId
+            && $students->count() === 1
+            && $user
+            && (int) ($students->first()->user_id ?? 0) === (int) $user->id
+        ) {
+            $selectedStudentId = (int) $students->first()->id_siswa;
+            session(['id_siswa' => $selectedStudentId]);
+            $mustChooseChildAfterLogin = false;
+        }
+
+        $activeStudent = $selectedStudentId
+            ? $students->firstWhere('id_siswa', (int) $selectedStudentId)
+            : null;
+
+        if (! $activeStudent && $students->isNotEmpty()) {
+            $studentIdsWithRevision = $students->pluck('id_siswa')->filter()->values();
+            $revisionStudentId = $studentIdsWithRevision->isNotEmpty()
+                ? DB::table('pendaftaran')
+                    ->whereIn('id_siswa', $studentIdsWithRevision)
+                    ->where('status_approval', 'Revisi')
+                    ->orderByDesc('tanggal_daftar')
+                    ->orderByDesc('id_pendaftaran')
+                    ->value('id_siswa')
+                : null;
+
+            if (! $revisionStudentId && $studentIdsWithRevision->isNotEmpty()) {
+                $revisionStudentId = DB::table('bukti_pembayaran')
+                    ->join('pembayaran', 'bukti_pembayaran.id_pembayaran', '=', 'pembayaran.id_pembayaran')
+                    ->whereIn('bukti_pembayaran.id_siswa', $studentIdsWithRevision)
+                    ->where('bukti_pembayaran.status', 'ditolak')
+                    ->where('pembayaran.jenis', 'Pendaftaran')
+                    ->orderByDesc('bukti_pembayaran.tanggal_bukti_bayar')
+                    ->orderByDesc('bukti_pembayaran.id_bukti_pembayaran')
+                    ->value('bukti_pembayaran.id_siswa');
+            }
+
+            if ($revisionStudentId) {
+                $activeStudent = $students->firstWhere('id_siswa', (int) $revisionStudentId);
+                $selectedStudentId = $activeStudent ? (int) $activeStudent->id_siswa : $selectedStudentId;
+
+                if ($selectedStudentId) {
+                    session(['id_siswa' => $selectedStudentId]);
+                    $mustChooseChildAfterLogin = false;
+                }
+            }
+        }
+
         $shouldOpenChildPicker = $students->count() > 0 && (
             $mustChooseChildAfterLogin
             || ! $selectedStudentId
@@ -697,16 +1031,11 @@ class SsbInertiaData
 
         session()->forget('show_child_picker_after_login');
 
-        $activeStudent = $selectedStudentId
-            ? $students->firstWhere('id_siswa', (int) $selectedStudentId)
-            : null;
         $firstStudent = $activeStudent;
         $studentIds = $firstStudent ? [$firstStudent->id_siswa] : [];
-        $latestPayment = $studentIds
-            ? DB::table('pembayaran')->whereIn('id_siswa', $studentIds)->orderByDesc('tanggal_bayar')->first()
-            : null;
         $studentIsActive = $firstStudent
             ? strtolower((string) $firstStudent->status) === 'active'
+                && self::studentHasApprovedRegistrationPayment((int) $firstStudent->id_siswa)
             : false;
         $studentProfile = $firstStudent
             ? DB::table('profil_siswa')->where('id_siswa', $firstStudent->id_siswa)->first()
@@ -815,7 +1144,7 @@ class SsbInertiaData
                 ? ($studentIsActive ? 'paid' : 'unpaid')
                 : 'unselected',
             'isAccountReady' => (bool) $parent,
-            'canSwitchChild' => $students->count() > 0,
+            'canSwitchChild' => $students->count() > 1,
             'childrenOptions' => $students
                 ->map(fn ($student) => [
                     'id' => $student->id_siswa,
@@ -833,6 +1162,7 @@ class SsbInertiaData
             'coachNotes' => self::coachNotes($studentIds),
             'notes' => self::coachNotes($studentIds),
             'paymentHistory' => self::paymentHistory($studentIds),
+            'monthlyPaymentSummary' => self::monthlyPaymentSummary($studentIds),
             'notifications' => self::parentNotifications($studentIds, $user?->id),
             'reuploadRequest' => $reuploadRequest,
         ];
