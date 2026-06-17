@@ -19,12 +19,18 @@ import BagianPrestasiAdminPage from "./BagianPrestasiAdmin";
 import BagianJadwalLatihanAdminPage from "./BagianJadwalLatihanAdmin";
 import BagianMediaPromosiAdminPage from "./BagianMediaPromosiAdmin";
 import SiteFooter from "../SiteFooter";
+import GreenSelect from "../../components/GreenSelect";
 
 const ageCategoryStats = [
   { label: "U-10", value: 18 },
   { label: "U-12", value: 16 },
   { label: "U-11", value: 14 },
 ];
+
+function isActiveStudentStatus(status) {
+  const normalized = String(status || "").trim().toLowerCase();
+  return normalized === "" || normalized === "active" || normalized === "aktif";
+}
 
 const monthNames = [
   "Januari",
@@ -40,6 +46,8 @@ const monthNames = [
   "November",
   "Desember",
 ];
+
+const shortMonthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
 const currentYear = String(new Date().getFullYear());
 const currentMonthName = monthNames[new Date().getMonth()];
@@ -132,6 +140,19 @@ function parseLocalDateInput(value) {
   if (!year || !month || !day) return null;
   const date = new Date(year, month - 1, day);
   return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function isWednesdayOrSundayDate(value) {
+  const date = parseLocalDateInput(value);
+  if (!date) return false;
+  return date.getDay() === 0 || date.getDay() === 3;
+}
+
+function isRoutineTrainingSchedule(schedule) {
+  if (schedule?.isRoutine === true) return true;
+  const date = parseLocalDateInput(schedule?.date);
+  if (!date) return false;
+  return date.getDay() === 0 || date.getDay() === 3;
 }
 
 function getNextDateForScheduleDay(dayName, fallbackDate) {
@@ -294,9 +315,30 @@ const buildAdminMenuUrl = (menuKey) => {
 
 const paymentCategoryOptions = [
   { value: "Semua", label: "Semua" },
-  { value: "Pembayaran Bulanan", label: "Pembayaran Bulanan" },
   { value: "Pendaftaran", label: "Pendaftaran" },
+  { value: "Pembayaran Harian", label: "Pembayaran Harian" },
 ];
+
+function normalizeAdminPaymentType(value) {
+  const normalized = String(value || "").trim().toLowerCase().replace(/\s+/g, "");
+  if (["pendaftaran", "uangpendaftaran"].includes(normalized)) return "pendaftaran";
+  if (["bulanan", "uangbulanan", "iuranbulanan", "pembayaranbulanan"].includes(normalized)) return "bulanan";
+  if (["harian", "pembayaranharian"].includes(normalized)) return "harian";
+  return normalized || "";
+}
+
+function adminPaymentCategoryFromType(value) {
+  const type = normalizeAdminPaymentType(value);
+  if (type === "harian") return "Pembayaran Harian";
+  return "Pendaftaran";
+}
+
+function adminPaymentTypeLabel(value) {
+  const type = normalizeAdminPaymentType(value);
+  if (type === "harian") return "Harian";
+  if (type === "pendaftaran") return "Pendaftaran";
+  return value || "-";
+}
 
 const performanceCategoryOptions = [
   { value: "all", label: "Semua Kategori" },
@@ -814,7 +856,7 @@ function HalamanPembayaranAdmin({
       <div className="adminSectionHead">
         <div>
           <h2>Validasi Pembayaran</h2>
-          <p>Periksa bukti pembayaran pendaftaran dan pembayaran bulanan.</p>
+          <p>Periksa bukti pembayaran pendaftaran dan pembayaran harian.</p>
         </div>
         <div className="adminTabGroup">
           <button
@@ -943,14 +985,13 @@ function BagianPrestasiAdmin({ students = [], achievements = [], onAddAchievemen
 
       <article className="adminCard adminSectionCard">
         <form className="adminInlineForm" onSubmit={addAchievement}>
-          <select
+          <GreenSelect
             value={formValues.studentId}
-            onChange={(event) => setFormValues((prev) => ({ ...prev, studentId: event.target.value }))}
-          >
-            {students.map((student) => (
-              <option key={student.id} value={student.id}>{student.name}</option>
-            ))}
-          </select>
+            onChange={(nextValue) => setFormValues((prev) => ({ ...prev, studentId: nextValue }))}
+            ariaLabel="Pilih siswa prestasi"
+            className="adminInlineGreenSelect"
+            options={students.map((student) => ({ value: student.id, label: student.name }))}
+          />
           <input
             type="text"
             placeholder="Judul prestasi"
@@ -1056,26 +1097,31 @@ function BagianJadwalLatihanAdmin({
                 onChange={(event) => updateSchedule(schedule.id, "place", event.target.value)}
                 aria-label="Tempat"
               />
-              <select
+              <GreenSelect
                 value={schedule.category || "all"}
-                onChange={(event) => updateSchedule(schedule.id, "category", event.target.value)}
-                aria-label="Kategori"
-              >
-                <option value="all">Semua Kategori</option>
-                <option value="u10">U-10</option>
-                <option value="u11">U-11</option>
-                <option value="u12">U-12</option>
-              </select>
-              <select
+                onChange={(nextValue) => updateSchedule(schedule.id, "category", nextValue)}
+                ariaLabel="Kategori"
+                className="adminScheduleGreenSelect"
+                options={[
+                  { value: "all", label: "Semua Kategori" },
+                  { value: "u10", label: "U-10" },
+                  { value: "u11", label: "U-11" },
+                  { value: "u12", label: "U-12" },
+                ]}
+              />
+              <GreenSelect
                 value={schedule.studentName || "all"}
-                onChange={(event) => updateSchedule(schedule.id, "studentName", event.target.value)}
-                aria-label="Siswa"
-              >
-                <option value="all">Semua Siswa</option>
-                {scheduleStudentDirectory.map((student) => (
-                  <option key={student.id || student.name} value={student.name}>{student.name}</option>
-                ))}
-              </select>
+                onChange={(nextValue) => updateSchedule(schedule.id, "studentName", nextValue)}
+                ariaLabel="Siswa"
+                className="adminScheduleGreenSelect"
+                options={[
+                  { value: "all", label: "Semua Siswa" },
+                  ...scheduleStudentDirectory.map((student) => ({
+                    value: student.name,
+                    label: student.name,
+                  })),
+                ]}
+              />
               <button
                 type="button"
                 className="adminSmallAction adminDangerAction"
@@ -1221,7 +1267,9 @@ export default function DasborAdmin({
   const currentActiveMenu = activeMenu || inertiaProps.activeMenu || "Home";
   const initialAdminActivityHistory =
     adminActivityHistory.length > 0 ? adminActivityHistory : inertiaProps.adminActivityHistory || [];
-  const resolvedAdminStudents = adminStudents;
+  const resolvedAdminStudents = adminStudents.filter((student) =>
+    isActiveStudentStatus(student?.status)
+  );
   const resolvedAdminCoaches = adminCoaches;
   const resolvedCoachNotes = adminCatatanPelatih;
   const resolvedMediaArticles = mediaArticles;
@@ -1257,6 +1305,8 @@ export default function DasborAdmin({
     normalizeAdminActivityRows(initialAdminActivityHistory)
   );
   const [paymentActiveTab, setPaymentActiveTab] = useState("validation");
+  const [studentNotificationTargetName, setStudentNotificationTargetName] = useState(null);
+  const [localNotifications, setLocalNotifications] = useState(notifications);
   const ageMenuRef = useRef(null);
   const yearMenuRef = useRef(null);
   const attendanceMonthRef = useRef(null);
@@ -1277,8 +1327,12 @@ export default function DasborAdmin({
   const isAchievementsPage = currentActiveMenu === "Prestasi";
   const isSchedulePage = currentActiveMenu === "Jadwal Latihan";
   const isMediaPage = currentActiveMenu === "Media Promosi";
-  const unreadNotificationsCount = notifications.filter((item) => !item?.read).length;
-  const hasNotifications = notifications.length > 0;
+  const unreadNotificationsCount = localNotifications.filter((item) => !item?.read).length;
+  const hasNotifications = localNotifications.length > 0;
+
+  useEffect(() => {
+    setLocalNotifications(notifications);
+  }, [notifications]);
 
   useEffect(() => {
     if (!isValidationDocsPage) return undefined;
@@ -1723,7 +1777,7 @@ export default function DasborAdmin({
     const registrationRows = registrationPaymentSubmissions.map((item) => ({
       id: item.id,
       name: item.childName || item.parentName || "-",
-      type: item.paymentType === "Bulanan" ? "Uang Bulanan" : item.paymentType || "Pendaftaran",
+      type: adminPaymentTypeLabel(item.paymentType || "Pendaftaran"),
       date: item.paidDate
         ? new Date(item.paidDate).toLocaleDateString("id-ID")
         : item.createdAt
@@ -1732,14 +1786,14 @@ export default function DasborAdmin({
       amount: `Rp${Number(item.amount || 0).toLocaleString("id-ID")},00`,
       status: item.status || "Menunggu Verifikasi",
       proofFileName: item.proofFileName || "-",
-      category: item.paymentType === "Bulanan" ? "Pembayaran Bulanan" : "Pendaftaran",
+      category: adminPaymentCategoryFromType(item.paymentType || "Pendaftaran"),
       createdAt: Number(item.createdAt || 0),
     }));
 
     const coachRows = coachPaymentSubmissions.map((item) => ({
       id: item.id,
       name: item.studentName || "-",
-      type: item.paymentTypeLabel || item.paymentType || "-",
+      type: adminPaymentTypeLabel(item.paymentTypeLabel || item.paymentType),
       date: item.paidDate
         ? new Date(item.paidDate).toLocaleDateString("id-ID")
         : item.createdAt
@@ -1748,11 +1802,13 @@ export default function DasborAdmin({
       amount: `Rp${Number(item.amount || 0).toLocaleString("id-ID")},00`,
       status: item.status || "Menunggu Verifikasi",
       proofFileName: item.proofFileName || "-",
-      category: item.paymentType === "bulanan" ? "Pembayaran Bulanan" : "Pendaftaran",
+      category: adminPaymentCategoryFromType(item.paymentTypeLabel || item.paymentType),
       createdAt: Number(item.createdAt || 0),
     }));
 
-    return [...coachRows, ...registrationRows].sort((a, b) => b.createdAt - a.createdAt);
+    return [...coachRows, ...registrationRows]
+      .filter((item) => normalizeAdminPaymentType(item.type) !== "bulanan")
+      .sort((a, b) => b.createdAt - a.createdAt);
   }, [coachPaymentSubmissions, registrationPaymentSubmissions]);
   const pendingPaymentRows = useMemo(
     () => allPaymentRows.filter((item) => item.status === "Menunggu Verifikasi"),
@@ -1819,14 +1875,13 @@ export default function DasborAdmin({
   };
 
   const markAdminNotificationsRead = async () => {
-    if (onClearNotifications) {
-      onClearNotifications();
-      return;
-    }
-
-    const unreadIds = notifications
+    const unreadIds = localNotifications
       .filter((item) => !item?.read && item?.id)
       .map((item) => item.id);
+
+    if (unreadIds.length === 0) return;
+
+    setLocalNotifications((prev) => prev.map((item) => ({ ...item, read: true })));
 
     if (window.axios && unreadIds.length > 0) {
       await Promise.allSettled(
@@ -1834,18 +1889,43 @@ export default function DasborAdmin({
       );
     }
 
-    router.reload({ only: ["notifications"], preserveScroll: true });
+    if (onClearNotifications) {
+      onClearNotifications();
+    }
+
+    router.reload({ only: ["notifications"], preserveScroll: true, preserveState: true });
+  };
+
+  const markSingleAdminNotificationRead = async (notification) => {
+    if (!notification?.id || notification?.read) return;
+
+    setLocalNotifications((prev) =>
+      prev.map((item) => item.id === notification.id ? { ...item, read: true } : item)
+    );
+
+    if (window.axios) {
+      await window.axios.post(`/api/notifikasi/baca/${notification.id}`).catch(() => {});
+    }
+  };
+
+  const handleAdminNotificationClick = async (notification) => {
+    await markSingleAdminNotificationRead(notification);
+    setShowNotificationMenu(false);
+    const notificationText = String(notification?.text || "");
+    const isStudentProfileNotification = /profil siswa/i.test(notificationText);
+    const targetMenu = isStudentProfileNotification ? "Siswa" : notification?.actionMenu || "Home";
+
+    if (targetMenu === "Siswa") {
+      const matchedName = notificationText.match(/untuk siswa\s+(.+?)(?:\.|$)/i)?.[1]?.trim();
+      setStudentNotificationTargetName(matchedName || null);
+    }
+
+    navigateAdminMenu(targetMenu);
   };
 
   const openValidationDetail = (docNo) => {
     navigateAdminMenu("Pendaftaran");
     setRegistrationRequestedDocNo(docNo);
-  };
-
-  const openPaymentHistoryFromNotification = () => {
-    setPaymentActiveTab("history");
-    navigateAdminMenu("Pembayaran", { keepPaymentTab: true });
-    setShowNotificationMenu(false);
   };
 
   useEffect(() => {
@@ -1967,8 +2047,9 @@ export default function DasborAdmin({
       .map((student) => Number(student?.id ?? student?.id_siswa))
       .filter((id) => Number.isFinite(id) && id > 0);
     const { jam_mulai, jam_selesai } = parseScheduleTimeRange(schedule?.time);
+    const tanggal = getNextDateForScheduleDay(schedule?.day, schedule?.date);
     return {
-      tanggal: getNextDateForScheduleDay(schedule?.day, schedule?.date),
+      tanggal,
       jam_mulai,
       jam_selesai,
       lokasi: String(schedule?.place || schedule?.location || "").trim(),
@@ -1996,6 +2077,10 @@ export default function DasborAdmin({
 
     if (payload.id_siswa.length === 0) {
       throw new Error("Pilih target siswa dulu sebelum jadwal disimpan.");
+    }
+
+    if (!isRoutineTrainingSchedule(schedule) && isWednesdayOrSundayDate(payload.tanggal)) {
+      throw new Error("Latihan tambahan harus di luar hari Rabu dan Minggu.");
     }
 
     const applySavedScheduleToLocalRows = (rawScheduleId) => {
@@ -2217,21 +2302,19 @@ export default function DasborAdmin({
             </button>
             {showNotificationMenu && (
               <div className="adminNotifyMenu">
-                <button
-                  type="button"
-                  className="adminNotifyShortcut"
-                  onClick={openPaymentHistoryFromNotification}
-                >
-                  <strong>History Pembayaran</strong>
-                  <span>{allPaymentRows.length} data pembayaran</span>
-                </button>
                 {hasNotifications ? (
                   <>
                     <ul>
-                      {notifications.slice(0, 5).map((item) => (
+                      {localNotifications.slice(0, 8).map((item) => (
                         <li key={item.id} className={!item?.read ? "isUnread" : "isRead"}>
-                          <span className="adminNotifyDot" aria-hidden="true" />
-                          <span className="adminNotifyText">{item.text}</span>
+                          <button
+                            type="button"
+                            className="adminNotifyItemBtn"
+                            onClick={() => handleAdminNotificationClick(item)}
+                          >
+                            <span className="adminNotifyDot" aria-hidden="true" />
+                            <span className="adminNotifyText">{item.text}</span>
+                          </button>
                         </li>
                       ))}
                     </ul>
@@ -2307,6 +2390,8 @@ export default function DasborAdmin({
             performanceHistory={adminPerformanceHistory}
             onDeleteStudent={onDeleteStudent}
             onRecordAdminActivity={recordAdminActivity}
+            requestedStudentName={currentActiveMenu === "Siswa" ? studentNotificationTargetName : null}
+            onHandledRequestedStudentName={() => setStudentNotificationTargetName(null)}
           />
         ) : isCoachesPage ? (
           <HalamanPelatihAdminPage
@@ -2502,7 +2587,7 @@ export default function DasborAdmin({
                         }}
                       />
                     </div>
-                    <small>{item.month}</small>
+                    <small>{shortMonthNames[index] || item.month}</small>
                   </div>
                 </button>
               ))}
@@ -2834,5 +2919,3 @@ export default function DasborAdmin({
     </>
   );
 }
-
-
