@@ -6,10 +6,23 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MenuUtamaController;
 use App\Http\Controllers\WebPageController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+
 
 Route::get('/', [MenuUtamaController::class, 'index']);
 Route::get('/berita', [MenuUtamaController::class, 'berita']);
 Route::get('/galeri', [MenuUtamaController::class, 'galeri']);
+
+
+Route::post('/logout', function (Request $request) {
+    Auth::logout();
+
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect('/');
+})->middleware('web');
 
 Route::get('/register', [WebPageController::class, 'register']);
 Route::get('/register/verify-notice', [WebPageController::class, 'verifyNotice']);
@@ -41,7 +54,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/parent-coach-notes', fn () => redirect('/orang-tua/catatan-pelatih'));
         Route::get('/parent-payments', fn () => redirect('/orang-tua/pembayaran'));
         Route::get('/parent-reupload', fn () => redirect('/orang-tua/upload-ulang'));
+        Route::get('/orang-tua/daftar-anak', function () {
+      return inertia('HalamanFormPendaftaran');
+    });
         Route::get('/orang-tua/{section?}', [DashboardController::class, 'parentSection']);
+
+        
     });
 
     Route::middleware('role:pelatih')->group(function () {
