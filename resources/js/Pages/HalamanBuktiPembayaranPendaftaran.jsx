@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Head, router, usePage } from "@inertiajs/react";
+import GreenSelect from "../components/GreenSelect";
 import "../../css/HalamanBuktiPembayaranPendaftaran.css";
 
 import LogoSBB from "../../assets/LogoSBB.png";
@@ -27,6 +28,18 @@ export default function HalamanBuktiPembayaranPendaftaran({
   for (let year = currentYear; year >= registrationYear; year -= 1) {
     yearPeriodOptions.push(String(year));
   }
+
+const page = usePage();
+
+const user = page.props?.auth?.user;
+const [localUser, setLocalUser] = useState(null);
+
+console.log(ProfileIcon);
+
+useEffect(() => {
+  setLocalUser(user);
+}, [user]);
+  
   const [formValues, setFormValues] = useState({
     studentName: paymentDraft?.formValues?.studentName || paymentDraft?.childName || "",
     paymentType: paymentDraft?.formValues?.paymentType || "Pendaftaran dan Bulanan",
@@ -117,6 +130,10 @@ export default function HalamanBuktiPembayaranPendaftaran({
     });
   };
 
+  const setSelectValue = (name, value) => {
+    setFormValues((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleProofFileChange = (file) => {
     if (!file) {
       setProofFile(null);
@@ -140,6 +157,7 @@ export default function HalamanBuktiPembayaranPendaftaran({
 
     setProofFile(file);
   };
+  
 
   return (
     <div className="regPaymentPage">
@@ -159,9 +177,14 @@ export default function HalamanBuktiPembayaranPendaftaran({
             <button type="button" className="regPaymentIconBtn" aria-label="Notifikasi">
               <img src={NotifIcon} alt="" />
             </button>
-            <button type="button" className="regPaymentIconBtn" aria-label="Profil">
-              <img src={ProfileIcon} alt="" />
-            </button>
+           <button className="regPaymentProfileBtn">
+  <img src={ProfileIcon} alt="" />
+  {localUser && (
+    <span className="regPaymentProfileName">
+      {localUser.name}
+    </span>
+  )}
+</button>
           </div>
         </div>
       </header>
@@ -194,13 +217,13 @@ export default function HalamanBuktiPembayaranPendaftaran({
 
             <label>
               <span>Periode</span>
-              <select name="period" value={formValues.period} onChange={handleChange}>
-                {yearPeriodOptions.map((periodItem) => (
-                  <option key={periodItem} value={periodItem}>
-                    {periodItem}
-                  </option>
-                ))}
-              </select>
+              <GreenSelect
+                value={formValues.period}
+                onChange={(nextValue) => setSelectValue("period", nextValue)}
+                ariaLabel="Pilih periode pembayaran"
+                className="regPaymentGreenSelect"
+                options={yearPeriodOptions}
+              />
             </label>
 
             <label>
@@ -219,33 +242,27 @@ export default function HalamanBuktiPembayaranPendaftaran({
             <div className="regPaymentDateGroup">
               <span>Tanggal Bayar</span>
               <div className="regPaymentDateGrid">
-                <select name="paidDay" value={formValues.paidDay} onChange={handleChange}>
-                  {Array.from({ length: 31 }, (_, index) => {
-                    const day = String(index + 1).padStart(2, "0");
-                    return (
-                      <option key={day} value={day}>
-                        {day}
-                      </option>
-                    );
-                  })}
-                </select>
-                <select name="paidMonth" value={formValues.paidMonth} onChange={handleChange}>
-                  {Array.from({ length: 12 }, (_, index) => {
-                    const month = String(index + 1).padStart(2, "0");
-                    return (
-                      <option key={month} value={month}>
-                        {month}
-                      </option>
-                    );
-                  })}
-                </select>
-                <select name="paidYear" value={formValues.paidYear} onChange={handleChange}>
-                  {yearPeriodOptions.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
+                <GreenSelect
+                  value={formValues.paidDay}
+                  onChange={(nextValue) => setSelectValue("paidDay", nextValue)}
+                  ariaLabel="Pilih tanggal bayar"
+                  className="regPaymentGreenSelect"
+                  options={Array.from({ length: 31 }, (_, index) => String(index + 1).padStart(2, "0"))}
+                />
+                <GreenSelect
+                  value={formValues.paidMonth}
+                  onChange={(nextValue) => setSelectValue("paidMonth", nextValue)}
+                  ariaLabel="Pilih bulan bayar"
+                  className="regPaymentGreenSelect"
+                  options={Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, "0"))}
+                />
+                <GreenSelect
+                  value={formValues.paidYear}
+                  onChange={(nextValue) => setSelectValue("paidYear", nextValue)}
+                  ariaLabel="Pilih tahun bayar"
+                  className="regPaymentGreenSelect"
+                  options={yearPeriodOptions}
+                />
               </div>
             </div>
 
