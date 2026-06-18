@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import "./KehadiranOrangTua.css";
 import { parentRoutes, visitOrCall } from "./parentNavigation";
 import SiteFooter from "../SiteFooter";
+import { router } from '@inertiajs/react';
+
 
 import LogoSBB from "../../../assets/LogoSBB.png";
 import ProfileIcon from "../../../assets/Profile.png";
@@ -55,7 +57,7 @@ export default function KehadiranOrangTua({
   const displayUserName = activeChildName || userName;
   const profilePhoto = studentProfile?.photo || ProfileIcon;
 
-  const showChildPickerAction = canSwitchChild || childrenOptions.length > 0;
+  const showChildPickerAction = canSwitchChild || childrenOptions.length > 1;
   const openSelectChild = () => {
     if (onSelectChild) {
       onSelectChild();
@@ -64,6 +66,11 @@ export default function KehadiranOrangTua({
 
     openChildPicker();
   };
+
+  const daftarAnak = () => {
+      router.visit('/orang-tua/daftar-anak');
+  };
+
   const isActive = paymentStatus === "paid";
   const openHome = visitOrCall(onOpenHome, parentRoutes.home);
   const logout = visitOrCall(onLogout, parentRoutes.logout);
@@ -109,12 +116,12 @@ export default function KehadiranOrangTua({
       return item.year === yearText && normalizedMonth === monthText;
     });
     const hadir = matchedRecap?.hadir ?? 0;
+    const alpha = matchedRecap?.alpha ?? 0;
     const sakit = matchedRecap?.sakit ?? 0;
-    const izin = matchedRecap?.izin ?? 0;
     return [
       { label: "Hadir", value: hadir, color: "#5daf2f" },
+      { label: "Alpha", value: alpha, color: "#2f5b23" },
       { label: "Sakit", value: sakit, color: "#468f28" },
-      { label: "Izin", value: izin, color: "#2f5b23" },
     ];
   }, [attendanceRecaps, effectiveSelectedMonth]);
   const circumference = 2 * Math.PI * 42;
@@ -135,6 +142,8 @@ export default function KehadiranOrangTua({
       }),
     [donutData, circumference]
   );
+
+  
 
   return (
     <div className="attendancePage">
@@ -171,6 +180,12 @@ export default function KehadiranOrangTua({
                   <button type="button" onClick={openProfile}>
                     Profil
                   </button>
+                  
+
+                  <button type="button" onClick={daftarAnak}>
+    Daftar Anak
+</button>
+
                   {showChildPickerAction && (
                     <button
                       type="button"
@@ -182,6 +197,8 @@ export default function KehadiranOrangTua({
                       Pilih Anak
                     </button>
                   )}
+
+                  
                   <button type="button" onClick={logout}>
                     Logout
                   </button>
@@ -268,15 +285,15 @@ export default function KehadiranOrangTua({
                   onMouseEnter={() => setActiveDonutItem(donutData[1])}
                   onMouseLeave={() => setActiveDonutItem(null)}
                 >
-                  <span className="dot sakit" />
-                  Sakit <b>{donutData[1].value}%</b>
+                  <span className="dot alpha" />
+                  Alpha <b>{donutData[1].value}%</b>
                 </li>
                 <li
                   onMouseEnter={() => setActiveDonutItem(donutData[2])}
                   onMouseLeave={() => setActiveDonutItem(null)}
                 >
-                  <span className="dot izin" />
-                  Izin <b>{donutData[2].value}%</b>
+                  <span className="dot sakit" />
+                  Sakit <b>{donutData[2].value}%</b>
                 </li>
               </ul>
             ) : (
@@ -319,7 +336,5 @@ export default function KehadiranOrangTua({
     </div>
   );
 }
-
-
 
 
