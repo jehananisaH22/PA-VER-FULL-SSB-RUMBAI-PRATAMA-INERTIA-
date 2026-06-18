@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "./CatatanPelatihOrangTua.css";
 import { parentRoutes, visitOrCall } from "./parentNavigation";
 import SiteFooter from "../SiteFooter";
+import { router } from '@inertiajs/react';
+
 
 import LogoSBB from "../../../assets/LogoSBB.png";
 import ProfileIcon from "../../../assets/Profile.png";
@@ -74,7 +76,7 @@ export default function CatatanPelatihOrangTua({
   const profilePhoto = studentProfile?.photo || ProfileIcon;
   
 
-  const showChildPickerAction = canSwitchChild || childrenOptions.length > 0;
+  const showChildPickerAction = canSwitchChild || childrenOptions.length > 1;
   const openSelectChild = () => {
     if (onSelectChild) {
       onSelectChild();
@@ -152,6 +154,10 @@ export default function CatatanPelatihOrangTua({
     };
   }, [openPicker]);
 
+  const daftarAnak = () => {
+    router.visit('/orang-tua/daftar-anak');
+};
+
   return (
     <div className="coachNotesPage">
       <header className="coachNotesTopbar">
@@ -183,6 +189,12 @@ export default function CatatanPelatihOrangTua({
                   <button type="button" onClick={openProfile}>
                     Profil
                   </button>
+
+                  
+<button type="button" onClick={daftarAnak}>
+    Daftar Anak
+</button>
+
                   {showChildPickerAction && (
                     <button
                       type="button"
@@ -302,6 +314,5 @@ export default function CatatanPelatihOrangTua({
     </div>
   );
 }
-
 
 
