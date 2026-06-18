@@ -28,6 +28,18 @@ export default function HalamanBuktiPembayaranPendaftaran({
   for (let year = currentYear; year >= registrationYear; year -= 1) {
     yearPeriodOptions.push(String(year));
   }
+
+const page = usePage();
+
+const user = page.props?.auth?.user;
+const [localUser, setLocalUser] = useState(null);
+
+console.log(ProfileIcon);
+
+useEffect(() => {
+  setLocalUser(user);
+}, [user]);
+  
   const [formValues, setFormValues] = useState({
     studentName: paymentDraft?.formValues?.studentName || paymentDraft?.childName || "",
     paymentType: paymentDraft?.formValues?.paymentType || "Pendaftaran dan Bulanan",
@@ -145,6 +157,7 @@ export default function HalamanBuktiPembayaranPendaftaran({
 
     setProofFile(file);
   };
+  
 
   return (
     <div className="regPaymentPage">
@@ -164,9 +177,14 @@ export default function HalamanBuktiPembayaranPendaftaran({
             <button type="button" className="regPaymentIconBtn" aria-label="Notifikasi">
               <img src={NotifIcon} alt="" />
             </button>
-            <button type="button" className="regPaymentIconBtn" aria-label="Profil">
-              <img src={ProfileIcon} alt="" />
-            </button>
+           <button className="regPaymentProfileBtn">
+  <img src={ProfileIcon} alt="" />
+  {localUser && (
+    <span className="regPaymentProfileName">
+      {localUser.name}
+    </span>
+  )}
+</button>
           </div>
         </div>
       </header>
@@ -300,5 +318,3 @@ export default function HalamanBuktiPembayaranPendaftaran({
     </div>
   );
 }
-
-

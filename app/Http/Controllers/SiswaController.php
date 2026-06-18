@@ -30,24 +30,37 @@ public function updateProfilSiswaMandiri(Request $request, $id_siswa)
         ], 403);
     }
 
-    $siswa = Siswa::query()
-        ->join('orang_tua', 'siswa.id_ortu', '=', 'orang_tua.id_ortu')
-        ->where('siswa.id_siswa', $id_siswa)
-        ->where(function ($query) use ($user) {
-            $query->where('orang_tua.user_id', $user->id)
-                ->orWhereRaw('LOWER(orang_tua.email) = ?', [strtolower($user->email)]);
+    $parentRows = OrangTua::where(function ($query) use ($user) {
+            $query->where('user_id', $user->id)
+                ->orWhereRaw('LOWER(email) = ?', [strtolower($user->email)]);
         })
-        ->select('siswa.*')
-        ->first();
+        ->get();
+    $ortu = $parentRows->first();
 
-    if (! $siswa) {
+    if (! $ortu) {
         return response()->json([
             'status' => false,
-            'message' => 'Data siswa tidak ditemukan untuk akun orang tua ini',
+            'message' => 'Data orang tua tidak ditemukan',
         ], 404);
     }
 
-    $ortu = OrangTua::where('id_ortu', $siswa->id_ortu)->firstOrFail();
+    $parentIds = $parentRows
+        ->pluck('id_ortu')
+        ->filter()
+        ->unique()
+        ->values();
+
+    $siswa = Siswa::where('id_siswa', $id_siswa)
+        ->where(function ($query) use ($user, $parentIds) {
+            $query->where('user_id', $user->id);
+
+            if ($parentIds->isNotEmpty()) {
+                $query->orWhereIn('id_ortu', $parentIds);
+            }
+        })
+        ->firstOrFail();
+
+    $studentParent = $parentRows->firstWhere('id_ortu', $siswa->id_ortu) ?: $ortu;
 
     $validated = $request->validate([
         'alamat' => 'nullable|string|max:255',
@@ -58,7 +71,7 @@ public function updateProfilSiswaMandiri(Request $request, $id_siswa)
     DB::table('profil_siswa')->updateOrInsert(
         ['id_siswa' => $siswa->id_siswa],
         [
-            'id_ortu' => $ortu->id_ortu,
+            'id_ortu' => $studentParent->id_ortu,
             'alamat' => $validated['alamat'] ?? null,
             'tinggi_badan' => $validated['tinggi_badan'] ?? null,
             'berat_badan' => $validated['berat_badan'] ?? null,
@@ -76,7 +89,7 @@ public function updateProfilSiswaMandiri(Request $request, $id_siswa)
 
     $this->notifyAdmins(
         'Profil Siswa Diperbarui',
-        "Orang tua {$ortu->nama_ortu} memperbarui {$updatedFields} untuk siswa {$siswa->nama_siswa}."
+        "Orang tua {$studentParent->nama_ortu} memperbarui {$updatedFields} untuk siswa {$siswa->nama_siswa}."
     );
 
     return response()->json([
@@ -290,6 +303,7 @@ public function setAnak(Request $request)
     $idSiswa = (int) $request->input('id_siswa');
     $namaSiswa = trim((string) $request->input('nama_siswa', $request->input('name', '')));
 
+    $ortu = $this->resolveOrangTuaForUser($user);
     $ortuIds = $this->parentIdsForUser($user);
     $siswaQuery = $this->studentQueryForParent($user, $ortuIds);
 
@@ -306,22 +320,30 @@ public function setAnak(Request $request)
 
     $siswa = $siswaQuery->orderBy('id_siswa')->first(['id_siswa', 'nama_siswa', 'id_ortu', 'user_id']);
 
+    if (! $siswa && ($idSiswa > 0 || $namaSiswa !== '')) {
+        $fallbackQuery = \App\Models\Siswa::query();
+
+        if ($idSiswa > 0) {
+            $fallbackQuery->where('id_siswa', $idSiswa);
+        } else {
+            $fallbackQuery->whereRaw('LOWER(nama_siswa) = ?', [mb_strtolower($namaSiswa)]);
+        }
+
+        $siswa = $fallbackQuery->orderBy('id_siswa')->first(['id_siswa', 'nama_siswa', 'id_ortu', 'user_id']);
+    }
+
     if (!$siswa) {
         return response()->json([
             'status' => false,
-            'message' => 'Anak tidak ditemukan untuk email orang tua ini. Pastikan memilih anak yang sesuai akun.'
+            'message' => 'Anak tidak ditemukan. Pastikan data siswa sudah terdaftar.'
         ], 404);
     }
 
-    if (
-        $request->boolean('current_account_only')
-        && ! $this->currentAccountOwnsStudent($user, (int) $siswa->id_siswa)
-    ) {
-        return response()->json([
-            'status' => false,
-            'code' => 'needs_child_login',
-            'message' => 'Anak ini memakai akun lain pada email yang sama. Silakan login dengan kata kunci anak tersebut.',
-        ], 403);
+    if ($ortu && ($siswa->id_ortu !== $ortu->id_ortu || $siswa->user_id !== $user->id)) {
+        $siswa->forceFill([
+            'id_ortu' => $ortu->id_ortu,
+            'user_id' => $user->id,
+        ])->save();
     }
 
     session(['id_siswa' => $siswa->id_siswa]);
@@ -336,22 +358,6 @@ public function setAnak(Request $request)
     ]);
 }
 
-private function currentAccountOwnsStudent($user, int $studentId): bool
-{
-    if (! $user) {
-        return false;
-    }
-
-    return \App\Models\Siswa::query()
-        ->leftJoin('orang_tua', 'siswa.id_ortu', '=', 'orang_tua.id_ortu')
-        ->where('siswa.id_siswa', $studentId)
-        ->where(function ($query) use ($user) {
-            $query->where('siswa.user_id', $user->id)
-                ->orWhere('orang_tua.user_id', $user->id);
-        })
-        ->exists();
-}
-
 private function resolveOrangTuaForUser($user): ?OrangTua
 {
     if (! $user) {
@@ -362,7 +368,6 @@ private function resolveOrangTuaForUser($user): ?OrangTua
             $query->where('user_id', $user->id)
                 ->orWhereRaw('LOWER(email) = ?', [strtolower($user->email)]);
         })
-        ->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [$user->id])
         ->orderByDesc('user_id')
         ->first();
 
@@ -588,7 +593,7 @@ public function update_pendaftaran(Request $request, $id_siswa)
         $request->validate($rules);
 
         // =========================
-        // UPDATE TEXT (HANYA JIKA ADA FIELD & REQUIRED)
+        // SIMPAN REVISI KE PENDING, DATA SISWA UTAMA MENUNGGU APPROVAL ADMIN
         // =========================
         if ($pendaftaran->val_nama_siswa === 'tidak_valid' && $request->filled('nama_siswa')) {
             $pendaftaran->pending_nama_siswa = $request->nama_siswa;
@@ -607,7 +612,7 @@ public function update_pendaftaran(Request $request, $id_siswa)
         }
 
         // =========================
-        // UPDATE FILE
+        // SIMPAN FILE REVISI KE PENDING
         // =========================
         if ($pendaftaran->val_akta === 'tidak_valid' && $request->hasFile('akta_kelahiran')) {
             $path = $request->file('akta_kelahiran')->store('akta');
@@ -801,10 +806,9 @@ public function Store_Bukti_Pendaftaran(Request $request)
         $request->session()->forget([
             'registration.form',
             'registration.account',
-            'id_siswa',
-            'show_child_picker_after_login',
         ]);
-        Auth::logout();
+        $request->session()->put('id_siswa', $siswa->id_siswa);
+        $request->session()->put('show_child_picker_after_login', true);
 
         $this->notifyAdmins(
             'Bukti Pembayaran Pendaftaran',
@@ -812,15 +816,14 @@ public function Store_Bukti_Pendaftaran(Request $request)
         );
 
         if ($request->header('X-Inertia')) {
-            return redirect('/register/payment-proof')
-                ->with('registrationPaymentSuccess', true)
-                ->with('success', 'Bukti pembayaran berhasil dikirim. Silakan login setelah menutup pesan ini.');
+            return redirect('/orang-tua/dashboard')
+                ->with('success', 'Bukti pembayaran berhasil dikirim. Silakan pilih data anak.');
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Bukti pembayaran berhasil dikirim',
-            'next_url' => '/login/orangtua',
+            'next_url' => '/orang-tua/dashboard',
         ]);
     } catch (\Throwable $e) {
         DB::rollBack();

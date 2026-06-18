@@ -6,6 +6,8 @@ import LogoSBB from "../../assets/LogoSBB.png";
 import NotifIcon from "../../assets/notif.png";
 import ProfileIcon from "../../assets/Profile.png";
 
+
+
 const uploadFields = [
   {
     id: "akta",
@@ -56,6 +58,16 @@ export default function HalamanFormPendaftaran({
   });
   const openHome = () => (onOpenHome ? onOpenHome() : router.visit("/"));
   const backToDaftar = () => (onBackToDaftar ? onBackToDaftar() : router.visit("/register"));
+
+
+const page = usePage();
+
+const user = page.props?.auth?.user;
+const [localUser, setLocalUser] = useState(null);
+
+useEffect(() => {
+  setLocalUser(user);
+}, [user]);
 
   useEffect(() => {
     onRegistrationFormDraftChange?.({
@@ -182,9 +194,10 @@ export default function HalamanFormPendaftaran({
             <button type="button" className="enrollIconBtn" aria-label="Notifikasi">
               <img src={NotifIcon} alt="" />
             </button>
-            <button type="button" className="enrollIconBtn" aria-label="Profil">
-              <img src={ProfileIcon} alt="" />
-            </button>
+          <button type="button" className="enrollIconBtn" aria-label="Profil">
+  <img src={ProfileIcon} alt="" />
+{localUser && <span>{localUser.name}</span>}
+</button>
           </div>
         </div>
       </header>
@@ -350,5 +363,3 @@ export default function HalamanFormPendaftaran({
     </div>
   );
 }
-
-

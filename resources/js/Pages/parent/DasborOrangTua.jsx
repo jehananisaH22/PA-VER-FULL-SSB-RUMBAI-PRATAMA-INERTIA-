@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import "./DasborOrangTua.css";
 import { parentRoutes, visitOrCall } from "./parentNavigation";
 import SiteFooter from "../SiteFooter";
+import { router } from '@inertiajs/react';
+
 
 import LogoSBB from "../../../assets/LogoSBB.png";
 import ProfileIcon from "../../../assets/Profile.png";
@@ -253,6 +255,10 @@ export default function DasborOrangTua({
     });
   }, [activePerformanceYear, routinePerformanceHistory]);
 
+const daftarAnak = () => {
+    router.visit('/orang-tua/daftar-anak');
+};
+
   return (
     <div className="parentPage">
       <header className="parentTopbar">
@@ -303,6 +309,11 @@ export default function DasborOrangTua({
                   <button type="button" onClick={openProfile}>
                     Profil
                   </button>
+
+<button type="button" onClick={daftarAnak}>
+    Daftar Anak
+</button>
+
                   {showChildPickerAction && (
                     <button
                       type="button"

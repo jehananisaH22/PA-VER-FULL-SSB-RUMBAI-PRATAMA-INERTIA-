@@ -28,15 +28,40 @@
   border: 0;
   background: transparent;
   padding: 0;
-  display: grid;
-  place-items: center;
   cursor: pointer;
 }
+
+.regPaymentProfileBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.regPaymentProfileBtn img {
+  width: 24px;
+  height: 24px;
+  filter: none; /* PENTING */
+}
+
 
 .regPaymentLogoBtn img {
   width: 30px;
   height: 30px;
   object-fit: contain;
+}
+.profileName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  max-width: 120px;
 }
 
 .regPaymentNavLinks {
@@ -83,6 +108,8 @@
   display: grid;
   place-items: center;
   cursor: pointer;
+  filter: brightness(0) saturate(100%) invert(23%) sepia(14%) saturate(1004%) hue-rotate(176deg) brightness(93%) contrast(90%);
+
 }
 
 .regPaymentIconBtn img {

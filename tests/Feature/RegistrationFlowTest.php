@@ -255,7 +255,8 @@ class RegistrationFlowTest extends TestCase
                 'bukti_bayar' => UploadedFile::fake()->create('bukti.pdf', 10, 'application/pdf'),
             ])
             ->assertOk()
-            ->assertJsonPath('success', true);
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('next_url', '/orang-tua/dashboard');
 
         $this->assertDatabaseHas('pembayaran', [
             'id_siswa' => $siswa->id_siswa,
@@ -270,7 +271,7 @@ class RegistrationFlowTest extends TestCase
         ]);
     }
 
-    public function test_registration_payment_upload_shows_success_modal_then_requires_login(): void
+    public function test_registration_payment_upload_redirects_to_parent_dashboard(): void
     {
         Storage::fake('public');
 
@@ -312,11 +313,11 @@ class RegistrationFlowTest extends TestCase
                 'tanggal_bukti_bayar' => '2026-05-30',
                 'bukti_bayar' => UploadedFile::fake()->create('bukti-modal.pdf', 10, 'application/pdf'),
             ], ['X-Inertia' => 'true'])
-            ->assertRedirect('/register/payment-proof')
-            ->assertSessionHas('registrationPaymentSuccess', true);
+            ->assertRedirect('/orang-tua/dashboard')
+            ->assertSessionHas('id_siswa', $siswa->id_siswa);
 
-        $this->assertGuest();
-        $this->assertFalse((bool) session('show_child_picker_after_login'));
+        $this->assertAuthenticatedAs($parent);
+        $this->assertTrue((bool) session('show_child_picker_after_login'));
     }
 
     public function test_student_registration_is_visible_to_admin_and_parent_child_picker(): void

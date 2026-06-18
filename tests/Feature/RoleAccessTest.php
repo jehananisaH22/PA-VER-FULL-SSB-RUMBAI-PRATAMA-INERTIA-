@@ -55,7 +55,7 @@ class RoleAccessTest extends TestCase
             ->assertRedirect('/register/form');
     }
 
-    public function test_parent_can_register_new_account_with_reused_contact_without_child(): void
+    public function test_parent_registration_with_reused_contact_without_child_requires_existing_password(): void
     {
         $user = User::factory()->create([
             'role' => 'orang_tua',
@@ -82,23 +82,16 @@ class RoleAccessTest extends TestCase
             'nama' => 'Jehan',
             'email' => $user->email,
             'no_hp' => '081234567804',
-            'password' => 'PasswordBaru2!', // DIUBAH: Menggunakan password berbeda agar lolos validasi
+            'password' => 'PasswordBaru2!',
         ], ['X-Inertia' => 'true'])
-            ->assertRedirect('/register/verify-notice');
-
-        $this->getJson('/api/verification-status?email=' . urlencode($user->email))
-            ->assertOk()
-            ->assertJson([
-                'verified' => false,
-                'next_url' => '/register/form',
-            ]);
+            ->assertSessionHasErrors(['email', 'no_hp']);
 
         $this->assertGuest();
-        $this->assertSame($existingUserCount + 1, User::where('email', $user->email)->where('role', 'orang_tua')->count());
-        $this->assertSame($existingParentCount + 1, OrangTua::where('no_hp', '081234567804')->count());
+        $this->assertSame($existingUserCount, User::where('email', $user->email)->where('role', 'orang_tua')->count());
+        $this->assertSame($existingParentCount, OrangTua::where('no_hp', '081234567804')->count());
     }
 
-    public function test_parent_can_register_new_account_with_reused_contact_even_when_old_account_has_child(): void
+    public function test_parent_registration_with_reused_contact_and_existing_child_requires_existing_password(): void
     {
         $user = User::factory()->create([
             'role' => 'orang_tua',
@@ -133,14 +126,49 @@ class RoleAccessTest extends TestCase
             'nama' => 'Parent Anak',
             'email' => $user->email,
             'no_hp' => '081234567805',
-            'password' => 'PasswordBaru2!', // DIUBAH: Menggunakan password berbeda agar lolos validasi
+            'password' => 'PasswordBaru2!',
         ], ['X-Inertia' => 'true'])
-            ->assertRedirect('/register/verify-notice');
+            ->assertSessionHasErrors(['email', 'no_hp']);
 
         $this->assertGuest();
         $this->assertFalse((bool) session('show_child_picker_after_login'));
-        $this->assertSame($existingUserCount + 1, User::where('email', $user->email)->where('role', 'orang_tua')->count());
-        $this->assertSame($existingParentCount + 1, OrangTua::where('no_hp', '081234567805')->count());
+        $this->assertSame($existingUserCount, User::where('email', $user->email)->where('role', 'orang_tua')->count());
+        $this->assertSame($existingParentCount, OrangTua::where('no_hp', '081234567805')->count());
+    }
+
+    public function test_parent_registration_with_existing_email_and_password_resumes_existing_account(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'orang_tua',
+            'name' => 'Username Lama',
+            'email' => 'existing-parent-username@example.com',
+            'password' => Hash::make('Password1!'),
+            'email_verified_at' => now(),
+        ]);
+
+        OrangTua::create([
+            'user_id' => $user->id,
+            'nama_ortu' => 'Username Lama',
+            'email' => $user->email,
+            'password' => $user->password,
+            'no_hp' => '081234567808',
+        ]);
+
+        $existingUserCount = User::where('email', $user->email)
+            ->where('role', 'orang_tua')
+            ->count();
+
+        $this->post('/api/register', [
+            'nama' => 'Username Baru',
+            'email' => $user->email,
+            'no_hp' => '081234567808',
+            'password' => 'Password1!',
+        ], ['X-Inertia' => 'true'])
+            ->assertRedirect('/register/form');
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertSame($existingUserCount, User::where('email', $user->email)->where('role', 'orang_tua')->count());
+        $this->assertSame('Username Lama', $user->fresh()->name);
     }
 
     public function test_parent_login_with_child_redirects_to_dashboard_picker(): void
@@ -176,7 +204,7 @@ class RoleAccessTest extends TestCase
             ->assertRedirect('/orang-tua/dashboard');
     }
 
-    public function test_parent_login_with_reused_email_selects_child_for_matching_newer_account_after_password_reset(): void
+    public function test_parent_password_reset_updates_first_matching_parent_account(): void
     {
         $email = 'shared-parent-login@example.com';
         $oldUser = User::factory()->create([
@@ -241,7 +269,7 @@ class RoleAccessTest extends TestCase
         ])->assertOk();
 
         $this->assertTrue(Hash::check('Asu0101!', $oldUser->fresh()->password));
-        $this->assertTrue(Hash::check('Asu0101!', $newUser->fresh()->password));
+        $this->assertFalse(Hash::check('Asu0101!', $newUser->fresh()->password));
 
         $this->post('/api/login', [
             'email' => $email,
@@ -249,7 +277,7 @@ class RoleAccessTest extends TestCase
             'role' => 'orang_tua',
         ], ['X-Inertia' => 'true'])
             ->assertRedirect('/orang-tua/dashboard')
-            ->assertSessionHas('id_siswa', $galang->id_siswa);
+            ->assertSessionMissing('id_siswa');
     }
 
     public function test_coach_can_open_coach_dashboard(): void

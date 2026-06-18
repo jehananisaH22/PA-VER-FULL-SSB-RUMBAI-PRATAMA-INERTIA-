@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Head, router } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import "../../css/Berita.css";
 
 import LogoSBB from "../../assets/LogoSBB.png";
@@ -13,14 +13,11 @@ export default function Berita({
   articles = [],
   selectedArticle,
   onOpenHome,
-  onOpenDaftar,
   onOpenLogin,
   onOpenProfile,
   onOpenGaleri,
   onOpenList,
   onOpenDetail,
-  isLoggedIn,
-  userRole,
   notifications = [],
   onClearNotifications,
   onLogout,
@@ -36,7 +33,6 @@ export default function Berita({
   const currentArticle =
     resolvedSelectedArticle || listItems.find((item) => Number(item.id) === Number(activeArticleId));
   const openHome = () => (onOpenHome ? onOpenHome() : router.visit("/"));
-  const openDaftar = () => (onOpenDaftar ? onOpenDaftar() : router.visit("/register"));
   const openLogin = () => (onOpenLogin ? onOpenLogin() : router.visit("/login"));
   const openGaleri = () => (onOpenGaleri ? onOpenGaleri() : router.visit("/galeri"));
   const openProfile = () => {
@@ -47,16 +43,23 @@ export default function Berita({
 
     router.visit("/login");
   };
-  const handleLogout = () => {
-    setIsProfileMenuOpen(false);
-    setIsNotifMenuOpen(false);
-    if (onLogout) {
-      onLogout();
-      return;
-    }
+  const { auth } = usePage().props;
+const user = auth?.user;
+const isLoggedIn = !!user;
+const userRole = user?.role;
 
-    router.visit("/");
-  };
+console.log(auth);
+console.log(auth?.user);
+
+const openDaftar = (event) => {
+  event.preventDefault();
+
+  if (user) {
+    router.visit("/orang-tua/daftar-anak");
+  } else {
+    router.visit("/register");
+  }
+};
   const openList = () => {
     setActiveArticleId(null);
     if (onOpenList) onOpenList();
@@ -323,5 +326,3 @@ export default function Berita({
     </>
   );
 }
-
-
