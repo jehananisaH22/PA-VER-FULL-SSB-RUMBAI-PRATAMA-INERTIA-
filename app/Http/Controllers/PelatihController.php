@@ -22,6 +22,63 @@ use Illuminate\Support\Facades\Storage;
 
 class PelatihController extends Controller
 {
+  private function studentAgeValue(?object $student): ?int
+  {
+    if (! $student) {
+        return null;
+    }
+
+    if (! empty($student->tanggal_lahir)) {
+        return Carbon::parse($student->tanggal_lahir)->age;
+    }
+
+    return $student->umur !== null ? (int) $student->umur : null;
+  }
+
+  private function studentCategoryLabel(?object $student): ?string
+  {
+    $age = $this->studentAgeValue($student);
+
+    return $age ? 'U-' . $age : null;
+  }
+
+  private function categoryOptionsFromStudents($students)
+  {
+    return collect($students)
+        ->map(fn ($student) => $this->studentCategoryLabel($student))
+        ->filter()
+        ->unique()
+        ->sortBy(fn ($category) => (int) preg_replace('/\D/', '', $category))
+        ->values();
+  }
+
+  private function filterStudentsByCategory($students, ?string $category)
+  {
+    $age = $this->extractUmur($category);
+
+    if ($age === null) {
+        return collect($students);
+    }
+
+    return collect($students)
+        ->filter(fn ($student) => $this->studentAgeValue($student) === $age)
+        ->values();
+  }
+
+  private function applyStudentAgeFilter($query, int $age): void
+  {
+    $oldestBirthDate = now()->subYears($age + 1)->addDay()->toDateString();
+    $youngestBirthDate = now()->subYears($age)->toDateString();
+
+    $query->where(function ($builder) use ($age, $oldestBirthDate, $youngestBirthDate) {
+        $builder
+            ->whereBetween('tanggal_lahir', [$oldestBirthDate, $youngestBirthDate])
+            ->orWhere(function ($fallback) use ($age) {
+                $fallback->whereNull('tanggal_lahir')->where('umur', $age);
+            });
+    });
+  }
+
   private function activeStatusValues(): array
   {
     return ['active', 'aktif'];
@@ -107,14 +164,14 @@ class PelatihController extends Controller
 
     return DB::table('siswa')
         ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
-        ->select('id_siswa', 'umur')
+        ->select('id_siswa', 'tanggal_lahir', 'umur')
         ->get()
         ->filter(function ($student) use ($storedCategory) {
             if (! $storedCategory || $storedCategory === 'all') {
                 return true;
             }
 
-            return SsbInertiaData::categoryValue(SsbInertiaData::categoryFromAge((int) $student->umur)) === $storedCategory;
+            return SsbInertiaData::categoryValue(SsbInertiaData::categoryFromStudent($student)) === $storedCategory;
         })
         ->pluck('id_siswa')
         ->map(fn ($id) => (int) $id)
@@ -137,12 +194,6 @@ class PelatihController extends Controller
         $q->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues());
 
         // FILTER UMUR (U-12 → 12)
-        if ($request->filled('kategori_umur')) {
-            if (preg_match('/U(\d+)/', strtoupper($request->kategori_umur), $match)) {
-                $q->where('umur', (int) $match[1]);
-            }
-        }
-
     }])->whereHas('siswa', function ($query) {
         $query->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues());
     })
@@ -329,8 +380,7 @@ public function Rekap_Absensi(Request $request)
             'id_siswa' => $s->id_siswa,
             'nama_siswa' => $s->nama_siswa ?? '-',
 
-            // U- format
-            'umur' => 'U-' . $s->umur,
+            'umur' => $this->studentCategoryLabel($s),
 
             'hadir' => $total ? round(($hadir / $total) * 100, 1) : 0,
             'sakit' => $total ? round(($sakit / $total) * 100, 1) : 0,
@@ -618,7 +668,7 @@ public function Tambah_Catatan_Pelatih(Request $request)
                     'nama_siswa' => $catatan->siswa->nama_siswa ?? null,
                     'studentName' => $catatan->siswa->nama_siswa ?? null,
                     'player' => $catatan->siswa->nama_siswa ?? null,
-                    'umur' => 'U-' . ($catatan->siswa->umur ?? 0),
+                    'umur' => $this->studentCategoryLabel($catatan->siswa),
                     'category' => $catatan->siswa?->kategori_umur
                         ? strtolower(str_replace('-', '', $catatan->siswa->kategori_umur))
                         : null,
@@ -728,7 +778,7 @@ public function Update_Catatan_Pelatih(Request $request, $id)
             'id_catatan' => $catatan->id_catatan,
             'id_siswa' => $catatan->id_siswa,
             'nama_siswa' => $catatan->siswa->nama_siswa ?? null,
-            'umur' => $catatan->siswa->umur ? 'U-' . $catatan->siswa->umur : null,
+            'umur' => $this->studentCategoryLabel($catatan->siswa),
 
             'id_pelatih' => $catatan->id_pelatih,
             'nama_pelatih' => $catatan->pelatih->nama_pelatih ?? null,
@@ -776,40 +826,28 @@ public function FormUploadBuktiPembayaran(Request $request)
     $pelatih = $this->currentPelatih();
     $allowedStudentIds = $pelatih ? $this->studentIdsForPelatih($pelatih) : null;
 
-    $kategoriUmur = Siswa::select('umur')
+    $studentOptionRows = Siswa::select('id_siswa', 'nama_siswa', 'tanggal_lahir', 'umur', 'status')
         ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
         ->when($allowedStudentIds !== null, fn ($query) => $query->whereIn('id_siswa', $allowedStudentIds))
-        ->distinct()
-        ->orderBy('umur')
-        ->pluck('umur')
-        ->map(fn ($umur) => 'U-' . $umur)
-        ->values();
+        ->orderBy('nama_siswa')
+        ->get();
 
-    $siswaQuery = Siswa::select('id_siswa', 'nama_siswa', 'umur', 'status')
-        ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
-        ->orderBy('nama_siswa');
+    $kategoriUmur = $this->categoryOptionsFromStudents($studentOptionRows);
 
-    if ($allowedStudentIds !== null) {
-        $siswaQuery->whereIn('id_siswa', $allowedStudentIds);
-    }
-
-    if ($request->filled('kategori_umur')) {
-        $umur = $this->extractUmur($request->kategori_umur);
-
-        if (!is_null($umur)) {
-            $siswaQuery->where('umur', $umur);
-        }
-    }
+    $studentsForOptions = $this->filterStudentsByCategory($studentOptionRows, $request->input('kategori_umur'));
 
     if ($request->filled('search')) {
-        $siswaQuery->where('nama_siswa', 'like', '%' . $request->search . '%');
+        $search = strtolower((string) $request->search);
+        $studentsForOptions = $studentsForOptions
+            ->filter(fn ($student) => str_contains(strtolower((string) $student->nama_siswa), $search))
+            ->values();
     }
 
-    $siswa = $siswaQuery->get()->map(function ($item) {
+    $siswa = $studentsForOptions->map(function ($item) {
         return [
             'id_siswa' => $item->id_siswa,
             'nama_siswa' => $item->nama_siswa,
-            'kategori_umur' => 'U-' . $item->umur,
+            'kategori_umur' => $this->studentCategoryLabel($item),
             'status' => $item->status,
         ];
     });
@@ -977,7 +1015,7 @@ public function Store_Bukti_Pembayaran_Pelatih(Request $request)
 public function History_Bukti_Pembayaran_Pelatih(Request $request)
 {
     $query = BuktiPembayaran::with([
-        'siswa:id_siswa,nama_siswa,umur',
+        'siswa:id_siswa,nama_siswa,tanggal_lahir,umur',
         'pembayaran:id_pembayaran,id_siswa,jenis,status',
     ])->whereHas('siswa', function ($query) {
         $query->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues());
@@ -988,20 +1026,20 @@ public function History_Bukti_Pembayaran_Pelatih(Request $request)
         $query->whereIn('id_siswa', $this->studentIdsForPelatih($pelatih));
     }
 
-    if ($request->filled('kategori_umur')) {
-        $umur = $this->extractUmur($request->kategori_umur);
-
-        if (!is_null($umur)) {
-            $query->whereHas('siswa', function ($siswaQuery) use ($umur) {
-                $siswaQuery->where('umur', $umur);
-            });
-        }
-    }
-
     if ($request->filled('search')) {
         $query->whereHas('siswa', function ($siswaQuery) use ($request) {
             $siswaQuery->where('nama_siswa', 'like', '%' . $request->search . '%');
         });
+    }
+
+    if ($request->filled('kategori_umur')) {
+        $umur = $this->extractUmur($request->kategori_umur);
+
+        if (! is_null($umur)) {
+            $query->whereHas('siswa', function ($siswaQuery) use ($umur) {
+                $this->applyStudentAgeFilter($siswaQuery, $umur);
+            });
+        }
     }
 
     if ($request->filled('jenis')) {
@@ -1019,7 +1057,7 @@ public function History_Bukti_Pembayaran_Pelatih(Request $request)
                 'id_pembayaran' => $item->id_pembayaran,
                 'id_siswa' => $item->id_siswa,
                 'nama_siswa' => $item->siswa->nama_siswa ?? null,
-                'kategori_umur' => isset($item->siswa->umur) ? 'U-' . $item->siswa->umur : null,
+                'kategori_umur' => $this->studentCategoryLabel($item->siswa),
                 'jenis' => $item->pembayaran->jenis ?? null,
                 'periode' => $item->periode,
                 'tanggal_bukti_bayar' => $item->tanggal_bukti_bayar,
@@ -1029,14 +1067,11 @@ public function History_Bukti_Pembayaran_Pelatih(Request $request)
             ];
         });
 
-    $kategoriUmur = Siswa::select('umur')
+    $historyStudentRows = Siswa::select('id_siswa', 'tanggal_lahir', 'umur')
         ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
         ->when($pelatih, fn ($query) => $query->whereIn('id_siswa', $this->studentIdsForPelatih($pelatih)))
-        ->distinct()
-        ->orderBy('umur')
-        ->pluck('umur')
-        ->map(fn ($umur) => 'U-' . $umur)
-        ->values();
+        ->get();
+    $kategoriUmur = $this->categoryOptionsFromStudents($historyStudentRows);
 
     return response()->json([
         'success' => true,
@@ -1223,4 +1258,3 @@ private function notifyAdmins(string $judul, string $isi): void
 
 
 }
-

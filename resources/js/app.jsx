@@ -87,11 +87,10 @@ const pageTitles = {
   "berita-detail": "Detail Berita",
 };
 
-const coachCategoryLabels = {
-  u10: "U-10",
-  u11: "U-11",
-  u12: "U-12",
-};
+const ageCategoryNumbers = Array.from({ length: 11 }, (_, index) => index + 6);
+const coachCategoryLabels = Object.fromEntries(
+  ageCategoryNumbers.map((age) => [`u${age}`, `U-${age}`])
+);
 
 const coachPaymentTypeLabels = {
   pendaftaran: "Pendaftaran",
@@ -412,9 +411,8 @@ function normalizeAdminStudents(rows = []) {
 function resolveStudentCategoryFromAge(ageValue) {
   const ageNumber = Number(ageValue);
   if (!Number.isFinite(ageNumber)) return "U-10";
-  if (ageNumber <= 10) return "U-10";
-  if (ageNumber === 11) return "U-11";
-  return "U-12";
+  const normalizedAge = Math.min(16, Math.max(6, Math.trunc(ageNumber)));
+  return `U-${normalizedAge}`;
 }
 
 function upsertAdminStudents(prevStudents = [], nextStudents = []) {
@@ -607,8 +605,11 @@ function normalizeStudentCategoryKey(categoryValue) {
     .replace(/[^a-z0-9]/g, "");
 
   if (normalized === "u10") return "u10";
-  if (normalized === "u11") return "u11";
-  if (normalized === "u12") return "u12";
+  const ageMatch = normalized.match(/^u?(\d{1,2})$/);
+  if (ageMatch) {
+    const age = Number(ageMatch[1]);
+    if (age >= 6 && age <= 16) return `u${age}`;
+  }
   if (normalized === "all") return "all";
   return "";
 }

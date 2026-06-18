@@ -12,9 +12,10 @@ const meetingsPerMonth = 8;
 
 const baseCategoryOptions = [
   { value: "", label: "Pilih Kategori" },
-  { value: "u10", label: "U-10" },
-  { value: "u11", label: "U-11" },
-  { value: "u12", label: "U-12" },
+  ...Array.from({ length: 11 }, (_, index) => {
+    const age = index + 6;
+    return { value: `u${age}`, label: `U-${age}` };
+  }),
 ];
 
 const monthOptions = [
@@ -86,9 +87,10 @@ const routineScheduleWeekdays = new Set([0, 3]);
 
 const recapCategoryOptions = [
   { value: "all", label: "Kategori" },
-  { value: "u10", label: "U-10" },
-  { value: "u11", label: "U-11" },
-  { value: "u12", label: "U-12" },
+  ...Array.from({ length: 11 }, (_, index) => {
+    const age = index + 6;
+    return { value: `u${age}`, label: `U-${age}` };
+  }),
 ];
 
 const attendanceToastStorageKey = "ssb-coach-attendance-toast";
@@ -1520,5 +1522,4 @@ export default function KehadiranPelatih(props) {
     </TataLetakPelatih>
   );
 }
-
 

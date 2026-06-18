@@ -19,12 +19,27 @@ const identityFields = [
   { key: "childName", label: "Nama Anak" },
   { key: "fatherName", label: "Nama Ayah" },
   { key: "motherName", label: "Nama Ibu" },
-  { key: "age", label: "Umur" },
+  { key: "age", label: "Tanggal Lahir" },
 ];
 const ACCEPTED_UPLOAD_TYPES = ".jpg,.jpeg,.png,.webp,.pdf";
 const ACCEPTED_UPLOAD_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "pdf"];
 const MAX_UPLOAD_SIZE_MB = 5;
 const MAX_UPLOAD_SIZE_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024;
+
+function calculateAgeFromBirthDate(value) {
+  if (!value) return "";
+  const birthDate = new Date(value);
+  if (Number.isNaN(birthDate.getTime())) return "";
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age -= 1;
+  }
+
+  return age >= 0 ? String(age) : "";
+}
 
 export default function UploadUlangBerkasOrangTua({
   onLogout,
@@ -92,7 +107,7 @@ export default function UploadUlangBerkasOrangTua({
     childName: baseDoc.childName || baseDoc.name || "",
     fatherName: baseDoc.fatherName || "",
     motherName: baseDoc.motherName || "",
-    age: baseDoc.age || "",
+    age: baseDoc.birthDate || "",
   });
   const [uploadedFiles, setUploadedFiles] = useState({
     birthCert: null,
@@ -118,6 +133,7 @@ export default function UploadUlangBerkasOrangTua({
     event.preventDefault();
     if (!isComplete || !reuploadRequest) return;
     const studentId = reuploadRequest.studentId || baseDoc.id_siswa;
+    const calculatedAge = calculateAgeFromBirthDate(formValues.age);
     const payload = {
       email: reuploadRequest.email,
       phone: reuploadRequest.phone,
@@ -126,7 +142,8 @@ export default function UploadUlangBerkasOrangTua({
       childName: formValues.childName.trim(),
       fatherName: formValues.fatherName.trim(),
       motherName: formValues.motherName.trim(),
-      age: String(formValues.age).trim(),
+      age: calculatedAge,
+      birthDate: formValues.age,
       status: "Belum Diperiksa",
       invalidIdentityFields: invalidIdentityKeys,
       invalidUploadFields: invalidUploadKeys,
@@ -147,7 +164,7 @@ export default function UploadUlangBerkasOrangTua({
       nama_siswa: formValues.childName.trim(),
       nama_ayah: formValues.fatherName.trim(),
       nama_ibu: formValues.motherName.trim(),
-      umur: String(formValues.age).trim(),
+      tanggal_lahir: formValues.age,
       akta_kelahiran: uploadedFiles.birthCert,
       kartu_keluarga: uploadedFiles.familyCard,
       rapor: uploadedFiles.reportCard,
@@ -292,8 +309,7 @@ export default function UploadUlangBerkasOrangTua({
                 <label key={field.key}>
                   <span>{field.label}</span>
                   <input
-                    type={field.key === "age" ? "number" : "text"}
-                    min={field.key === "age" ? "1" : undefined}
+                    type={field.key === "age" ? "date" : "text"}
                     value={formValues[field.key]}
                     onChange={(event) =>
                       setFormValues((prev) => ({ ...prev, [field.key]: event.target.value }))
@@ -379,6 +395,4 @@ export default function UploadUlangBerkasOrangTua({
     </div>
   );
 }
-
-
 

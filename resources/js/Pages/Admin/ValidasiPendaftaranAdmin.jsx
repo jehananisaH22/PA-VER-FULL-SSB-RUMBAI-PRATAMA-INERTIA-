@@ -284,18 +284,16 @@ export default function ValidasiPendaftaranAdmin({
   );
 
 const handleOpenPreviewFile = (fileItem) => {
-  console.log("CLICK FILE:", fileItem);
+  if (!fileItem?.file) return;
 
-  if (!fileItem) {
-    console.error("fileItem kosong");
+  if (fileItem.file instanceof File) {
+    const objectUrl = URL.createObjectURL(fileItem.file);
+    window.open(objectUrl, "_blank", "noopener,noreferrer");
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
     return;
   }
 
-  const url = `http://127.0.0.1:8000/api/file-pendaftaran-siswa/${fileItem.jenis}/${fileItem.filename}`;
-
-  console.log("OPEN URL:", url);
-
-  window.open(url, "_blank");
+  window.open(String(fileItem.file), "_blank", "noopener,noreferrer");
 };
 
   const getIdentityValue = (field, document) => {
@@ -303,6 +301,11 @@ const handleOpenPreviewFile = (fileItem) => {
     if (field.key === "childName") return document.childName || document.name || "-";
     if (field.key === "motherName") return document.motherName || "-";
     if (field.key === "fatherName") return document.fatherName || "-";
+    if (field.key === "age") {
+      return document.birthDate
+        ? `${document.birthDate} (${document.age || "-"} tahun)`
+        : document.age || "-";
+    }
     return document[field.key] || "-";
   };
 

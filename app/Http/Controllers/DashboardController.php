@@ -122,13 +122,20 @@ private function studentIdsForCoach(int $coachId): array
         ->values()
         ->all();
 
-    $routineStudentIds = DB::table('jadwal_latihan')
+    $routineSchedules = DB::table('jadwal_latihan')
         ->where(function ($query) use ($coachId) {
             $query->where('id_pelatih', $coachId)
                 ->orWhereNull('id_pelatih');
         })
-        ->get()
-        ->flatMap(function ($schedule) {
+        ->get();
+
+    $activeStudents = DB::table('siswa')
+        ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+        ->select('id_siswa', 'tanggal_lahir', 'umur')
+        ->get();
+
+    $routineStudentIds = $routineSchedules
+        ->flatMap(function ($schedule) use ($activeStudents) {
             $scheduleDate = Carbon::parse($schedule->tanggal);
             $isRoutineSchedule = in_array($scheduleDate->dayOfWeek, [Carbon::WEDNESDAY, Carbon::SUNDAY], true);
 
@@ -140,16 +147,13 @@ private function studentIdsForCoach(int $coachId): array
                 ? SsbInertiaData::categoryValue((string) $schedule->kategori_umur)
                 : null;
 
-            return DB::table('siswa')
-                ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
-                ->select('id_siswa', 'umur')
-                ->get()
+            return $activeStudents
                 ->filter(function ($student) use ($storedCategory) {
                     if (! $storedCategory || $storedCategory === 'all') {
                         return true;
                     }
 
-                    return SsbInertiaData::categoryValue(SsbInertiaData::categoryFromAge((int) $student->umur)) === $storedCategory;
+                    return SsbInertiaData::categoryValue(SsbInertiaData::categoryFromStudent($student)) === $storedCategory;
                 })
                 ->pluck('id_siswa');
         })

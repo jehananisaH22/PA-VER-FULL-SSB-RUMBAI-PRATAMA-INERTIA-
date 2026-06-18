@@ -11,7 +11,7 @@ class Jadwal_Latihan extends Model
     use HasFactory;
 
     protected $table = 'jadwal_latihan';
-    public $timestamps = false; // 🔥 PENTING
+    public $timestamps = false;
     protected $primaryKey = 'id_jadwal';
     protected $appends = ['hari', 'jam'];
     protected $keyType = 'int';

@@ -21,11 +21,10 @@ import BagianMediaPromosiAdminPage from "./BagianMediaPromosiAdmin";
 import SiteFooter from "../SiteFooter";
 import GreenSelect from "../../components/GreenSelect";
 
-const ageCategoryStats = [
-  { label: "U-10", value: 18 },
-  { label: "U-12", value: 16 },
-  { label: "U-11", value: 14 },
-];
+const ageCategoryStats = Array.from({ length: 11 }, (_, index) => ({
+  label: `U-${index + 6}`,
+  value: 0,
+}));
 
 function isActiveStudentStatus(status) {
   const normalized = String(status || "").trim().toLowerCase();
@@ -97,9 +96,11 @@ function getScheduleRawId(scheduleId) {
 
 function normalizeScheduleCategoryKey(value) {
   const normalized = String(value || "all").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-  if (normalized === "u10" || normalized === "10") return "u10";
-  if (normalized === "u11" || normalized === "11") return "u11";
-  if (normalized === "u12" || normalized === "12") return "u12";
+  const ageMatch = normalized.match(/^u?(\d{1,2})$/);
+  if (ageMatch) {
+    const age = Number(ageMatch[1]);
+    if (age >= 6 && age <= 16) return `u${age}`;
+  }
   return "all";
 }
 
@@ -109,9 +110,8 @@ function categoryFromStudent(student) {
 
   const age = Number(student?.age ?? student?.umur);
   if (Number.isFinite(age)) {
-    if (age <= 10) return "u10";
-    if (age === 11) return "u11";
-    return "u12";
+    const normalizedAge = Math.min(16, Math.max(6, Math.trunc(age)));
+    return `u${normalizedAge}`;
   }
 
   return "all";
@@ -196,7 +196,7 @@ const validationIdentityFields = [
   { key: "childName", label: "Nama Anak" },
   { key: "motherName", label: "Nama Ibu" },
   { key: "fatherName", label: "Nama Ayah" },
-  { key: "age", label: "Umur" },
+  { key: "age", label: "Tanggal Lahir" },
 ];
 
 const validationUploadFields = [
@@ -342,9 +342,10 @@ function adminPaymentTypeLabel(value) {
 
 const performanceCategoryOptions = [
   { value: "all", label: "Semua Kategori" },
-  { value: "u10", label: "U-10" },
-  { value: "u11", label: "U-11" },
-  { value: "u12", label: "U-12" },
+  ...Array.from({ length: 11 }, (_, index) => {
+    const age = index + 6;
+    return { value: `u${age}`, label: `U-${age}` };
+  }),
 ];
 
 const formatDateId = (value) => {
@@ -1102,12 +1103,7 @@ function BagianJadwalLatihanAdmin({
                 onChange={(nextValue) => updateSchedule(schedule.id, "category", nextValue)}
                 ariaLabel="Kategori"
                 className="adminScheduleGreenSelect"
-                options={[
-                  { value: "all", label: "Semua Kategori" },
-                  { value: "u10", label: "U-10" },
-                  { value: "u11", label: "U-11" },
-                  { value: "u12", label: "U-12" },
-                ]}
+                options={performanceCategoryOptions}
               />
               <GreenSelect
                 value={schedule.studentName || "all"}
@@ -1437,11 +1433,10 @@ export default function DasborAdmin({
     });
   };
   const dynamicAgeStats = useMemo(
-    () => [
-      { label: "U-10", value: resolvedAdminStudents.filter((item) => item.category === "U-10").length },
-      { label: "U-11", value: resolvedAdminStudents.filter((item) => item.category === "U-11").length },
-      { label: "U-12", value: resolvedAdminStudents.filter((item) => item.category === "U-12").length },
-    ],
+    () => ageCategoryStats.map((category) => ({
+      ...category,
+      value: resolvedAdminStudents.filter((item) => item.category === category.label).length,
+    })),
     [resolvedAdminStudents]
   );
   const totalStudentsCount = resolvedAdminStudents.length;
@@ -2919,5 +2914,3 @@ export default function DasborAdmin({
     </>
   );
 }
-
-

@@ -2,17 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import TataLetakPelatih from "./TataLetakPelatih";
 import "./PerformaPelatih.css";
 
-const categoryLabel = {
-  u10: "U-10",
-  u11: "U-11",
-  u12: "U-12",
-};
-
 const categoryOptions = [
-  { value: "u10", label: "U-10" },
-  { value: "u11", label: "U-11" },
-  { value: "u12", label: "U-12" },
+  ...Array.from({ length: 11 }, (_, index) => {
+    const age = index + 6;
+    return { value: `u${age}`, label: `U-${age}` };
+  }),
 ];
+
+const categoryLabel = Object.fromEntries(categoryOptions.map((option) => [option.value, option.label]));
 
 const scoreFields = ["dribbling", "passing", "shooting"];
 const meetingsPerMonth = 8;
@@ -1238,5 +1235,4 @@ export default function PerformaPelatih(props) {
     </TataLetakPelatih>
   );
 }
-
 

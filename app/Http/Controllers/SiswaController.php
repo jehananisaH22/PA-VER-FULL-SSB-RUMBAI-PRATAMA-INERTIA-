@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,34 @@ use App\Models\Notifikasi;
 
 class SiswaController extends Controller
 {
+private const MIN_REGISTRATION_AGE = 6;
+private const MAX_REGISTRATION_AGE = 16;
+
+private function ageFromBirthDate(?string $birthDate): ?int
+{
+    if (! $birthDate) {
+        return null;
+    }
+
+    return Carbon::parse($birthDate)->age;
+}
+
+private function validatedRegistrationAge(Request $request, array $validated): int
+{
+    $age = $request->filled('tanggal_lahir')
+        ? $this->ageFromBirthDate($validated['tanggal_lahir'])
+        : (int) ($validated['umur'] ?? 0);
+
+    if ($age < self::MIN_REGISTRATION_AGE || $age > self::MAX_REGISTRATION_AGE) {
+        throw \Illuminate\Validation\ValidationException::withMessages([
+            'tanggal_lahir' => 'Umur siswa harus berada di antara 6 sampai 16 tahun.',
+            'umur' => 'Umur siswa harus berada di antara 6 sampai 16 tahun.',
+        ]);
+    }
+
+    return $age;
+}
+
 public function updateProfilSiswaMandiri(Request $request, $id_siswa)
 {
     $user = Auth::user();
@@ -121,12 +150,14 @@ public function daftar_siswa(Request $request)
             'nama_siswa' => 'required',
             'nama_ayah'  => 'required',
             'nama_ibu'   => 'required',
-            'umur'       => 'required|numeric',
+            'tanggal_lahir' => 'required_without:umur|date|before_or_equal:today',
+            'umur'       => 'nullable|integer|min:6|max:16',
             'akta_kelahiran' => 'required|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
             'kartu_keluarga' => 'required|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
             'rapor' => 'required|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
             'pas_photo_3x4' => 'required|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
         ]);
+        $validated['umur'] = $this->validatedRegistrationAge($request, $validated);
     } catch (\Illuminate\Validation\ValidationException $e) {
         if ($request->header('X-Inertia')) {
             return back()->withErrors($e->errors())->withInput();
@@ -177,6 +208,7 @@ public function daftar_siswa(Request $request)
             'nama_siswa' => $validated['nama_siswa'],
             'nama_ayah'  => $validated['nama_ayah'],
             'nama_ibu'   => $validated['nama_ibu'],
+            'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
             'umur'       => $validated['umur'],
             'id_ortu'    => $ortu->id_ortu,
             'user_id'    => $user->id,
@@ -208,11 +240,13 @@ public function daftar_siswa(Request $request)
             'fatherName' => $validated['nama_ayah'],
             'motherName' => $validated['nama_ibu'],
             'age' => $validated['umur'],
+            'birthDate' => $validated['tanggal_lahir'] ?? '',
             'formValues' => [
                 'childName' => $validated['nama_siswa'],
                 'fatherName' => $validated['nama_ayah'],
                 'motherName' => $validated['nama_ibu'],
                 'age' => $validated['umur'],
+                'birthDate' => $validated['tanggal_lahir'] ?? '',
             ],
             'studentId' => $siswa->id_siswa,
             'registrationId' => $pendaftaran->id_pendaftaran,
@@ -553,7 +587,8 @@ public function update_pendaftaran(Request $request, $id_siswa)
         }
 
         if ($pendaftaran->val_umur === 'tidak_valid') {
-            $rules['umur'] = 'required|numeric';
+            $rules['tanggal_lahir'] = 'required_without:umur|date|before_or_equal:today';
+            $rules['umur'] = 'nullable|integer|min:6|max:16';
         }
 
         if ($pendaftaran->val_akta === 'tidak_valid') {
@@ -590,7 +625,12 @@ public function update_pendaftaran(Request $request, $id_siswa)
         // =========================
         // VALIDATE REQUEST
         // =========================
-        $request->validate($rules);
+        $validated = $request->validate($rules);
+
+        $revisionAge = null;
+        if ($pendaftaran->val_umur === 'tidak_valid') {
+            $revisionAge = $this->validatedRegistrationAge($request, $validated);
+        }
 
         // =========================
         // SIMPAN REVISI KE PENDING, DATA SISWA UTAMA MENUNGGU APPROVAL ADMIN
@@ -607,8 +647,9 @@ public function update_pendaftaran(Request $request, $id_siswa)
             $pendaftaran->pending_nama_ibu = $request->nama_ibu;
         }
 
-        if ($pendaftaran->val_umur === 'tidak_valid' && $request->filled('umur')) {
-            $pendaftaran->pending_umur = (int) $request->umur;
+        if ($pendaftaran->val_umur === 'tidak_valid' && $revisionAge !== null) {
+            $pendaftaran->pending_umur = $revisionAge;
+            $pendaftaran->pending_tanggal_lahir = $validated['tanggal_lahir'] ?? null;
         }
 
         // =========================

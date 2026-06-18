@@ -5,9 +5,10 @@ import "./PembayaranPelatih.css";
 
 const categoryOptions = [
   { value: "all", label: "Pilih Kategori Umur" },
-  { value: "u10", label: "U-10" },
-  { value: "u11", label: "U-11" },
-  { value: "u12", label: "U-12" },
+  ...Array.from({ length: 11 }, (_, index) => {
+    const age = index + 6;
+    return { value: `u${age}`, label: `U-${age}` };
+  }),
 ];
 
 const paymentTypeOptions = [
@@ -16,11 +17,9 @@ const paymentTypeOptions = [
   { value: "harian", label: "Harian" },
 ];
 
-const categoryLabel = {
-  u10: "U-10",
-  u11: "U-11",
-  u12: "U-12",
-};
+const categoryLabel = Object.fromEntries(
+  categoryOptions.filter((option) => option.value !== "all").map((option) => [option.value, option.label])
+);
 
 const paymentAmounts = {
   pendaftaran: 280000,
@@ -865,5 +864,4 @@ export default function PembayaranPelatih({
     </TataLetakPelatih>
   );
 }
-
 

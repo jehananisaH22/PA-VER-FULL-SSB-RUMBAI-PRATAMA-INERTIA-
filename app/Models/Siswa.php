@@ -4,6 +4,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Siswa extends Model
@@ -109,17 +110,15 @@ public function pencapaian()
 
 public function getKategoriUmurAttribute(): string
 {
-    $umur = (int) $this->umur;
+    $umur = $this->tanggal_lahir
+        ? Carbon::parse($this->tanggal_lahir)->age
+        : (int) $this->umur;
 
-    if ($umur <= 10) {
-        return 'U-10';
+    if ($umur <= 0) {
+        return '-';
     }
 
-    if ($umur === 11) {
-        return 'U-11';
-    }
-
-    return 'U-12';
+    return 'U-' . max(6, min(16, $umur));
 }
 
 public function toInertiaDirectory(): array

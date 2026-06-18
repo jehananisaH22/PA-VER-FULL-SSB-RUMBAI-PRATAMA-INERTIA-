@@ -206,6 +206,7 @@ public function Admin_validasi_Pendaftaran_siswa($id)
         $displayStudent->setAttribute('nama_ayah', $pendaftaran->pending_nama_ayah ?: $pendaftaran->siswa->nama_ayah);
         $displayStudent->setAttribute('nama_ibu', $pendaftaran->pending_nama_ibu ?: $pendaftaran->siswa->nama_ibu);
         $displayStudent->setAttribute('umur', $pendaftaran->pending_umur ?: $pendaftaran->siswa->umur);
+        $displayStudent->setAttribute('tanggal_lahir', ($pendaftaran->pending_tanggal_lahir ?? null) ?: $pendaftaran->siswa->tanggal_lahir);
         $displayStudent->setAttribute('akta_kelahiran', $pendaftaran->pending_akta_kelahiran ?: $pendaftaran->siswa->akta_kelahiran);
         $displayStudent->setAttribute('kartu_keluarga', $pendaftaran->pending_kartu_keluarga ?: $pendaftaran->siswa->kartu_keluarga);
         $displayStudent->setAttribute('rapor', $pendaftaran->pending_rapor ?: $pendaftaran->siswa->rapor);
@@ -226,25 +227,25 @@ public function Admin_validasi_Pendaftaran_siswa($id)
     $pendaftaran->setAttribute('fileObjects', [
         'birthCert' => array_values(array_filter([
             $pendaftaran->siswa?->akta_kelahiran
-                ? url('/api/file-pendaftaran-siswa/akta/' . basename($pendaftaran->siswa->akta_kelahiran))
+                ? url('/api/admin/file-pendaftaran-siswa/akta/' . basename($pendaftaran->siswa->akta_kelahiran))
                 : null,
         ])),
 
         'reportCard' => array_values(array_filter([
             $pendaftaran->siswa?->rapor
-                ? url('/api/file-pendaftaran-siswa/rapor/' . basename($pendaftaran->siswa->rapor))
+                ? url('/api/admin/file-pendaftaran-siswa/rapor/' . basename($pendaftaran->siswa->rapor))
                 : null,
         ])),
 
         'familyCard' => array_values(array_filter([
             $pendaftaran->siswa?->kartu_keluarga
-                ? url('/api/file-pendaftaran-siswa/kk/' . basename($pendaftaran->siswa->kartu_keluarga))
+                ? url('/api/admin/file-pendaftaran-siswa/kk/' . basename($pendaftaran->siswa->kartu_keluarga))
                 : null,
         ])),
 
         'photo' => array_values(array_filter([
             $pendaftaran->siswa?->pas_photo_3x4
-                ? url('/api/file-pendaftaran-siswa/foto/' . basename($pendaftaran->siswa->pas_photo_3x4))
+                ? url('/api/admin/file-pendaftaran-siswa/foto/' . basename($pendaftaran->siswa->pas_photo_3x4))
                 : null,
         ])),
 
@@ -449,6 +450,7 @@ private function applyPendingRegistrationRevision(Pendaftaran_Siswa $pendaftaran
         'pending_nama_ayah' => 'nama_ayah',
         'pending_nama_ibu' => 'nama_ibu',
         'pending_umur' => 'umur',
+        'pending_tanggal_lahir' => 'tanggal_lahir',
         'pending_akta_kelahiran' => 'akta_kelahiran',
         'pending_kartu_keluarga' => 'kartu_keluarga',
         'pending_rapor' => 'rapor',
@@ -864,11 +866,11 @@ public function Data_Siswa(Request $request)
     }
 
     // =========================
-    // FILTER UMUR U9 - U18
+    // FILTER KATEGORI UMUR U-6 SAMPAI U-16
     // =========================
     if ($request->filled('kategori_umur')) {
         if (preg_match('/U(\d+)/', strtoupper($request->kategori_umur), $match)) {
-            $query->where('umur', (int) $match[1]);
+            $this->applyStudentAgeFilter($query, (int) $match[1]);
         }
     }
 
@@ -927,7 +929,7 @@ public function editProfilSiswaPage($id_siswa)
             'email' => $siswa->email ?: '-',
             'parentName' => $siswa->nama_ortu ?: '',
             'parentPhone' => $siswa->no_hp ?: '',
-            'age' => $siswa->umur,
+            'age' => $siswa->tanggal_lahir ? \Carbon\Carbon::parse($siswa->tanggal_lahir)->age : $siswa->umur,
             'status' => $siswa->status,
             'address' => $siswa->alamat ?: '',
             'height' => $siswa->tinggi_badan,
@@ -951,12 +953,25 @@ public function Update_Profil_Siswa(Request $request, $id_siswa)
         'tanggal_lahir' => 'nullable|date',
         'nama_ortu' => 'nullable|string|max:100',
         'no_hp_ortu' => 'nullable|string|max:20',
-        'umur' => 'nullable|integer|min:1|max:25',
+        'umur' => 'nullable|integer|min:6|max:16',
         'alamat' => 'nullable|string|max:255',
         'tinggi_badan' => 'nullable|integer|min:1|max:250',
         'berat_badan' => 'nullable|integer|min:1|max:250',
         'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
     ]);
+
+    if (! empty($validated['tanggal_lahir'])) {
+        $calculatedAge = \Carbon\Carbon::parse($validated['tanggal_lahir'])->age;
+
+        if ($calculatedAge < 6 || $calculatedAge > 16) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'tanggal_lahir' => 'Umur siswa harus berada di antara 6 sampai 16 tahun.',
+                'umur' => 'Umur siswa harus berada di antara 6 sampai 16 tahun.',
+            ]);
+        }
+
+        $validated['umur'] = $calculatedAge;
+    }
 
     $profil = DB::table('profil_siswa')->where('id_siswa', $siswa->id_siswa)->first();
     $fotoPath = $profil->foto ?? null;
@@ -1158,7 +1173,7 @@ public function Rekap_Absensi_PerSiswa(Request $request, $id_siswa)
         'message' => 'Rekap absensi per siswa berhasil',
         'id_siswa' => $siswa->id_siswa,
         'nama_siswa' => $siswa->nama_siswa,
-        'umur' => 'U-' . $siswa->umur,
+        'umur' => $this->categoryLabelFromStudent($siswa),
 
         'filter' => [
             'bulan' => $bulan,
@@ -1617,7 +1632,7 @@ public function Hapus_Jadwal($id)
 
 public function MediaPromosiAdmin(Request $request)
 {
-    $query = Promosi::with(['siswa:id_siswa,nama_siswa,umur,status', 'dibuatOleh:id_admin,nama_admin']);
+    $query = Promosi::with(['siswa:id_siswa,nama_siswa,tanggal_lahir,umur,status', 'dibuatOleh:id_admin,nama_admin']);
 
     if ($request->filled('search')) {
         $search = $request->search;
@@ -1640,7 +1655,7 @@ public function MediaPromosiAdmin(Request $request)
 
         if (!is_null($umur)) {
             $query->whereHas('siswa', function ($siswaQuery) use ($umur) {
-                $siswaQuery->where('umur', $umur);
+                $this->applyStudentAgeFilter($siswaQuery, $umur);
             });
         }
     }
@@ -1657,21 +1672,19 @@ public function MediaPromosiAdmin(Request $request)
         })
         ->withQueryString();
 
-    $kategoriUmur = Siswa::select('umur')
-        ->distinct()
-        ->orderBy('umur')
-        ->pluck('umur')
-        ->map(fn ($umur) => 'U-' . $umur)
-        ->values();
+    $allStudentOptions = Siswa::select('id_siswa', 'nama_siswa', 'tanggal_lahir', 'umur', 'status')
+        ->orderBy('nama_siswa')
+        ->get();
+    $kategoriUmur = $this->categoryOptionsFromStudents($allStudentOptions);
 
-    $siswaQuery = Siswa::select('id_siswa', 'nama_siswa', 'umur', 'status')
+    $siswaQuery = Siswa::select('id_siswa', 'nama_siswa', 'tanggal_lahir', 'umur', 'status')
         ->orderBy('nama_siswa');
 
     if ($request->filled('kategori_umur')) {
         $umur = $this->extractUmurFromKategori($request->kategori_umur);
 
         if (!is_null($umur)) {
-            $siswaQuery->where('umur', $umur);
+            $this->applyStudentAgeFilter($siswaQuery, $umur);
         }
     }
 
@@ -1679,7 +1692,7 @@ public function MediaPromosiAdmin(Request $request)
         return [
             'id_siswa' => $siswa->id_siswa,
             'nama_siswa' => $siswa->nama_siswa,
-            'kategori_umur' => 'U-' . $siswa->umur,
+            'kategori_umur' => $this->categoryLabelFromStudent($siswa),
             'status' => $siswa->status,
         ];
     });
@@ -1703,7 +1716,7 @@ public function MediaPromosiAdmin(Request $request)
 
 public function DetailMediaPromosi($id)
 {
-    $promosi = Promosi::with(['siswa:id_siswa,nama_siswa,umur,status', 'dibuatOleh:id_admin,nama_admin'])
+    $promosi = Promosi::with(['siswa:id_siswa,nama_siswa,tanggal_lahir,umur,status', 'dibuatOleh:id_admin,nama_admin'])
         ->findOrFail($id);
 
     return response()->json([
@@ -1768,7 +1781,7 @@ public function TambahMediaPromosi(Request $request)
             ], 422);
         }
 
-        $siswaQuery->whereIn('umur', $umurList->all());
+        $this->applyStudentAgeFilterAny($siswaQuery, $umurList);
     }
 
     if ($targetMode === 'siswa') {
@@ -1778,7 +1791,7 @@ public function TambahMediaPromosi(Request $request)
     $siswaTargets = $kategori === 'Galeri'
         ? collect([(object) ['id_siswa' => null]])
         : $siswaQuery
-            ->select('id_siswa', 'nama_siswa', 'umur', 'status')
+            ->select('id_siswa', 'nama_siswa', 'tanggal_lahir', 'umur', 'status')
             ->orderBy('nama_siswa')
             ->get();
 
@@ -1815,7 +1828,7 @@ public function TambahMediaPromosi(Request $request)
             'dibuat_oleh' => $admin->id_admin,
             'foto_promosi' => $fotoPath,
             'kategori' => $kategori,
-        ])->load(['siswa:id_siswa,nama_siswa,umur,status', 'dibuatOleh:id_admin,nama_admin']);
+        ])->load(['siswa:id_siswa,nama_siswa,tanggal_lahir,umur,status', 'dibuatOleh:id_admin,nama_admin']);
     })->values();
 
     $this->recordAdminActivity(
@@ -1890,7 +1903,7 @@ public function UpdateMediaPromosi(Request $request, $id)
             ], 422);
         }
 
-        $siswaQuery->whereIn('umur', $umurList->all());
+        $this->applyStudentAgeFilterAny($siswaQuery, $umurList);
     }
 
     if ($targetMode === 'siswa') {
@@ -1900,7 +1913,7 @@ public function UpdateMediaPromosi(Request $request, $id)
     $siswaTargets = $kategori === 'Galeri'
         ? collect([(object) ['id_siswa' => null]])
         : $siswaQuery
-            ->select('id_siswa', 'nama_siswa', 'umur', 'status')
+            ->select('id_siswa', 'nama_siswa', 'tanggal_lahir', 'umur', 'status')
             ->orderBy('nama_siswa')
             ->get();
 
@@ -1959,7 +1972,7 @@ public function UpdateMediaPromosi(Request $request, $id)
                 'dibuat_oleh' => $promosiAwal->dibuat_oleh,
                 'foto_promosi' => $fotoPath,
                 'kategori' => $kategori,
-            ])->load(['siswa:id_siswa,nama_siswa,umur,status', 'dibuatOleh:id_admin,nama_admin']);
+            ])->load(['siswa:id_siswa,nama_siswa,tanggal_lahir,umur,status', 'dibuatOleh:id_admin,nama_admin']);
         })->values();
 
         if ($request->hasFile('foto_promosi') && $fotoLama && Storage::disk('public')->exists($fotoLama)) {
@@ -2064,7 +2077,7 @@ private function formatMediaPromosi(Promosi $promosi): array
         'foto_url' => $promosi->foto_promosi ? asset('storage/' . ltrim($promosi->foto_promosi, '/')) : null,
         'id_siswa' => $promosi->id_siswa,
         'nama_siswa' => $promosi->siswa->nama_siswa ?? null,
-        'kategori_umur' => $promosi->siswa ? 'U-' . $promosi->siswa->umur : null,
+        'kategori_umur' => $this->categoryLabelFromStudent($promosi->siswa),
         'status_siswa' => $promosi->siswa->status ?? null,
         'dibuat_oleh' => $promosi->dibuat_oleh,
         'nama_admin' => $promosi->dibuatOleh->nama_admin ?? null,
@@ -2080,14 +2093,10 @@ public function FormPrestasiAdmin(Request $request)
         'per_page' => 'nullable|integer|min:1|max:100',
     ]);
 
-    $kategoriUmur = Siswa::select('umur')
-        ->distinct()
-        ->orderBy('umur')
-        ->pluck('umur')
-        ->map(fn ($umur) => 'U-' . $umur)
-        ->values();
+    $allStudentOptions = Siswa::select('id_siswa', 'tanggal_lahir', 'umur')->get();
+    $kategoriUmur = $this->categoryOptionsFromStudents($allStudentOptions);
 
-    $siswaQuery = Siswa::select('id_siswa', 'nama_siswa', 'umur', 'status')
+    $siswaQuery = Siswa::select('id_siswa', 'nama_siswa', 'tanggal_lahir', 'umur', 'status')
         ->orderBy('nama_siswa');
 
     if ($request->filled('kategori_umur')) {
@@ -2100,7 +2109,7 @@ public function FormPrestasiAdmin(Request $request)
             ], 422);
         }
 
-        $siswaQuery->where('umur', $umur);
+        $this->applyStudentAgeFilter($siswaQuery, $umur);
     }
 
     if ($request->filled('status')) {
@@ -2116,7 +2125,7 @@ public function FormPrestasiAdmin(Request $request)
         return [
             'id_siswa' => $item->id_siswa,
             'nama_siswa' => $item->nama_siswa,
-            'kategori_umur' => 'U-' . $item->umur,
+            'kategori_umur' => $this->categoryLabelFromStudent($item),
             'status' => $item->status,
         ];
     })->withQueryString();
@@ -2165,7 +2174,7 @@ public function StorePrestasiAdmin(Request $request)
         DB::commit();
 
         $data = Pencapaian::with([
-            'siswa:id_siswa,nama_siswa,umur',
+            'siswa:id_siswa,nama_siswa,tanggal_lahir,umur',
         ])->whereIn('id_pencapaian', $prestasiIds)->get();
 
         $this->recordAdminActivity(
@@ -2193,7 +2202,7 @@ public function StorePrestasiAdmin(Request $request)
 public function HistoryPrestasiAdmin(Request $request)
 {
     $query = Pencapaian::with([
-        'siswa:id_siswa,nama_siswa,umur',
+        'siswa:id_siswa,nama_siswa,tanggal_lahir,umur',
     ]);
 
     // 🔍 Filter kategori umur
@@ -2202,7 +2211,7 @@ public function HistoryPrestasiAdmin(Request $request)
 
         if (!is_null($umur)) {
             $query->whereHas('siswa', function ($siswaQuery) use ($umur) {
-                $siswaQuery->where('umur', $umur);
+                $this->applyStudentAgeFilter($siswaQuery, $umur);
             });
         }
     }
@@ -2232,19 +2241,16 @@ public function HistoryPrestasiAdmin(Request $request)
                 'id_pencapaian' => $item->id_pencapaian,
                 'id_siswa' => $item->id_siswa,
                 'nama_siswa' => $item->siswa->nama_siswa ?? null,
-                'kategori_umur' => isset($item->siswa->umur) ? 'U-' . $item->siswa->umur : null,
+                'kategori_umur' => $this->categoryLabelFromStudent($item->siswa),
                 'nama_prestasi' => $item->nama_prestasi, // 🔥 FIX
                 'tanggal_diberikan' => $item->tanggal_diberikan,
             ];
         });
 
     // 🔽 Filter dropdown kategori umur
-    $kategoriUmur = Siswa::select('umur')
-        ->distinct()
-        ->orderBy('umur')
-        ->pluck('umur')
-        ->map(fn ($umur) => 'U-' . $umur)
-        ->values();
+    $kategoriUmur = $this->categoryOptionsFromStudents(
+        Siswa::select('id_siswa', 'tanggal_lahir', 'umur')->get()
+    );
 
     return response()->json([
         'success' => true,
@@ -2341,31 +2347,100 @@ private function sendStudentNotification(?Siswa $siswa, string $judul, string $i
 
 private function studentCategoryValue(?int $age): string
 {
-    if ($age !== null && $age <= 10) {
-        return 'u10';
+    if ($age === null || $age < 6 || $age > 16) {
+        return 'all';
     }
 
-    if ($age === 11) {
-        return 'u11';
+    return 'u' . $age;
+}
+
+private function studentAgeValue(?object $student): ?int
+{
+    if (! $student) {
+        return null;
     }
 
-    return 'u12';
+    if (! empty($student->tanggal_lahir)) {
+        return Carbon::parse($student->tanggal_lahir)->age;
+    }
+
+    return $student->umur !== null ? (int) $student->umur : null;
+}
+
+private function studentCategoryFromModel(?object $student): string
+{
+    return $this->studentCategoryValue($this->studentAgeValue($student));
+}
+
+private function applyStudentAgeFilter($query, int $age): void
+{
+    $oldestBirthDate = now()->subYears($age + 1)->addDay()->toDateString();
+    $youngestBirthDate = now()->subYears($age)->toDateString();
+
+    $query->where(function ($builder) use ($age, $oldestBirthDate, $youngestBirthDate) {
+        $builder
+            ->whereBetween('tanggal_lahir', [$oldestBirthDate, $youngestBirthDate])
+            ->orWhere(function ($fallback) use ($age) {
+                $fallback->whereNull('tanggal_lahir')->where('umur', $age);
+            });
+    });
+}
+
+private function applyStudentAgeFilterAny($query, $ages): void
+{
+    $ageValues = collect($ages)
+        ->filter(fn ($age) => $age !== null)
+        ->map(fn ($age) => (int) $age)
+        ->unique()
+        ->values();
+
+    if ($ageValues->isEmpty()) {
+        return;
+    }
+
+    $query->where(function ($builder) use ($ageValues) {
+        foreach ($ageValues as $age) {
+            $oldestBirthDate = now()->subYears($age + 1)->addDay()->toDateString();
+            $youngestBirthDate = now()->subYears($age)->toDateString();
+
+            $builder->orWhere(function ($ageQuery) use ($age, $oldestBirthDate, $youngestBirthDate) {
+                $ageQuery
+                    ->whereBetween('tanggal_lahir', [$oldestBirthDate, $youngestBirthDate])
+                    ->orWhere(function ($fallback) use ($age) {
+                        $fallback->whereNull('tanggal_lahir')->where('umur', $age);
+                    });
+            });
+        }
+    });
+}
+
+private function categoryLabelFromStudent(?object $student): ?string
+{
+    $age = $this->studentAgeValue($student);
+
+    return $age ? 'U-' . $age : null;
+}
+
+private function categoryOptionsFromStudents($students)
+{
+    return collect($students)
+        ->map(fn ($student) => $this->categoryLabelFromStudent($student))
+        ->filter()
+        ->unique()
+        ->sortBy(fn ($category) => (int) preg_replace('/\D/', '', $category))
+        ->values();
 }
 
 private function normalizeScheduleCategoryValue(?string $category): string
 {
     $normalized = strtolower(preg_replace('/[^a-z0-9]/', '', (string) $category));
 
-    if ($normalized === 'u10' || $normalized === '10') {
-        return 'u10';
-    }
+    if (preg_match('/^u?(\d{1,2})$/', $normalized, $match)) {
+        $age = (int) $match[1];
 
-    if ($normalized === 'u11' || $normalized === '11') {
-        return 'u11';
-    }
-
-    if ($normalized === 'u12' || $normalized === '12') {
-        return 'u12';
+        if ($age >= 6 && $age <= 16) {
+            return 'u' . $age;
+        }
     }
 
     return 'all';
@@ -2394,8 +2469,8 @@ private function scheduleStudentCategoryMismatchResponse(array $studentIds, ?str
 
     $mismatchedStudents = Siswa::query()
         ->whereIn('id_siswa', $studentIds)
-        ->get(['id_siswa', 'nama_siswa', 'umur'])
-        ->filter(fn (Siswa $siswa) => $this->studentCategoryValue((int) $siswa->umur) !== $normalizedCategory)
+        ->get(['id_siswa', 'nama_siswa', 'tanggal_lahir', 'umur'])
+        ->filter(fn (Siswa $siswa) => $this->studentCategoryFromModel($siswa) !== $normalizedCategory)
         ->values();
 
     if ($mismatchedStudents->isEmpty()) {
@@ -2420,9 +2495,9 @@ private function syncActiveStudentToCategorySchedules(?Siswa $siswa): void
         return;
     }
 
-    $studentCategory = $this->studentCategoryValue((int) $siswa->umur);
+    $studentCategory = $this->studentCategoryFromModel($siswa);
 
-    $schedules = Jadwal_Latihan::with('siswa:id_siswa,umur')
+    $schedules = Jadwal_Latihan::with('siswa:id_siswa,tanggal_lahir,umur')
         ->orderBy('id_jadwal')
         ->get()
         ->filter(fn (Jadwal_Latihan $jadwal) => $this->isRoutineTrainingSchedule($jadwal))
@@ -2444,7 +2519,7 @@ private function syncActiveStudentToCategorySchedules(?Siswa $siswa): void
         }
 
         $scheduleCategories = $jadwal->siswa
-            ->map(fn ($student) => $this->studentCategoryValue((int) $student->umur))
+            ->map(fn ($student) => $this->studentCategoryFromModel($student))
             ->unique();
 
         return $scheduleCategories->contains($studentCategory);

@@ -30,6 +30,7 @@ class Pendaftaran_Siswa extends Model
         'pending_nama_ayah',
         'pending_nama_ibu',
         'pending_umur',
+        'pending_tanggal_lahir',
         'pending_akta_kelahiran',
         'pending_kartu_keluarga',
         'pending_rapor',

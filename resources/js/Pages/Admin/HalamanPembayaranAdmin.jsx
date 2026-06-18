@@ -6,9 +6,10 @@ import "./HalamanPembayaranAdmin.css";
 
 const ageOptions = [
   { value: "all", label: "Pilih Kategori Usia" },
-  { value: "u10", label: "U-10" },
-  { value: "u11", label: "U-11" },
-  { value: "u12", label: "U-12" },
+  ...Array.from({ length: 11 }, (_, index) => {
+    const age = index + 6;
+    return { value: `u${age}`, label: `U-${age}` };
+  }),
 ];
 
 const notificationTypeOptions = [
@@ -212,9 +213,11 @@ function getStatusSelectClass(status) {
 
 function normalizeCategoryValue(value) {
   const normalized = String(value || "").trim().toLowerCase().replace(/\s+/g, "");
-  if (["u10", "u-10", "10"].includes(normalized)) return "u10";
-  if (["u11", "u-11", "11"].includes(normalized)) return "u11";
-  if (["u12", "u-12", "12"].includes(normalized)) return "u12";
+  const ageMatch = normalized.match(/^u-?(\d{1,2})$/) || normalized.match(/^(\d{1,2})$/);
+  if (ageMatch) {
+    const age = Number(ageMatch[1]);
+    if (age >= 6 && age <= 16) return `u${age}`;
+  }
   return normalized || "all";
 }
 

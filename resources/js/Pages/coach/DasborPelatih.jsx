@@ -7,9 +7,10 @@ import PlaceMarkerIcon from "../../../assets/PlaceMarker.png";
 
 const categoryFilterOptions = [
   { value: "all", label: "Semua Kategori" },
-  { value: "u10", label: "U-10" },
-  { value: "u11", label: "U-11" },
-  { value: "u12", label: "U-12" },
+  ...Array.from({ length: 11 }, (_, index) => {
+    const age = index + 6;
+    return { value: `u${age}`, label: `U-${age}` };
+  }),
 ];
 
 function normalizeCategory(value) {
@@ -83,9 +84,11 @@ function buildAttendanceGroups(rows = []) {
 
   return {
     all: buildGroup("all"),
-    u10: buildGroup("u10"),
-    u11: buildGroup("u11"),
-    u12: buildGroup("u12"),
+    ...Object.fromEntries(
+      categoryFilterOptions
+        .filter((option) => option.value !== "all")
+        .map((option) => [option.value, buildGroup(option.value)])
+    ),
   };
 }
 
@@ -105,9 +108,11 @@ function buildPerformanceGroups(rows = []) {
 
   return {
     all: buildGroup("all"),
-    u10: buildGroup("u10"),
-    u11: buildGroup("u11"),
-    u12: buildGroup("u12"),
+    ...Object.fromEntries(
+      categoryFilterOptions
+        .filter((option) => option.value !== "all")
+        .map((option) => [option.value, buildGroup(option.value)])
+    ),
   };
 }
 
@@ -471,5 +476,4 @@ export default function DasborPelatih(props) {
     </TataLetakPelatih>
   );
 }
-
 

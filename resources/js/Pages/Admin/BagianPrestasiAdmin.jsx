@@ -5,9 +5,10 @@ import "./BagianPrestasiAdmin.css";
 
 const categoryOptions = [
   { value: "", label: "Pilih Kategori Umur" },
-  { value: "U-10", label: "U-10" },
-  { value: "U-11", label: "U-11" },
-  { value: "U-12", label: "U-12" },
+  ...Array.from({ length: 11 }, (_, index) => {
+    const age = index + 6;
+    return { value: `U-${age}`, label: `U-${age}` };
+  }),
 ];
 
 function SearchIcon() {

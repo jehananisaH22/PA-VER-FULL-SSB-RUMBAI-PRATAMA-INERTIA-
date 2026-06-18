@@ -204,6 +204,10 @@ class RegistrationFlowTest extends TestCase
             'nama_ayah' => 'Ayah',
             'nama_ibu' => 'Ibu',
             'umur' => 10,
+            'akta_kelahiran' => 'akta/akta-test.pdf',
+            'kartu_keluarga' => 'kk/kk-test.pdf',
+            'rapor' => 'rapor/rapor-test.pdf',
+            'pas_photo_3x4' => 'foto/foto-test.pdf',
             'status' => 'Inactive',
         ]);
         $pendaftaran = Pendaftaran_Siswa::create([
@@ -215,7 +219,11 @@ class RegistrationFlowTest extends TestCase
         $this->actingAs($admin)
             ->getJson("/api/admin/pendaftaran/{$pendaftaran->id_pendaftaran}")
             ->assertOk()
-            ->assertJsonPath('data.id_pendaftaran', $pendaftaran->id_pendaftaran);
+            ->assertJsonPath('data.id_pendaftaran', $pendaftaran->id_pendaftaran)
+            ->assertJsonPath(
+                'data.fileObjects.birthCert.0',
+                url('/api/admin/file-pendaftaran-siswa/akta/akta-test.pdf')
+            );
 
         $this->actingAs($admin)
             ->getJson("/api/admin/pendaftaran/{$siswa->id_siswa}")
@@ -342,7 +350,7 @@ class RegistrationFlowTest extends TestCase
                 'nama_siswa' => 'Anak Masuk Admin',
                 'nama_ayah' => 'Ayah',
                 'nama_ibu' => 'Ibu',
-                'umur' => 10,
+                'tanggal_lahir' => now()->subYears(10)->toDateString(),
                 'akta_kelahiran' => UploadedFile::fake()->create('akta.pdf', 10, 'application/pdf'),
                 'kartu_keluarga' => UploadedFile::fake()->create('kk.pdf', 10, 'application/pdf'),
                 'rapor' => UploadedFile::fake()->create('rapor.pdf', 10, 'application/pdf'),
@@ -358,6 +366,8 @@ class RegistrationFlowTest extends TestCase
             'id_siswa' => $studentId,
             'user_id' => $parent->id,
             'nama_siswa' => 'Anak Masuk Admin',
+            'tanggal_lahir' => now()->subYears(10)->toDateString(),
+            'umur' => 10,
             'status' => 'Inactive',
         ]);
         $this->assertDatabaseHas('pendaftaran', [

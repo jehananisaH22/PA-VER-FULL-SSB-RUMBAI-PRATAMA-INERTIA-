@@ -4,6 +4,21 @@ import LogoSBB from "../../../assets/LogoSBB.png";
 import ProfileIcon from "../../../assets/Profile.png";
 import "./PerbaikiProfilSiswaAdmin.css";
 
+function calculateAgeFromBirthDate(value) {
+  if (!value) return "";
+  const birthDate = new Date(value);
+  if (Number.isNaN(birthDate.getTime())) return "";
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age -= 1;
+  }
+
+  return age >= 0 ? String(age) : "";
+}
+
 export default function PerbaikiProfilSiswaAdmin({ userName = "Admin SSB", student = {} }) {
   const [form, setForm] = useState({
     nama_siswa: student.name || "",
@@ -31,7 +46,13 @@ export default function PerbaikiProfilSiswaAdmin({ userName = "Admin SSB", stude
   );
 
   const updateField = (key, value) => {
-    setForm((current) => ({ ...current, [key]: value }));
+    setForm((current) => {
+      if (key === "tanggal_lahir") {
+        return { ...current, tanggal_lahir: value, umur: calculateAgeFromBirthDate(value) };
+      }
+
+      return { ...current, [key]: value };
+    });
     setErrors((current) => ({ ...current, [key]: null }));
   };
 
@@ -179,8 +200,10 @@ export default function PerbaikiProfilSiswaAdmin({ userName = "Admin SSB", stude
               Umur
               <input
                 type="number"
+                min="6"
+                max="16"
                 value={form.umur}
-                onChange={(event) => updateField("umur", event.target.value)}
+                readOnly
               />
               {errors.umur && <small>{errors.umur[0]}</small>}
             </label>

@@ -4,16 +4,19 @@ import "./BagianJadwalLatihanAdmin.css";
 
 const scheduleCategoryOptions = [
   { value: "all", label: "Semua Kategori" },
-  { value: "u10", label: "U-10" },
-  { value: "u11", label: "U-11" },
-  { value: "u12", label: "U-12" },
+  ...Array.from({ length: 11 }, (_, index) => {
+    const age = index + 6;
+    return { value: `u${age}`, label: `U-${age}` };
+  }),
 ];
 
 function normalizeScheduleCategory(value) {
   const normalized = String(value || "all").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-  if (normalized === "u10" || normalized === "10") return "u10";
-  if (normalized === "u11" || normalized === "11") return "u11";
-  if (normalized === "u12" || normalized === "12") return "u12";
+  const ageMatch = normalized.match(/^u?(\d{1,2})$/);
+  if (ageMatch) {
+    const age = Number(ageMatch[1]);
+    if (age >= 6 && age <= 16) return `u${age}`;
+  }
   return "all";
 }
 

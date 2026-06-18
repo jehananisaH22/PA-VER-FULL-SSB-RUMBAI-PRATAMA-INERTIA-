@@ -31,6 +31,21 @@ const ACCEPTED_UPLOAD_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "pdf"];
 const MAX_UPLOAD_SIZE_MB = 5;
 const MAX_UPLOAD_SIZE_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024;
 
+function calculateAgeFromBirthDate(value) {
+  if (!value) return "";
+  const birthDate = new Date(value);
+  if (Number.isNaN(birthDate.getTime())) return "";
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age -= 1;
+  }
+
+  return age >= 0 ? String(age) : "";
+}
+
 export default function HalamanFormPendaftaran({
   onOpenHome,
   onBackToDaftar,
@@ -48,7 +63,7 @@ export default function HalamanFormPendaftaran({
     childName: registrationFormDraft?.formValues?.childName || "",
     fatherName: registrationFormDraft?.formValues?.fatherName || "",
     motherName: registrationFormDraft?.formValues?.motherName || "",
-    age: registrationFormDraft?.formValues?.age || "",
+    birthDate: registrationFormDraft?.formValues?.birthDate || "",
   });
   const [uploadedFiles, setUploadedFiles] = useState({
     akta: registrationFormDraft?.uploadedFiles?.akta || null,
@@ -81,7 +96,7 @@ useEffect(() => {
       formValues.childName.trim() &&
       formValues.fatherName.trim() &&
       formValues.motherName.trim() &&
-      String(formValues.age).trim();
+      String(formValues.birthDate).trim();
     const hasAllFiles = Object.values(uploadedFiles).every((file) => !!file);
     return Boolean(hasAllText && hasAllFiles);
   }, [formValues, uploadedFiles]);
@@ -89,6 +104,7 @@ useEffect(() => {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!isFormComplete) return;
+    const calculatedAge = calculateAgeFromBirthDate(formValues.birthDate);
     const payload = {
       name: formValues.childName.trim(),
       email: registrationAccount?.email?.trim() || "",
@@ -97,7 +113,8 @@ useEffect(() => {
       childName: formValues.childName.trim(),
       motherName: formValues.motherName.trim(),
       fatherName: formValues.fatherName.trim(),
-      age: String(formValues.age).trim(),
+      age: calculatedAge,
+      birthDate: formValues.birthDate,
       files: {
         birthCert: uploadedFiles.akta ? [uploadedFiles.akta.name] : [],
         familyCard: uploadedFiles.kk ? [uploadedFiles.kk.name] : [],
@@ -122,7 +139,7 @@ useEffect(() => {
       nama_siswa: formValues.childName.trim(),
       nama_ayah: formValues.fatherName.trim(),
       nama_ibu: formValues.motherName.trim(),
-      umur: String(formValues.age).trim(),
+      tanggal_lahir: formValues.birthDate,
       akta_kelahiran: uploadedFiles.akta,
       kartu_keluarga: uploadedFiles.kk,
       rapor: uploadedFiles.rapor,
@@ -220,16 +237,17 @@ useEffect(() => {
                 />
               </label>
               <label>
-                <span>Umur</span>
+                <span>Tanggal Lahir</span>
                 <input
-                  type="number"
-                  name="age"
-                  min="1"
-                  value={formValues.age}
+                  type="date"
+                  name="birthDate"
+                  value={formValues.birthDate}
                   onChange={handleTextChange}
-                  placeholder="Masukkan Umur"
                   required
                 />
+                {(errors.tanggal_lahir || errors.umur) && (
+                  <small>{errors.tanggal_lahir?.[0] || errors.umur?.[0]}</small>
+                )}
               </label>
               <label>
                 <span>Nama Ayah</span>

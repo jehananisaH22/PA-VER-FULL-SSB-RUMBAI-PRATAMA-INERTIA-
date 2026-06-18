@@ -26,15 +26,32 @@ class SsbInertiaData
 
     public static function categoryFromAge(?int $age): string
     {
-        if ($age !== null && $age <= 10) {
-            return 'U-10';
+        if ($age === null) {
+            return '-';
         }
 
-        if ($age === 11) {
-            return 'U-11';
+        $normalizedAge = max(6, min(16, $age));
+
+        return 'U-' . $normalizedAge;
+    }
+
+    public static function ageFromBirthDate($birthDate): ?int
+    {
+        if (! $birthDate) {
+            return null;
         }
 
-        return 'U-12';
+        return Carbon::parse($birthDate)->age;
+    }
+
+    public static function displayAge($birthDate, $storedAge): ?int
+    {
+        return self::ageFromBirthDate($birthDate) ?? ($storedAge !== null ? (int) $storedAge : null);
+    }
+
+    public static function categoryFromStudent(object $student): string
+    {
+        return self::categoryFromAge(self::displayAge($student->tanggal_lahir ?? null, $student->umur ?? null));
     }
 
     public static function categoryValue(string $category): string
@@ -79,7 +96,7 @@ class SsbInertiaData
                     'id' => $student->id_siswa,
                     'name' => $student->nama_siswa,
                     'email' => $student->parent_email ?: '-',
-                    'category' => self::categoryFromAge((int) $student->umur),
+                    'category' => self::categoryFromStudent($student),
                     'status' => $student->status,
                 ];
             })
@@ -145,15 +162,35 @@ class SsbInertiaData
             ->orderByDesc('jadwal_latihan.tanggal')
             ->get();
 
-        return $rows->map(function ($schedule) use ($studentIds, $activeOnly) {
-            $students = DB::table('jadwal_siswa')
+        $scheduleIds = $rows->pluck('id_jadwal')->filter()->values();
+        $assignedStudents = collect();
+
+        if ($scheduleIds->isNotEmpty()) {
+            $assignedStudents = DB::table('jadwal_siswa')
                 ->join('siswa', 'jadwal_siswa.id_siswa', '=', 'siswa.id_siswa')
-                ->where('jadwal_siswa.id_jadwal', $schedule->id_jadwal)
+                ->whereIn('jadwal_siswa.id_jadwal', $scheduleIds)
                 ->when($activeOnly, function ($query) {
                     $query->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
                 })
-                ->select('siswa.id_siswa', 'siswa.nama_siswa', 'siswa.umur')
-                ->get();
+                ->select(
+                    'jadwal_siswa.id_jadwal',
+                    'siswa.id_siswa',
+                    'siswa.nama_siswa',
+                    'siswa.tanggal_lahir',
+                    'siswa.umur'
+                )
+                ->get()
+                ->groupBy('id_jadwal');
+        }
+
+        $routineStudents = DB::table('siswa')
+            ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), self::activeStatusValues())
+            ->select('id_siswa', 'nama_siswa', 'tanggal_lahir', 'umur')
+            ->orderBy('nama_siswa')
+            ->get();
+
+        return $rows->map(function ($schedule) use ($studentIds, $activeOnly, $assignedStudents, $routineStudents) {
+            $students = $assignedStudents->get($schedule->id_jadwal, collect())->values();
 
             $storedCategory = $schedule->kategori_umur !== null
                 ? self::categoryValue((string) $schedule->kategori_umur)
@@ -162,23 +199,17 @@ class SsbInertiaData
             $isRoutineSchedule = in_array($date->dayOfWeek, [Carbon::WEDNESDAY, Carbon::SUNDAY], true);
 
             if ($isRoutineSchedule && $students->isEmpty()) {
-                $routineStudents = DB::table('siswa')
-                    ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), self::activeStatusValues())
-                    ->select('id_siswa', 'nama_siswa', 'umur')
-                    ->orderBy('nama_siswa')
-                    ->get();
+                $students = $routineStudents;
 
                 if ($storedCategory && $storedCategory !== 'all') {
-                    $routineStudents = $routineStudents
-                        ->filter(fn ($student) => self::categoryValue(self::categoryFromAge((int) $student->umur)) === $storedCategory)
+                    $students = $students
+                        ->filter(fn ($student) => self::categoryValue(self::categoryFromStudent($student)) === $storedCategory)
                         ->values();
                 }
 
-                if ($activeOnly && $routineStudents->isEmpty()) {
+                if ($activeOnly && $students->isEmpty()) {
                     return null;
                 }
-
-                $students = $routineStudents;
             }
 
             if ($activeOnly && $students->isEmpty()) {
@@ -197,7 +228,7 @@ class SsbInertiaData
             }
 
             $studentCategories = $students
-                ->map(fn ($student) => self::categoryValue(self::categoryFromAge((int) $student->umur)))
+                ->map(fn ($student) => self::categoryValue(self::categoryFromStudent($student)))
                 ->unique()
                 ->values();
             $firstCategory = $storedCategory
@@ -238,6 +269,7 @@ class SsbInertiaData
             ->select(
                 'presensi.*',
                 'siswa.nama_siswa',
+                'siswa.tanggal_lahir',
                 'siswa.umur',
                 'jadwal_latihan.tanggal',
                 'jadwal_latihan.jam_mulai',
@@ -297,7 +329,7 @@ class SsbInertiaData
                     'studentId' => $first->id_siswa,
                     'player' => $first->nama_siswa,
                     'playerName' => $first->nama_siswa,
-                    'category' => self::categoryValue(self::categoryFromAge((int) $first->umur)),
+                    'category' => self::categoryValue(self::categoryFromStudent($first)),
                     'month' => self::monthKey($date),
                     'year' => $date->format('Y'),
                     'scheduleId' => $first->id_jadwal ? 'schedule-' . $first->id_jadwal : null,
@@ -337,6 +369,7 @@ class SsbInertiaData
             ->select(
                 'performa_siswa.*',
                 'siswa.nama_siswa',
+                'siswa.tanggal_lahir',
                 'siswa.umur',
                 'jadwal_latihan.tanggal as jadwal_tanggal',
                 'jadwal_latihan.jam_mulai',
@@ -369,7 +402,7 @@ class SsbInertiaData
                     'studentId' => $row->id_siswa,
                     'studentName' => $row->nama_siswa,
                     'player' => $row->nama_siswa,
-                    'category' => self::categoryValue(self::categoryFromAge((int) $row->umur)),
+                    'category' => self::categoryValue(self::categoryFromStudent($row)),
                     'rawScheduleId' => $row->id_jadwal ? (int) $row->id_jadwal : null,
                     'scheduleId' => $row->id_jadwal ? 'schedule-' . $row->id_jadwal : null,
                     'scheduleLabel' => $row->jadwal_tanggal
@@ -406,7 +439,7 @@ class SsbInertiaData
         $query = DB::table('catatan_pelatih')
             ->join('siswa', 'catatan_pelatih.id_siswa', '=', 'siswa.id_siswa')
             ->leftJoin('pelatih', 'catatan_pelatih.id_pelatih', '=', 'pelatih.id_pelatih')
-            ->select('catatan_pelatih.*', 'siswa.nama_siswa', 'siswa.umur', 'pelatih.nama_pelatih');
+            ->select('catatan_pelatih.*', 'siswa.nama_siswa', 'siswa.tanggal_lahir', 'siswa.umur', 'pelatih.nama_pelatih');
 
         if ($activeOnly) {
             $query->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
@@ -426,7 +459,7 @@ class SsbInertiaData
                 'coach' => $row->nama_pelatih ?: 'Pelatih',
                 'studentName' => $row->nama_siswa,
                 'player' => $row->nama_siswa,
-                'category' => self::categoryValue(self::categoryFromAge((int) $row->umur)),
+                'category' => self::categoryValue(self::categoryFromStudent($row)),
                 'date' => self::dateSlash($row->tanggal_catatan),
                 'note' => $row->catatan,
                 'title' => $row->catatan,
@@ -440,7 +473,7 @@ class SsbInertiaData
     {
         $query = DB::table('pencapaian')
             ->join('siswa', 'pencapaian.id_siswa', '=', 'siswa.id_siswa')
-            ->select('pencapaian.*', 'siswa.nama_siswa', 'siswa.umur');
+            ->select('pencapaian.*', 'siswa.nama_siswa', 'siswa.tanggal_lahir', 'siswa.umur');
 
         if ($studentIds !== null) {
             $query->whereIn('pencapaian.id_siswa', $studentIds);
@@ -451,7 +484,7 @@ class SsbInertiaData
                 'id' => $row->id_pencapaian,
                 'studentId' => $row->id_siswa,
                 'studentName' => $row->nama_siswa,
-                'category' => self::categoryFromAge((int) $row->umur),
+                'category' => self::categoryFromStudent($row),
                 'title' => $row->nama_prestasi,
                 'dateLabel' => Carbon::parse($row->tanggal_diberikan)->locale('id')->translatedFormat('d F Y'),
                 'createdAt' => self::timestamp($row->tanggal_diberikan),
@@ -467,6 +500,7 @@ class SsbInertiaData
             ->select(
                 'promosi.*',
                 'siswa.nama_siswa',
+                'siswa.tanggal_lahir',
                 'siswa.umur'
             )
             ->orderByDesc('promosi.tanggal_promosi')
@@ -481,7 +515,7 @@ class SsbInertiaData
                     ->map(fn ($row) => [
                         'id' => $row->id_siswa,
                         'name' => $row->nama_siswa,
-                        'category' => self::categoryFromAge((int) $row->umur),
+                        'category' => self::categoryFromStudent($row),
                     ])
                     ->unique('id')
                     ->values()
@@ -535,7 +569,8 @@ class SsbInertiaData
                 $displayName = $row->pending_nama_siswa ?: $row->nama_siswa;
                 $displayFatherName = $row->pending_nama_ayah ?: $row->nama_ayah;
                 $displayMotherName = $row->pending_nama_ibu ?: $row->nama_ibu;
-                $displayAge = $row->pending_umur ?: $row->umur;
+                $displayBirthDate = ($row->pending_tanggal_lahir ?? null) ?: $row->tanggal_lahir;
+                $displayAge = self::displayAge($displayBirthDate, $row->pending_umur ?: $row->umur);
                 $displayBirthCert = $row->pending_akta_kelahiran ?: $row->akta_kelahiran;
                 $displayReportCard = $row->pending_rapor ?: $row->rapor;
                 $displayFamilyCard = $row->pending_kartu_keluarga ?: $row->kartu_keluarga;
@@ -576,6 +611,7 @@ class SsbInertiaData
                     'motherName' => $displayMotherName ?: '-',
                     'fatherName' => $displayFatherName ?: '-',
                     'age' => $displayAge ?: '-',
+                    'birthDate' => $displayBirthDate ?: '',
                     'files' => [
                         'birthCert' => array_filter([$displayBirthCert]),
                         'reportCard' => array_filter([$displayReportCard]),
@@ -607,6 +643,7 @@ class SsbInertiaData
                 'pembayaran.tanggal_bayar',
                 'pembayaran.periode as periode_pembayaran',
                 'siswa.nama_siswa',
+                'siswa.tanggal_lahir',
                 'siswa.umur'
             );
 
@@ -682,7 +719,7 @@ class SsbInertiaData
                     'studentId' => $row->id_siswa,
                     'studentName' => $row->nama_siswa,
                     'childName' => $row->nama_siswa,
-                    'category' => self::categoryValue(self::categoryFromAge((int) $row->umur)),
+                    'category' => self::categoryValue(self::categoryFromStudent($row)),
                     'paymentType' => $paymentType,
                     'paymentTypeLabel' => $row->jenis,
                     'amount' => (float) $row->jumlah,
@@ -1046,7 +1083,7 @@ class SsbInertiaData
                 ->leftJoin('orang_tua', 'siswa.id_ortu', '=', 'orang_tua.id_ortu')
                 ->whereIn('pendaftaran.id_siswa', $studentIds)
                 ->where('pendaftaran.status_approval', 'Revisi')
-                ->select('pendaftaran.*', 'siswa.nama_siswa', 'siswa.nama_ayah', 'siswa.nama_ibu', 'siswa.umur', 'orang_tua.email', 'orang_tua.no_hp')
+                ->select('pendaftaran.*', 'siswa.nama_siswa', 'siswa.nama_ayah', 'siswa.nama_ibu', 'siswa.tanggal_lahir', 'siswa.umur', 'orang_tua.email', 'orang_tua.no_hp')
                 ->orderByDesc('pendaftaran.tanggal_daftar')
                 ->first()
             : null;
@@ -1069,6 +1106,7 @@ class SsbInertiaData
                     'nama_siswa' => $firstStudent->nama_siswa,
                     'nama_ayah' => $firstStudent->nama_ayah,
                     'nama_ibu' => $firstStudent->nama_ibu,
+                    'tanggal_lahir' => $firstStudent->tanggal_lahir,
                     'umur' => $firstStudent->umur,
                     'email' => $parent->email ?? '',
                     'no_hp' => $parent->no_hp ?? '',
@@ -1113,7 +1151,8 @@ class SsbInertiaData
                     'childName' => $revisionSource->nama_siswa ?? $firstStudent->nama_siswa ?? '',
                     'fatherName' => $revisionSource->nama_ayah ?? '',
                     'motherName' => $revisionSource->nama_ibu ?? '',
-                    'age' => $revisionSource->umur ?? '',
+                    'age' => self::displayAge($revisionSource->pending_tanggal_lahir ?? $revisionSource->tanggal_lahir ?? null, $revisionSource->pending_umur ?? $revisionSource->umur ?? null) ?? '',
+                    'birthDate' => ($revisionSource->pending_tanggal_lahir ?? null) ?: ($revisionSource->tanggal_lahir ?? ''),
                 ],
                 'invalidIdentityFields' => array_values(array_unique($invalidIdentityFields)),
                 'invalidUploadFields' => array_values(array_unique($invalidUploadFields)),
@@ -1129,7 +1168,7 @@ class SsbInertiaData
                 'nisn' => $firstStudent->nisn ?? '',
                 'birthPlace' => $firstStudent->tempat_lahir ?? '',
                 'birthDate' => $firstStudent->tanggal_lahir ?? '',
-                'age' => $firstStudent->umur ?? '',
+                'age' => $firstStudent ? self::displayAge($firstStudent->tanggal_lahir ?? null, $firstStudent->umur ?? null) : '',
                 'parentName' => $parent->nama_ortu ?? '',
                 'parentPhone' => $parent->no_hp ?? '',
                 'parentEmail' => $parent->email ?? '',
@@ -1139,7 +1178,9 @@ class SsbInertiaData
             ],
             'selectedChildId' => $selectedStudentId ? (int) $selectedStudentId : null,
             'hasSelectedChild' => (bool) $selectedStudentId && ! $shouldOpenChildPicker,
-            'childCategoryLabel' => $firstStudent ? self::categoryFromAge((int) $firstStudent->umur) : '-',
+            'childCategoryLabel' => $firstStudent
+                ? self::categoryFromAge(self::displayAge($firstStudent->tanggal_lahir ?? null, $firstStudent->umur ?? null))
+                : '-',
             'paymentStatus' => $firstStudent
                 ? ($studentIsActive ? 'paid' : 'unpaid')
                 : 'unselected',
