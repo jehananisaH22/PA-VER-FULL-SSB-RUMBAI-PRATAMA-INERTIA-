@@ -153,6 +153,10 @@ class CoachToParentFlowTest extends TestCase
         $this->assertSame(88, $payload['performanceHistory'][0]['dribbling']);
         $this->assertSame('Perlu latihan finishing.', $payload['coachNotes'][0]['note']);
         $this->assertSame('Menunggu Validasi', $payload['paymentHistory'][0]['status']);
+        $this->assertSame(100000.0, $payload['monthlyPaymentSummary']['targetAmount']);
+        $this->assertSame(0.0, $payload['monthlyPaymentSummary']['paidAmount']);
+        $this->assertSame(35000.0, $payload['monthlyPaymentSummary']['pendingAmount']);
+        $this->assertSame(100000.0, $payload['monthlyPaymentSummary']['remainingAmount']);
         $this->assertCount(4, $payload['notifications']);
     }
 
@@ -216,10 +220,10 @@ class CoachToParentFlowTest extends TestCase
 
         $payload = SsbInertiaData::parentPayload();
 
-        $this->assertTrue($payload['openChildPickerOnLoad']);
-        $this->assertNull($payload['selectedChildId']);
-        $this->assertFalse($payload['hasSelectedChild']);
-        $this->assertSame('', $payload['userName']);
+        $this->assertFalse($payload['openChildPickerOnLoad']);
+        $this->assertSame($siswa->id_siswa, $payload['selectedChildId']);
+        $this->assertTrue($payload['hasSelectedChild']);
+        $this->assertSame('Anak Coach', $payload['userName']);
         $this->assertCount(1, $payload['childrenOptions']);
 
         session(['id_siswa' => $siswa->id_siswa]);

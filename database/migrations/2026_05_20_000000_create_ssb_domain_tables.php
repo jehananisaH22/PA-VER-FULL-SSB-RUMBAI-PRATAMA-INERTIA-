@@ -183,6 +183,8 @@ return new class extends Migration
             Schema::create('performa_siswa', function (Blueprint $table) {
                 $table->id('id_performa');
                 $table->foreignId('id_siswa')->constrained('siswa', 'id_siswa')->cascadeOnDelete();
+                $table->foreignId('id_jadwal')->nullable()->constrained('jadwal_latihan', 'id_jadwal')->nullOnDelete();
+                $table->foreignId('id_pelatih')->nullable()->constrained('pelatih', 'id_pelatih')->nullOnDelete();
                 $table->date('tanggal_penilaian')->nullable();
                 $table->unsignedTinyInteger('dribbling')->default(0);
                 $table->unsignedTinyInteger('passing')->default(0);

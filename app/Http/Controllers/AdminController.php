@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\Pendaftaran_Siswa;
+use App\Services\SiswaPaymentStatusService;
 use App\Mail\SendPasswordMail;
 use Carbon\Carbon;
 use Inertia\Inertia;
@@ -458,6 +459,36 @@ public function pembayaran_admin(Request $request)
         ->paginate(10)
         ->withQueryString();
 
+    $pembayaran->getCollection()->transform(function ($item) {
+        if (strtolower((string) $item->jenis) !== 'harian') {
+            return $item;
+        }
+
+        $month = substr((string) ($item->periode ?: $item->tanggal_bayar), 0, 7);
+        $monthlyTarget = SiswaPaymentStatusService::MONTHLY_TARGET;
+        $monthlyPaid = DB::table('pembayaran')
+            ->join('bukti_pembayaran', 'pembayaran.id_pembayaran', '=', 'bukti_pembayaran.id_pembayaran')
+            ->where('pembayaran.id_siswa', $item->id_siswa)
+            ->where('pembayaran.jenis', 'Harian')
+            ->where('pembayaran.periode', 'like', $month . '%')
+            ->whereRaw('LOWER(TRIM(bukti_pembayaran.status)) = ?', ['diterima'])
+            ->sum('pembayaran.jumlah');
+        $monthlyPending = DB::table('pembayaran')
+            ->join('bukti_pembayaran', 'pembayaran.id_pembayaran', '=', 'bukti_pembayaran.id_pembayaran')
+            ->where('pembayaran.id_siswa', $item->id_siswa)
+            ->where('pembayaran.jenis', 'Harian')
+            ->where('pembayaran.periode', 'like', $month . '%')
+            ->whereRaw('LOWER(TRIM(bukti_pembayaran.status)) = ?', ['menunggu validasi'])
+            ->sum('pembayaran.jumlah');
+
+        $item->monthly_target = $monthlyTarget;
+        $item->monthly_paid_amount = (float) $monthlyPaid;
+        $item->monthly_pending_amount = (float) $monthlyPending;
+        $item->monthly_remaining_amount = max(0, $monthlyTarget - (float) $monthlyPaid);
+
+        return $item;
+    });
+
     return response()->json([
         'success' => true,
         'message' => 'Data pembayaran berhasil diambil',
@@ -593,8 +624,8 @@ public function Bukti_Diterima($id)
                 $bukti->siswa->update(['status' => 'Inactive']);
             }
         } elseif (! $isRegistrationPayment) {
-            $this->activateStudentAccount($bukti->siswa);
-            $studentActivated = true;
+            app(SiswaPaymentStatusService::class)->syncAfterPaymentValidation($bukti->siswa);
+            $studentActivated = strtolower((string) $bukti->siswa?->fresh()?->status) === 'active';
         }
 
         DB::commit();

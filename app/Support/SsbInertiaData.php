@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\User;
+use App\Services\SiswaPaymentStatusService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -623,7 +624,7 @@ class SsbInertiaData
             ->get();
 
         $monthlyDailyQuery = DB::table('pembayaran')
-            ->leftJoin('bukti_pembayaran', 'pembayaran.id_pembayaran', '=', 'bukti_pembayaran.id_pembayaran')
+            ->join('bukti_pembayaran', 'pembayaran.id_pembayaran', '=', 'bukti_pembayaran.id_pembayaran')
             ->join('siswa', 'pembayaran.id_siswa', '=', 'siswa.id_siswa')
             ->select(
                 'pembayaran.id_pembayaran',
@@ -633,10 +634,7 @@ class SsbInertiaData
                 'pembayaran.jumlah'
             )
             ->where('pembayaran.jenis', 'Harian')
-            ->where(function ($builder) {
-                $builder->whereNull('bukti_pembayaran.status')
-                    ->orWhereRaw('LOWER(bukti_pembayaran.status) <> ?', ['ditolak']);
-            });
+            ->whereRaw('LOWER(TRIM(bukti_pembayaran.status)) = ?', ['diterima']);
 
         if ($activeOnly) {
             $monthlyDailyQuery->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues());
@@ -657,8 +655,26 @@ class SsbInertiaData
             })
             ->map(fn ($items) => (float) $items->sum('jumlah'));
 
+        $monthlyDailyPendingTotals = DB::table('pembayaran')
+            ->join('bukti_pembayaran', 'pembayaran.id_pembayaran', '=', 'bukti_pembayaran.id_pembayaran')
+            ->join('siswa', 'pembayaran.id_siswa', '=', 'siswa.id_siswa')
+            ->select('pembayaran.id_pembayaran', 'pembayaran.id_siswa', 'pembayaran.periode', 'pembayaran.tanggal_bayar', 'pembayaran.jumlah')
+            ->where('pembayaran.jenis', 'Harian')
+            ->whereRaw('LOWER(TRIM(bukti_pembayaran.status)) = ?', ['menunggu validasi'])
+            ->when($activeOnly, fn ($builder) => $builder->whereIn(DB::raw('LOWER(COALESCE(siswa.status, ""))'), self::activeStatusValues()))
+            ->when($studentIds !== null, fn ($builder) => $builder->whereIn('pembayaran.id_siswa', $studentIds))
+            ->get()
+            ->unique('id_pembayaran')
+            ->groupBy(function ($row) {
+                $periodSource = $row->periode ?: $row->tanggal_bayar;
+                $month = substr((string) $periodSource, 0, 7);
+
+                return $row->id_siswa . '|' . $month;
+            })
+            ->map(fn ($items) => (float) $items->sum('jumlah'));
+
         return $rows
-            ->map(function ($row) use ($monthlyDailyTotals) {
+            ->map(function ($row) use ($monthlyDailyTotals, $monthlyDailyPendingTotals) {
                 $paymentType = strtolower(trim((string) $row->jenis));
                 $proofStatus = strtolower(trim((string) $row->status));
                 $isRegistration = $paymentType === 'pendaftaran';
@@ -666,8 +682,9 @@ class SsbInertiaData
                 $hasProofFile = filled($row->bukti_bayar);
                 $periodSource = $row->periode_pembayaran ?: $row->periode ?: $row->tanggal_bayar ?: $row->tanggal_bukti_bayar;
                 $month = substr((string) $periodSource, 0, 7);
-                $monthlyTarget = $isDaily ? 100000.0 : null;
+                $monthlyTarget = $isDaily ? SiswaPaymentStatusService::MONTHLY_TARGET : null;
                 $monthlyPaid = $isDaily ? (float) ($monthlyDailyTotals[$row->id_siswa . '|' . $month] ?? 0) : null;
+                $monthlyPending = $isDaily ? (float) ($monthlyDailyPendingTotals[$row->id_siswa . '|' . $month] ?? 0) : null;
                 $monthlyRemaining = $isDaily ? max(0, $monthlyTarget - $monthlyPaid) : null;
                 $statusLabel = match (true) {
                     in_array($proofStatus, ['diterima', 'lunas', 'sudah dibayar'], true) => 'Sudah Dibayar',
@@ -688,6 +705,7 @@ class SsbInertiaData
                     'amount' => (float) $row->jumlah,
                     'monthlyTarget' => $monthlyTarget,
                     'monthlyPaidAmount' => $monthlyPaid,
+                    'monthlyPendingAmount' => $monthlyPending,
                     'monthlyRemainingAmount' => $monthlyRemaining,
                     'paidDate' => $row->tanggal_bayar ?: $row->tanggal_bukti_bayar,
                     'period' => $row->periode_pembayaran ?: $row->periode,
@@ -859,22 +877,27 @@ class SsbInertiaData
         }
 
         $period = now()->format('Y-m');
-        $target = 100000.0;
+        $target = SiswaPaymentStatusService::MONTHLY_TARGET;
         $paid = (float) DB::table('pembayaran')
-            ->leftJoin('bukti_pembayaran', 'pembayaran.id_pembayaran', '=', 'bukti_pembayaran.id_pembayaran')
+            ->join('bukti_pembayaran', 'pembayaran.id_pembayaran', '=', 'bukti_pembayaran.id_pembayaran')
             ->whereIn('pembayaran.id_siswa', $studentIds)
             ->where('pembayaran.jenis', 'Harian')
             ->where('pembayaran.periode', 'like', $period . '%')
-            ->where(function ($query) {
-                $query->whereNull('bukti_pembayaran.status')
-                    ->orWhereRaw('LOWER(bukti_pembayaran.status) <> ?', ['ditolak']);
-            })
+            ->whereRaw('LOWER(TRIM(bukti_pembayaran.status)) = ?', ['diterima'])
+            ->sum('pembayaran.jumlah');
+        $pending = (float) DB::table('pembayaran')
+            ->join('bukti_pembayaran', 'pembayaran.id_pembayaran', '=', 'bukti_pembayaran.id_pembayaran')
+            ->whereIn('pembayaran.id_siswa', $studentIds)
+            ->where('pembayaran.jenis', 'Harian')
+            ->where('pembayaran.periode', 'like', $period . '%')
+            ->whereRaw('LOWER(TRIM(bukti_pembayaran.status)) = ?', ['menunggu validasi'])
             ->sum('pembayaran.jumlah');
         $remaining = max(0, $target - $paid);
 
         return [
             'targetAmount' => $target,
             'paidAmount' => $paid,
+            'pendingAmount' => $pending,
             'remainingAmount' => $remaining,
             'period' => $period,
             'periodLabel' => now()->locale('id')->translatedFormat('F Y'),
@@ -1032,6 +1055,16 @@ class SsbInertiaData
         session()->forget('show_child_picker_after_login');
 
         $firstStudent = $activeStudent;
+
+        if ($firstStudent) {
+            $syncedStudent = \App\Models\Siswa::with('pendaftaran')->find($firstStudent->id_siswa);
+
+            if ($syncedStudent) {
+                $syncedStudent = app(SiswaPaymentStatusService::class)->syncMonthlyStatus($syncedStudent);
+                $firstStudent->status = $syncedStudent->status;
+            }
+        }
+
         $studentIds = $firstStudent ? [$firstStudent->id_siswa] : [];
         $studentIsActive = $firstStudent
             ? strtolower((string) $firstStudent->status) === 'active'

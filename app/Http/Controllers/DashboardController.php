@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\Pendaftaran_Siswa;
 use App\Support\SsbInertiaData;
+use App\Services\SiswaPaymentStatusService;
 use Carbon\Carbon;
 use Inertia\Inertia;
 
@@ -243,12 +244,9 @@ public function adminSection(?string $section = null)
    
 public function siswaDashboard(Request $request)
 {
-    if (! $request->expectsJson()) {
-        return Inertia::render('parent/DasborOrangTua', SsbInertiaData::parentPayload());
-    }
-
     $user = Auth::user();
 
+    // 🔐 VALIDASI ROLE
     if ($user->role !== 'orang_tua') {
         return response()->json([
             'status' => false,
@@ -256,9 +254,18 @@ public function siswaDashboard(Request $request)
         ], 403);
     }
 
-    $selectedChildId = session('id_siswa');
+    // 🔎 AMBIL SISWA BERDASARKAN ANAK YANG DIPILIH DI setAnak
+    $selectedChildId = $request->route('id_siswa') ?? $request->id_siswa ?? session('id_siswa');
+    $orangTua = OrangTua::where('user_id', $user->id)->first();
 
-    $siswaQuery = $user->siswa();
+    if (!$orangTua) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Data orang tua tidak ditemukan'
+        ], 404);
+    }
+
+    $siswaQuery = Siswa::where('id_ortu', $orangTua->id_ortu);
 
     if ($selectedChildId) {
         $siswaQuery->where('id_siswa', $selectedChildId);
@@ -269,23 +276,109 @@ public function siswaDashboard(Request $request)
     if (!$siswa) {
         return response()->json([
             'status' => false,
-            'message' => 'Data siswa tidak ditemukan'
+            'message' => $selectedChildId
+                ? 'Anak yang dipilih tidak ditemukan atau tidak terkait dengan akun orang tua ini'
+                : 'Silakan pilih anak terlebih dahulu'
         ], 404);
     }
 
+    session(['id_siswa' => $siswa->id_siswa]);
+
+    $paymentStatusService = app(SiswaPaymentStatusService::class);
+    $siswa = $paymentStatusService->syncMonthlyStatus($siswa->loadMissing('pendaftaran'));
+
+    // 💰 PEMBAYARAN
     $pembayaranBelum = $siswa->pembayaran()
         ->whereIn('status', ['Belum', 'Lunas'])
-        ->whereIn('jenis', ['Pendaftaran', 'Bulanan'])
+        ->whereIn('jenis', ['Pendaftaran', 'Bulanan', 'Harian'])
         ->get();
 
+    $periodeBulanIni = now()->format('Y-m');
+    $periodeBulanSebelumnya = now()->subMonthNoOverflow()->format('Y-m');
+
+    $pembayaranBulanan = $paymentStatusService->monthlySummary($siswa, $periodeBulanIni);
+    $pembayaranBulanSebelumnya = $paymentStatusService->monthlySummary($siswa, $periodeBulanSebelumnya);
+
+    // 📊 KEHADIRAN (TAHUN INI)
+    $presensi = $siswa->presensi()
+        ->whereYear('created_at', now()->year)
+        ->get();
+
+    $total = $presensi->count();
+
+    $hadir = $presensi->where('status_kehadiran', 'Hadir')->count();
+    $sakit = $presensi->where('status_kehadiran', 'Sakit')->count();
+    $izin  = $presensi->where('status_kehadiran', 'Izin')->count();
+
+    $kehadiran = [
+        'hadir' => $total ? round(($hadir / $total) * 100) : 0,
+        'sakit' => $total ? round(($sakit / $total) * 100) : 0,
+        'izin'  => $total ? round(($izin / $total) * 100) : 0,
+    ];
+
+    // 📅 JADWAL LATIHAN
+    $jadwal = $siswa->jadwal()->get();
+
+    // 📈 PERFORMA (12 BULAN)
+    \Carbon\Carbon::setLocale('id'); // 🔥 BAHASA INDONESIA
+
+    $performaRaw = $siswa->performa()
+        ->whereYear('tanggal_penilaian', now()->year)
+        ->get()
+        ->groupBy(function ($item) {
+            return \Carbon\Carbon::parse($item->tanggal_penilaian)->format('m');
+        });
+
+    $performa = [];
+
+    for ($i = 1; $i <= 12; $i++) {
+        $bulanKey = str_pad($i, 2, '0', STR_PAD_LEFT);
+        $namaBulan = \Carbon\Carbon::create()->month($i)->translatedFormat('F');
+
+        if (isset($performaRaw[$bulanKey])) {
+            $data = $performaRaw[$bulanKey];
+
+            $performa[] = [
+                'bulan' => $namaBulan,
+                'dribbling' => round($data->avg('dribbling')),
+                'passing'   => round($data->avg('passing')),
+                'shooting'  => round($data->avg('shooting')),
+            ];
+        } else {
+            $performa[] = [
+                'bulan' => $namaBulan,
+                'dribbling' => 0,
+                'passing'   => 0,
+                'shooting'  => 0,
+            ];
+        }
+    }
+
+    // 🏆 PRESTASI
+    $prestasi = $siswa->pencapaian;
+
+    // 📝 CATATAN PELATIH
+    $catatan = $siswa->catatan()->latest()->get();
+
+    // 🚀 RESPONSE FINAL
     return response()->json([
         'status' => true,
         'message' => 'Dashboard siswa',
         'data' => [
             'nama_siswa' => $siswa->nama_siswa,
+            'id_siswa' => $siswa->id_siswa,
+            'selected_child_id' => $siswa->id_siswa,
             'userName' => $user->name,
             'status_siswa' => $siswa->status,
-            'pembayaranBelum' => $pembayaranBelum
+
+            'pembayaranBelum' => $pembayaranBelum,
+            'pembayaran_bulanan' => $pembayaranBulanan,
+            'pembayaran_bulan_sebelumnya' => $pembayaranBulanSebelumnya,
+            'kehadiran' => $kehadiran,
+            'jadwal' => $jadwal,
+            'performa' => $performa,
+            'prestasi' => $prestasi,
+            'catatan' => $catatan,
         ]
     ]);
 }
