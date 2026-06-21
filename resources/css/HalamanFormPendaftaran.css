@@ -1,582 +1,1086 @@
+
 .enrollPage {
+  
   min-height: 100vh;
+  
   background: #ffffff;
+  
   color: #111111;
+  
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+
 }
+
 
 .enrollTopbar {
+  
   background: rgba(255, 255, 255, 0.96);
+  
   border-bottom: 1px solid #e5e7eb;
+  
   position: sticky;
+  
   top: 0;
+  
   z-index: 40;
+  
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+
 }
+
 
 .enrollTopInner {
+  
   width: 1180px;
+  
   max-width: calc(100% - 24px);
+  
   min-height: 56px;
+  
   margin: 0 auto;
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 10px;
+
 }
+
 
 .enrollLogoBtn {
+  
   border: 0;
+  
   background: transparent;
+  
   padding: 0;
+  
   display: grid;
+  
   place-items: center;
+  
   cursor: pointer;
+
 }
+
 
 .enrollLogoBtn img {
+  
   width: 30px;
+  
   height: 30px;
+  
   object-fit: contain;
+
 }
 
+
 .enrollNavLinks {
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 8px;
+
 }
+
 
 
 .enrollNavLinks button {
+  
   border: 0;
+  
   background: transparent;
+  
   color: #334155;
+  
   font-size: 13px;
+  
   font-weight: 600;
+  
   height: 36px;
+  
   padding: 0 14px;
+  
   border-radius: 12px;
+  
   cursor: pointer;
+  
   transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+
 }
+
 
 .enrollNavLinks button.is-active {
+  
   background: #eef7e8;
+  
   color: #4f982b;
+  
   box-shadow: inset 0 0 0 1px rgba(79, 152, 43, 0.14);
+
 }
+
 
 .enrollNavLinks button:hover {
+  
   background: #f8fafc;
+
 }
 
+
 .enrollIconBtn {
+  
   display: flex;
+  
   flex-direction: row;
+  
   align-items: center;
+  
   gap: 8px;
 
+  
   white-space: nowrap; /* jaga layout tetap satu baris */
+
 }
 
+
 .enrollIconBtn img {
+  
   width: 24px;
+  
   height: 24px;
+
 }
+
 
 .profileName {
+  
   font-size: 14px;
+  
   white-space: nowrap;
 
+  
   max-width: 120px;        /* batas panjang */
+  
   overflow: hidden;        /* sembunyikan sisa */
+  
   text-overflow: ellipsis; /* jadi ... */
+
 }
+
 
 .enrollNavRight {
+  
   margin-left: auto;
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 5px;
+
 }
+
 
 .enrollIconBtn {
+  
   width: 32px;
+  
   height: 32px;
+  
   border: 0;
+  
   background: transparent;
 
+  
   cursor: pointer;
+
 }
+
 
 .enrollIconBtn img {
+  
   width: 20px;
+  
   height: 20px;
+  
   object-fit: contain;
+  
   opacity: 0.9;
+  
   filter: brightness(0) saturate(100%) invert(23%) sepia(14%) saturate(1004%) hue-rotate(176deg) brightness(93%) contrast(90%);
+
 }
+
 
 .enrollMain {
+  
   padding: 20px 0 40px;
+  
   background: #f8fafc;
+
 }
+
 
 .enrollContainer {
+  
   width: 1000px;
+  
   max-width: calc(100% - 48px);
+  
   margin: 0 auto;
+  
   background: #ffffff;
+  
   border-radius: 24px;
+  
   padding: 24px;
+  
   box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+
 }
+
 
 .enrollContainer h1 {
+  
   margin: 0;
+  
   font-size: 40px;
+  
   font-weight: 700;
+  
   line-height: 1.1;
+
 }
+
 
 .enrollForm {
+  
   margin-top: 16px;
+
 }
+
 
 .enrollTextGrid {
+  
   display: grid;
+  
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  
   gap: 12px 18px;
+
 }
+
 
 .enrollTextGrid label span {
+  
   display: block;
+  
   margin-bottom: 6px;
+  
   font-size: 15px;
+  
   font-weight: 600;
+
 }
+
 
 .enrollTextGrid input {
+  
   width: 100%;
+  
   height: 44px;
+  
   border-radius: 999px;
+  
   border: 1px solid #b1b1b1;
+  
   background: #ffffff;
+  
   padding: 0 14px;
+  
   font-size: 14px;
+  
   outline: none;
+
 }
+
 
 .enrollTextGrid input:focus {
+  
   border-color: #69a847;
+  
   box-shadow: 0 0 0 3px rgba(105, 168, 71, 0.16);
+
 }
+
 
 .enrollUploadGrid {
+  
   margin-top: 34px;
+  
   display: grid;
+  
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  
   gap: 28px 20px;
+
 }
+
 
 .enrollUploadItem p {
+  
   margin: 0 0 8px;
+  
   font-size: 15px;
+  
   font-weight: 600;
+  
   line-height: 1.35;
+
 }
+
 
 .enrollUploadControl {
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 14px;
+  
   min-height: 36px;
+
 }
+
 
 .enrollUploadItem input {
+  
   position: absolute;
+  
   width: 1px;
+  
   height: 1px;
+  
   overflow: hidden;
+  
   clip: rect(0 0 0 0);
+  
   white-space: nowrap;
+  
   clip-path: inset(50%);
+
 }
+
 
 .enrollUploadBtn {
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   width: 92px;
+  
   height: 32px;
+  
   flex: 0 0 92px;
+  
   border-radius: 999px;
+  
   border: 0;
+  
   background: #4f982b;
+  
   color: #ffffff;
+  
   font-size: 12px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+
 }
+
 
 .enrollUploadHint {
+  
   display: block;
+  
   min-width: 0;
+  
   color: #111827;
+  
   font-size: 13px;
+  
   line-height: 1.35;
+
 }
+
 
 .enrollFileName {
+  
   display: block;
+  
   margin-top: 6px;
+  
   font-size: 12px;
+  
   color: #4b5563;
+  
   max-width: 100%;
+  
   white-space: nowrap;
+  
   overflow: hidden;
+  
   text-overflow: ellipsis;
+
 }
+
 
 .enrollFileRow {
+  
   margin-top: 6px;
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 10px;
+
 }
+
 
 .enrollFileNameBtn {
+  
   border: 0;
+  
   background: transparent;
+  
   padding: 0;
+  
   max-width: 220px;
+  
   font-size: 12px;
+  
   color: #2563eb;
+  
   text-decoration: underline;
+  
   text-align: left;
+  
   white-space: nowrap;
+  
   overflow: hidden;
+  
   text-overflow: ellipsis;
+  
   cursor: pointer;
+
 }
+
 
 .enrollFileDeleteBtn {
+  
   border: 0;
+  
   background: transparent;
+  
   padding: 0;
+  
   font-size: 12px;
+  
   font-weight: 600;
+  
   color: #dc2626;
+  
   cursor: pointer;
+
 }
+
 
 .enrollWarningTitleRow {
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 10px;
+
 }
+
 
 .enrollWarningIcon {
+  
   width: 24px;
+  
   height: 24px;
+  
   border-radius: 999px;
+  
   background: #f2cf62;
+  
   display: grid;
+  
   place-items: center;
+  
   color: #2d2d2d;
+  
   font-size: 14px;
+  
   font-weight: 800;
+
 }
+
 
 .enrollWarningModal h2 {
+  
   margin: 0;
+  
   font-size: 30px;
+  
   font-weight: 700;
+  
   line-height: 1;
+
 }
+
 
 .enrollWarningModal p {
+  
   margin: 10px 0 0;
+  
   font-size: 13px;
+  
   line-height: 1.45;
+  
   font-weight: 400;
+  
   color: #1f2937;
+
 }
+
 
 .enrollWarningModal strong {
+  
   font-weight: 700;
+  
   color: #111827;
+
 }
+
 
 .enrollWarningModal ol {
+  
   margin: 4px 0 0 18px;
+  
   padding: 0;
+
 }
+
 
 .enrollWarningModal li {
+  
   font-size: 13px;
+  
   line-height: 1.35;
+  
   font-weight: 400;
+  
   color: #1f2937;
+
 }
+
 
 .enrollWarningActions {
+  
   margin-top: 24px;
+  
   display: flex;
+  
   justify-content: center;
+
 }
+
 
 .enrollWarningTrigger {
+  
   min-width: 0;
+  
   height: 40px;
+  
   padding: 0 18px;
+  
   border: 1px solid #d7e3ce;
+  
   border-radius: 12px;
+  
   background: #ffffff;
+  
   color: #476132;
+  
   font-size: 14px;
+  
   font-weight: 600;
+  
   line-height: 1;
+  
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
+  
   cursor: pointer;
+  
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
 }
+
 
 .enrollWarningTrigger:hover {
+  
   background: #f8fbf6;
+  
   border-color: #bfd4b1;
+  
   box-shadow: 0 8px 18px rgba(79, 152, 43, 0.1);
+
 }
+
 
 .enrollWarningOverlay {
+  
   position: fixed;
+  
   inset: 0;
+  
   z-index: 120;
+  
   background: rgba(15, 23, 42, 0.38);
+  
   display: grid;
+  
   place-items: center;
+  
   padding: 20px;
+
 }
+
 
 .enrollWarningModal {
+  
   position: relative;
+  
   width: min(100%, 950px);
+  
   background: #ffffff;
+  
   border: 1px solid #d8dee6;
+  
   border-radius: 24px;
+  
   box-shadow: 0 24px 56px rgba(15, 23, 42, 0.18);
+  
   padding: 26px 24px 22px;
+
 }
+
 
 .enrollWarningClose {
+  
   position: absolute;
+  
   top: 16px;
+  
   right: 16px;
+  
   width: 38px;
+  
   height: 38px;
+  
   border: 0;
+  
   border-radius: 999px;
+  
   background: #f3f4f6;
+  
   color: #475569;
+  
   font-size: 26px;
+  
   line-height: 1;
+  
   cursor: pointer;
+
 }
+
 
 .enrollSubmitBtn {
+  
   display: block;
+  
   margin: 28px auto 0;
+  
   min-width: 120px;
+  
   height: 44px;
+  
   border-radius: 999px;
+  
   border: 0;
+  
   background: #4f982b;
+  
   color: #ffffff;
+  
   font-size: 16px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+  
   line-height: 1;
+  
   padding: 0 22px;
+
 }
+
 
 .enrollSubmitBtn:disabled {
+  
   opacity: 0.45;
+  
   cursor: not-allowed;
+
 }
+
 
 .enrollSuccessOverlay {
+  
   position: fixed;
+  
   inset: 0;
+  
   background: rgba(0, 0, 0, 0.35);
+  
   z-index: 100;
+  
   display: grid;
+  
   place-items: center;
+  
   padding: 16px;
+
 }
+
 
 .enrollSuccessCard {
+  
   width: min(100%, 640px);
+  
   background: #fff;
+  
   border-radius: 12px;
+  
   box-shadow: 0 20px 34px rgba(0, 0, 0, 0.2);
+  
   padding: 26px 22px 18px;
+  
   text-align: center;
+
 }
+
 
 .enrollSuccessIcon {
+  
   width: 60px;
+  
   height: 60px;
+  
   margin: 0 auto 14px;
+  
   border-radius: 999px;
+  
   background: #2fb50a;
+  
   color: #fff;
+  
   font-size: 42px;
+  
   line-height: 54px;
+  
   font-weight: 700;
+
 }
+
 
 .enrollSuccessCard p {
+  
   margin: 10px 0 0;
+  
   font-size: 16px;
+  
   line-height: 1.35;
+
 }
+
 
 .enrollSuccessBtn {
+  
   margin-top: 18px;
+  
   min-width: 130px;
+  
   height: 40px;
+  
   border: 0;
+  
   border-radius: 10px;
+  
   background: #4f982b;
+  
   color: #fff;
+  
   font-size: 18px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+
 }
+
 
 .enrollSuccessActions {
+  
   margin-top: 18px;
+  
   display: flex;
+  
   justify-content: center;
+  
   gap: 10px;
+  
   flex-wrap: wrap;
+
 }
+
 
 .enrollSuccessActions .enrollSuccessBtn {
+  
   margin-top: 0;
+
 }
+
 
 .enrollSuccessBtnGhost {
+  
   min-width: 130px;
+  
   height: 40px;
+  
   border: 1px solid #cbd5e1;
+  
   border-radius: 10px;
+  
   background: #ffffff;
+  
   color: #334155;
+  
   font-size: 16px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+
 }
 
+
 @media (max-width: 900px) {
+  
   .enrollMain {
+    
     padding-top: 16px;
+  
   }
 
+  
   .enrollContainer {
+    
     max-width: calc(100% - 24px);
+    
     padding: 18px 16px;
+    
     border-radius: 18px;
+  
   }
 
+  
   .enrollContainer h1 {
+    
     font-size: 16px;
+  
   }
 
+  
   .enrollTextGrid {
+    
     grid-template-columns: 1fr;
+  
   }
 
+  
   .enrollUploadGrid {
+    
     margin-top: 20px;
+    
     grid-template-columns: 1fr;
+    
     gap: 16px;
+  
   }
 
+  
   .enrollUploadControl {
+    
     align-items: flex-start;
+    
     gap: 10px;
+  
   }
 
+  
   .enrollUploadHint {
+    
     padding-top: 6px;
+    
     font-size: 12px;
+  
   }
 
+  
   .enrollWarningActions {
+    
     margin-top: 22px;
+  
   }
 
+  
   .enrollWarningTrigger {
+    
     width: auto;
+    
     max-width: 100%;
+    
     min-width: 0;
+    
     height: 38px;
+    
     font-size: 14px;
+    
     padding: 0 16px;
+  
   }
 
+  
   .enrollWarningModal {
+    
     border-radius: 18px;
+    
     padding: 22px 16px 18px;
+  
   }
 
+  
   .enrollWarningClose {
+    
     top: 12px;
+    
     right: 12px;
+    
     width: 34px;
+    
     height: 34px;
+    
     font-size: 22px;
+  
   }
 
+  
   .enrollWarningModal h2 {
+    
     font-size: 24px;
+  
   }
 
+  
   .enrollWarningModal p,
+  
   .enrollWarningModal li {
+    
     font-size: 12px;
+  
   }
 
+  
   .enrollSubmitBtn {
+    
     margin-top: 20px;
+    
     height: 36px;
+    
     font-size: 21px;
+  
   }
 
+  
   .enrollSuccessCard {
+    
     padding: 20px 14px 16px;
+  
   }
 
+  
   .enrollSuccessIcon {
+    
     width: 52px;
+    
     height: 52px;
+    
     font-size: 34px;
+    
     line-height: 48px;
+  
   }
 
+  
   .enrollSuccessCard p {
+    
     font-size: 14px;
+  
   }
 
+  
   .enrollSuccessBtn {
+    
     min-width: 112px;
+    
     height: 36px;
+    
     font-size: 16px;
+  
   }
 
+  
   .enrollSuccessBtnGhost {
+    
     min-width: 112px;
+    
     height: 36px;
+    
     font-size: 14px;
+  
   }
+
 }

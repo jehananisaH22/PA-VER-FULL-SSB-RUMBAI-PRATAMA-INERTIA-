@@ -1,861 +1,1592 @@
+
 .coachGridAttendance {
+  
   margin-top: 12px;
+  
   display: grid;
+  
   grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+  
   gap: 12px;
+
 }
+
 
 .coachAttendanceInputCard,
+
 .coachAttendanceTableCard {
+  
   min-height: 470px;
+  
   padding: 20px 22px;
+  
   border-color: #dfe5ec;
+  
   box-shadow: 0 4px 14px rgba(17, 24, 39, 0.04);
+
 }
+
 
 .coachAttendanceInputCard {
+  
   display: flex;
+  
   flex-direction: column;
+
 }
+
 
 .coachAttendanceInputCard h2,
-.coachAttendanceTableCard h2 {
-  margin: 0;
-  font-size: 26px;
-  line-height: 1.2;
-  font-weight: 700;
-  color: #111827;
-}
 
 .coachAttendanceTableCard h2 {
-  margin-bottom: 12px;
+  
+  margin: 0;
+  
+  font-size: 26px;
+  
+  line-height: 1.2;
+  
+  font-weight: 700;
+  
+  color: #111827;
+
 }
+
+
+.coachAttendanceTableCard h2 {
+  
+  margin-bottom: 12px;
+
+}
+
 
 .coachFieldLabel {
+  
   display: block;
+  
   margin-top: 18px;
+  
   margin-bottom: 8px;
+  
   font-size: 14px;
+  
   font-weight: 600;
+  
   color: #334155;
+
 }
+
 
 .coachAttendanceSelect {
+  
   margin-top: 0;
+  
   width: 100%;
+  
   min-width: 0;
+
 }
+
 
 .coachAttendanceSelect .coachSoftSelectTrigger {
+  
   min-height: 54px;
+  
   height: auto;
+  
   padding-top: 10px;
+  
   padding-bottom: 10px;
+  
   align-items: flex-start;
+  
   gap: 10px;
+
 }
+
 
 .coachAttendanceSelect .coachSoftSelectLabel {
+  
   flex: 1;
+  
   min-width: 0;
+  
   text-align: left;
+  
   line-height: 1.35;
+  
   font-size: 13px;
+  
   font-weight: 600;
+  
   word-break: break-word;
+
 }
+
 
 .coachAttendanceSelect .coachSoftSelectChevron {
+  
   flex-shrink: 0;
+  
   margin-top: 2px;
+
 }
+
 
 .coachAttendanceSelect .coachSoftSelectOption {
+  
   padding-top: 10px;
+  
   padding-bottom: 10px;
+
 }
+
 
 .coachAttendanceSelect .coachSoftSelectOptionLabel {
+  
   display: block;
+  
   line-height: 1.4;
+  
   word-break: break-word;
+
 }
+
 
 .coachAttendanceSelect .coachSoftSelectTrigger:disabled {
+  
   cursor: not-allowed;
+  
   opacity: 0.7;
+  
   background: #f8fafc;
+
 }
+
 
 .coachFieldHint {
+  
   margin: 8px 0 0;
+  
   font-size: 13px;
+  
   line-height: 1.5;
+  
   color: #64748b;
+
 }
+
 
 .coachScheduleMetaBox {
+  
   margin-top: 12px;
+  
   padding: 12px 14px;
+  
   border: 1px solid #dbe7d2;
+  
   border-radius: 14px;
+  
   background: linear-gradient(180deg, #f6fbf1 0%, #eef7e7 100%);
+
 }
+
 
 .coachScheduleMetaLabel {
+  
   display: block;
+  
   margin-bottom: 4px;
+  
   font-size: 12px;
+  
   font-weight: 700;
+  
   letter-spacing: 0.02em;
+  
   color: #5f7c49;
+  
   text-transform: uppercase;
+
 }
+
 
 .coachScheduleMetaBox strong {
+  
   display: block;
+  
   font-size: 14px;
+  
   line-height: 1.5;
+  
   color: #1f2937;
+
 }
+
 
 .coachDateField {
+  
   position: relative;
+  
   display: block;
+  
   margin-top: 2px;
+
 }
+
 
 .coachDatePicker {
+  
   position: relative;
+  
   width: 100%;
+
 }
+
 
 .coachDatePickerTrigger {
+  
   width: 100%;
+  
   min-width: 0;
+  
   height: 42px;
+  
   border: 1px solid #d6dee8;
+  
   border-radius: 12px;
+  
   padding: 0 12px 0 14px;
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+  
   gap: 12px;
+  
   font-size: 14px;
+  
   font-weight: 600;
+  
   color: #1f2937;
+  
   background: #ffffff;
+  
   outline: none;
+  
   cursor: pointer;
+  
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
 }
+
 
 .coachDatePickerTrigger:hover,
+
 .coachDatePicker.is-open .coachDatePickerTrigger {
+  
   border-color: #8fcd69;
+  
   box-shadow: 0 0 0 3px rgba(143, 205, 105, 0.14);
+
 }
+
 
 .coachDatePickerTrigger:disabled {
+  
   cursor: not-allowed;
+  
   color: #334155;
+  
   background: #f8fafc;
+  
   border-color: #dbe7d2;
+  
   box-shadow: none;
+
 }
+
 
 .coachDatePickerTrigger svg {
+  
   width: 18px;
+  
   height: 18px;
+  
   flex-shrink: 0;
+  
   fill: none;
+  
   stroke: #1f2937;
+  
   stroke-width: 1.8;
+  
   stroke-linecap: round;
+  
   stroke-linejoin: round;
+
 }
+
 
 .coachCalendarPanel {
+  
   position: fixed;
+  
   z-index: 1400;
+  
   max-width: calc(100vw - 32px);
+  
   max-height: calc(100vh - 24px);
+  
   padding: 12px;
+  
   border: 1px solid #bfe3b2;
+  
   border-radius: 16px;
+  
   background: #ffffff;
+  
   box-shadow: 0 18px 42px rgba(31, 41, 55, 0.14);
+  
   overflow: auto;
+
 }
+
 
 .coachCalendarHead {
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+  
   gap: 12px;
+  
   margin-bottom: 10px;
+
 }
+
 
 .coachCalendarHead strong {
+  
   color: #111827;
+  
   font-size: 14px;
+  
   font-weight: 800;
+
 }
+
 
 .coachCalendarNav {
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 6px;
+
 }
+
 
 .coachCalendarNav button {
+  
   width: 32px;
+  
   height: 32px;
+  
   border: 0;
+  
   border-radius: 10px;
+  
   background: #f1faed;
+  
   color: #2f5f2b;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   cursor: pointer;
+
 }
+
 
 .coachCalendarNav button:hover {
+  
   background: #e3f4da;
+
 }
+
 
 .coachCalendarNav svg {
+  
   width: 18px;
+  
   height: 18px;
+  
   fill: none;
+  
   stroke: currentColor;
+  
   stroke-width: 2.2;
+  
   stroke-linecap: round;
+  
   stroke-linejoin: round;
+
 }
+
 
 .coachCalendarWeekdays,
+
 .coachCalendarGrid {
+  
   display: grid;
+  
   grid-template-columns: repeat(7, minmax(0, 1fr));
+
 }
+
 
 .coachCalendarWeekdays {
+  
   margin-bottom: 4px;
+
 }
+
 
 .coachCalendarWeekdays span {
+  
   height: 22px;
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   color: #64748b;
+  
   font-size: 12px;
+  
   font-weight: 800;
+
 }
+
 
 .coachCalendarGrid {
+  
   row-gap: 2px;
+
 }
+
 
 .coachCalendarDay {
+  
   width: 30px;
+  
   height: 30px;
+  
   margin: 0 auto;
+  
   border: 1px solid transparent;
+  
   border-radius: 10px;
+  
   background: transparent;
+  
   color: #111827;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   font-size: 13px;
+  
   font-weight: 800;
+  
   cursor: pointer;
+
 }
+
 
 .coachCalendarDay:hover {
+  
   background: #f1faed;
+
 }
+
 
 .coachCalendarDay.isOutside {
+  
   color: #94a3b8;
+
 }
+
 
 .coachCalendarDay.isToday {
+  
   border-color: #acd89c;
+
 }
+
 
 .coachCalendarDay.isSelected {
+  
   border-color: #7bbf65;
+  
   background: #dff0d7;
+  
   color: #24591d;
+
 }
+
 
 .coachCalendarDay.isDisabled,
+
 .coachCalendarDay:disabled {
+  
   color: #cbd5e1;
+  
   background: #f8fafc;
+  
   cursor: not-allowed;
+
 }
+
 
 .coachCalendarTodayBtn {
+  
   margin-top: 8px;
+  
   min-height: 34px;
+  
   border: 0;
+  
   border-radius: 10px;
+  
   padding: 0 14px;
+  
   background: #f1faed;
+  
   color: #2f6b2a;
+  
   font-size: 14px;
+  
   font-weight: 800;
+  
   cursor: pointer;
+
 }
+
 
 .coachCalendarTodayBtn:hover {
+  
   background: #e3f4da;
+
 }
+
 
 .coachCalendarTodayBtn:disabled {
+  
   color: #cbd5e1;
+  
   background: #f8fafc;
+  
   cursor: not-allowed;
+
 }
+
 
 .coachAttendanceSubmitBtn {
+  
   margin-top: clamp(14px, 4vw, 22px);
+  
   align-self: center;
+  
   width: 150px;
+  
   min-height: 44px;
+  
   border: 0;
+  
   border-radius: 999px;
+  
   background: linear-gradient(135deg, #6bc237, #4f9f27);
+  
   color: #ffffff;
+  
   font-size: 14px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+
 }
+
 
 .coachAttendanceSubmitBtn:disabled {
+  
   background: #d1d5db;
+  
   color: #f9fafb;
+  
   cursor: not-allowed;
+
 }
+
 
 .coachAttendanceToast {
+  
   position: fixed;
+  
   top: 92px;
+  
   right: 24px;
+  
   z-index: 1300;
+  
   width: min(430px, calc(100vw - 32px));
+  
   min-height: 92px;
+  
   padding: 18px 54px 18px 22px;
+  
   border: 1px solid #cfe8c3;
+  
   border-left: 6px solid #36a852;
+  
   border-radius: 14px;
+  
   background: #f2fbec;
+  
   color: #24591d;
+  
   box-shadow: 0 18px 44px rgba(15, 23, 42, 0.16);
+  
   font-size: 14px;
+  
   font-weight: 700;
+  
   display: block;
+  
   animation: coachToastEnter 0.28s ease both;
+
 }
+
 
 .coachAttendanceToast.isError {
+  
   border-color: #fecaca;
+  
   background: #fff1f2;
+  
   color: #b91c1c;
+
 }
+
 
 .coachAttendanceToastText {
+  
   min-width: 0;
+  
   display: grid;
+  
   gap: 8px;
+
 }
+
 
 .coachAttendanceToastText strong,
-.coachAttendanceToastText span {
-  display: block;
-}
 
 .coachAttendanceToastText span {
-  line-height: 1.45;
-  font-weight: 600;
-  color: #4b6150;
+  
+  display: block;
+
 }
+
+
+.coachAttendanceToastText span {
+  
+  line-height: 1.45;
+  
+  font-weight: 600;
+  
+  color: #4b6150;
+
+}
+
 
 .coachAttendanceToastClose {
+  
   position: absolute;
+  
   top: 14px;
+  
   right: 14px;
+  
   width: 30px;
+  
   height: 30px;
+  
   border: 0;
+  
   border-radius: 999px;
+  
   background: rgba(36, 89, 29, 0.08);
+  
   color: currentColor;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   flex-shrink: 0;
+  
   font-size: 14px;
+  
   font-weight: 800;
+  
   line-height: 1;
+  
   cursor: pointer;
+
 }
+
 
 .coachAttendanceToastClose:hover {
+  
   background: rgba(36, 89, 29, 0.14);
+
 }
+
 
 .coachStatusChips {
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 10px;
+  
   margin-left: 0;
+  
   flex-wrap: wrap;
+
 }
+
 
 .coachAttendanceTableCard .coachTableWrap {
+  
   overflow-x: hidden;
+
 }
+
 
 .coachAttendanceTableCard .coachTable {
+  
   table-layout: fixed;
+
 }
+
 
 .coachAttendanceTableCard .coachTable th:nth-child(1),
+
 .coachAttendanceTableCard .coachTable td:nth-child(1) {
+  
   width: 52px;
+
 }
+
 
 .coachAttendanceTableCard .coachTable th:nth-child(2),
+
 .coachAttendanceTableCard .coachTable td:nth-child(2) {
+  
   width: 240px;
+
 }
+
 
 .coachAttendanceTableCard .coachTable th:nth-child(3),
+
 .coachAttendanceTableCard .coachTable td:nth-child(3) {
+  
   width: auto;
+  
   padding-left: 8px;
+
 }
+
 
 .coachStatusChip {
+  
   height: 32px;
+  
   min-width: 74px;
+  
   padding: 0 12px;
+  
   border-radius: 999px;
+  
   border: 1px solid #d1d5db;
+  
   background: #ffffff;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   font-size: 14px;
+  
   font-weight: 600;
+  
   cursor: pointer;
+  
   transition: all 0.18s ease;
+
 }
+
 
 .coachStatusChip span {
+  
   line-height: 1;
+
 }
+
 
 .coachStatusChip.is-hadir {
+  
   color: #3f7d23;
+  
   border-color: #b8dca6;
+
 }
+
 
 .coachStatusChip.is-alpha {
+  
   color: #a16207;
+  
   border-color: #f3d07c;
+
 }
+
 
 .coachStatusChip.is-sakit {
+  
   color: #b91c1c;
+  
   border-color: #f0b3b3;
+
 }
+
 
 .coachStatusChip.is-hadir.is-active {
+  
   background: #5dae2f;
+  
   border-color: #5dae2f;
+  
   color: #ffffff;
+
 }
+
 
 .coachStatusChip.is-alpha.is-active {
+  
   background: #eab308;
+  
   border-color: #eab308;
+  
   color: #ffffff;
+
 }
+
 
 .coachStatusChip.is-sakit.is-active {
+  
   background: #ef4444;
+  
   border-color: #ef4444;
+  
   color: #ffffff;
+
 }
+
 
 .coachStatusChip:hover {
+  
   transform: translateY(-1px);
+  
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+
 }
+
 
 .coachRecapFilters {
+  
   display: grid;
+  
   grid-template-columns: minmax(128px, 0.72fr) minmax(116px, 0.62fr) minmax(220px, 1.3fr);
+  
   align-items: center;
+  
   gap: 10px;
+  
   justify-content: end;
+  
   width: min(100%, 640px);
+
 }
+
 
 .coachRecapSelect {
+  
   min-width: 0;
+  
   max-width: none;
+
 }
+
 
 .coachRecapCard {
+  
   padding: 24px 22px 18px;
+  
   border-color: #dfe5ec;
+  
   box-shadow: 0 4px 14px rgba(17, 24, 39, 0.04);
+
 }
+
 
 .coachRecapCard .coachTableHead {
+  
   display: grid;
+  
   grid-template-columns: minmax(260px, 1fr) minmax(500px, 640px);
+  
   align-items: start;
+  
   gap: 18px;
+  
   margin-bottom: 18px;
+
 }
+
 
 .coachRecapCard h2 {
+  
   margin: 0;
+  
   font-size: 24px;
+  
   line-height: 1.25;
+  
   font-weight: 700;
+  
   color: #0f172a;
+
 }
+
 
 .coachRecapCard .coachRecapSelect {
+  
   min-width: 0;
+
 }
+
 
 .coachRecapCard .coachRecapSelect .coachSoftSelectTrigger {
+  
   height: 42px;
+  
   border-radius: 12px;
+
 }
+
 
 .coachRecapCard .coachRecapSelect .coachSoftSelectLabel,
+
 .coachRecapCard .coachRecapSelect .coachSoftSelectTrigger > span:first-child {
+  
   min-width: 0;
+  
   overflow: hidden;
+  
   text-overflow: ellipsis;
+  
   white-space: nowrap;
+
 }
+
 
 .coachRecapCard .coachTableWrap {
+  
   margin-top: 2px;
+  
   overflow-x: auto;
+  
   min-height: 196px;
+
 }
+
 
 .coachRecapCard .coachTable {
+  
   table-layout: auto;
+
 }
+
 
 .coachAttendanceMatrixTable {
+  
   min-width: 1120px;
+
 }
+
 
 .coachAttendanceExtraMatrixTable {
+  
   min-width: 860px;
+
 }
+
 
 .coachAdditionalRecapBlock {
+  
   margin-top: 18px;
+
 }
+
 
 .coachAdditionalRecapHead {
+  
   display: flex;
+  
   align-items: flex-start;
+  
   justify-content: space-between;
+  
   gap: 16px;
+  
   margin-bottom: 10px;
+
 }
+
 
 .coachAdditionalRecapHead h2 {
+  
   margin: 0;
+
 }
+
 
 .coachAdditionalRecapHead p {
+  
   margin: 4px 0 0;
+  
   color: #64748b;
+  
   font-size: 13px;
+  
   font-weight: 600;
+
 }
+
 
 .coachRecapCard .coachTable th {
+  
   padding-top: 10px;
+  
   padding-bottom: 10px;
+
 }
+
 
 .coachRecapCard .coachTable td {
+  
   color: #334155;
+
 }
+
 
 .coachAttendanceMatrixTable th,
+
 .coachAttendanceMatrixTable td {
+  
   text-align: center;
+  
   vertical-align: middle;
+
 }
+
 
 .coachAttendanceMatrixTable th:nth-child(2),
+
 .coachAttendanceMatrixTable td:nth-child(2) {
+  
   min-width: 190px;
+  
   text-align: left;
+
 }
+
 
 .coachAttendanceMatrixTable th:nth-child(3),
+
 .coachAttendanceMatrixTable td:nth-child(3) {
+  
   min-width: 110px;
+
 }
+
 
 .coachMeetingHead {
+  
   display: grid;
+  
   gap: 2px;
+  
   justify-items: center;
+  
   line-height: 1.1;
+
 }
+
 
 .coachMeetingHead span {
+  
   font-size: 13px;
+  
   font-weight: 800;
+
 }
+
 
 .coachMeetingHead small {
+  
   font-size: 10px;
+  
   font-weight: 700;
+  
   color: #64748b;
+
 }
+
 
 .coachAttendanceStatusBadge {
+  
   min-width: 64px;
+  
   min-height: 26px;
+  
   border-radius: 999px;
+  
   padding: 5px 10px;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   border: 1px solid #dbe3ee;
+  
   background: #f8fafc;
+  
   color: #64748b;
+  
   font-size: 12px;
+  
   font-weight: 800;
+
 }
+
 
 .coachAttendanceStatusBadge.is-hadir {
+  
   border-color: #9ed485;
+  
   background: #dff2d6;
+  
   color: #2f6420;
+
 }
+
 
 .coachAttendanceStatusBadge.is-alpha {
+  
   border-color: #f2d47b;
+  
   background: #fef3c7;
+  
   color: #92400e;
+
 }
+
 
 .coachAttendanceStatusBadge.is-sakit {
+  
   border-color: #f0aaaa;
+  
   background: #fee2e2;
+  
   color: #b91c1c;
+
 }
+
 
 .coachAttendanceStatusBadge.is-empty {
+  
   color: #94a3b8;
+
 }
+
 
 .coachMeetingDate {
+  
   display: block;
+  
   margin-top: 4px;
+  
   color: #64748b;
+  
   font-size: 11px;
+  
   font-weight: 700;
+
 }
+
 
 .coachCategoryHeaderSoftSelect {
+  
   width: 100%;
+
 }
+
 
 .coachCategoryHeaderSoftSelect .coachSoftSelectTrigger {
+  
   height: 30px;
+  
   border: 0;
+  
   border-radius: 8px;
+  
   background: transparent;
+  
   color: #111827;
+  
   font-size: 14px;
+  
   font-weight: 700;
+  
   padding: 0 22px 0 0;
+  
   box-shadow: none;
+
 }
+
 
 .coachCategoryHeaderSoftSelect .coachSoftSelectTrigger:hover {
+  
   border-color: transparent;
+
 }
+
 
 .coachCategoryHeaderSoftSelect.is-open .coachSoftSelectTrigger {
+  
   box-shadow: none;
+
 }
+
 
 .coachCategoryHeaderSoftSelect .coachSoftSelectChevron {
+  
   width: 16px;
+  
   height: 16px;
+  
   color: #475569;
+
 }
+
 
 .coachCategoryHeaderSoftSelect .coachSoftSelectChevron svg {
+  
   width: 16px;
+  
   height: 16px;
+
 }
+
 
 .coachCategoryHeaderSoftSelect .coachSoftSelectMenu {
+  
   left: auto;
+  
   right: 0;
+  
   min-width: 160px;
+
 }
+
 
 .coachCategoryHeaderSoftSelect .coachSoftSelectOption {
+  
   min-height: 34px;
+
 }
+
 
 .coachRecapCard .coachTable tbody tr:hover {
+  
   background: #f8fafc;
+
 }
+
 
 .coachSectionSwap {
+  
   animation: coachSectionEnter 0.32s ease both;
+
 }
+
 
 @keyframes coachToastEnter {
+  
   from {
+    
     opacity: 0;
+    
     transform: translateY(-8px);
+  
   }
 
+  
   to {
+    
     opacity: 1;
+    
     transform: translateY(0);
+  
   }
+
 }
+
 
 @keyframes coachSectionEnter {
+  
   from {
+    
     opacity: 0;
+    
     transform: translateY(8px);
+  
   }
 
+  
   to {
+    
     opacity: 1;
+    
     transform: translateY(0);
+  
   }
+
 }
+
 
 @media (max-width: 980px) {
+  
   .coachGridAttendance {
+    
     grid-template-columns: 1fr;
+  
   }
 
+  
   .coachAttendanceInputCard,
+  
   .coachAttendanceTableCard {
+    
     min-height: auto;
+  
   }
 
+  
   .coachRecapCard .coachRecapFilters {
+    
     width: 100%;
+    
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  
   }
 
+  
   .coachRecapCard .coachRecapSelect {
+    
     flex: 1;
+    
     min-width: 0;
+  
   }
 
+  
   .coachRecapCard .coachTableHead {
+    
     grid-template-columns: 1fr;
+  
   }
+
 }
+
 
 @media (hover: none) and (pointer: coarse) {
+  
   .coachGridAttendance {
+    
     grid-template-columns: 1fr;
+  
   }
 
+  
   .coachAttendanceInputCard,
+  
   .coachAttendanceTableCard,
+  
   .coachRecapCard {
+    
     min-height: auto;
+    
     padding: 16px;
+  
   }
 
+  
   .coachAttendanceInputCard h2,
+  
   .coachAttendanceTableCard h2,
+  
   .coachRecapCard h2 {
+    
     font-size: 22px;
+  
   }
 
+  
   .coachAttendanceTableCard .coachTableWrap,
+  
   .coachRecapCard .coachTableWrap {
+    
     overflow-x: auto;
+  
   }
 
+  
   .coachAttendanceTableCard .coachTable,
+  
   .coachRecapCard .coachTable {
+    
     min-width: 640px;
+  
   }
 
+  
   .coachRecapFilters {
+    
     width: 100%;
+    
     grid-template-columns: 1fr;
+  
   }
 
+  
   .coachRecapSelect {
+    
     flex: 1 1 160px;
+    
     min-width: 0;
+  
   }
 
+  
   .coachStatusChips {
+    
     gap: 8px;
+  
   }
 
+  
   .coachStatusChip {
+    
     min-width: 68px;
+  
   }
+
 }
 
+
 @media (max-width: 640px) {
+  
   .coachCalendarPanel {
+    
     border-radius: 14px;
+  
   }
 
+  
   .coachCalendarHead {
+    
     margin-bottom: 10px;
+  
   }
 
+  
   .coachCalendarWeekdays {
+    
     margin-bottom: 4px;
+  
   }
 
+  
   .coachCalendarWeekdays span {
+    
     font-size: 11px;
+  
   }
 
+  
   .coachCalendarDay {
+    
     font-size: 13px;
+    
     border-radius: 9px;
+  
   }
 
+  
   .coachAttendanceSubmitBtn {
+    
     width: 100%;
+    
     max-width: 220px;
+  
   }
+
 }

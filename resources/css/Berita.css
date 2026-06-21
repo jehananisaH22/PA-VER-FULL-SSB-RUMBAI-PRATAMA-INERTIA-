@@ -1,537 +1,994 @@
+
 .beritaPage {
+  
   min-height: 100vh;
+  
   background: #f3f6f1;
+  
   color: #111827;
+
 }
+
 
 .beritaContainer {
+  
   width: 1080px;
+  
   max-width: calc(100% - 48px);
+  
   margin: 0 auto;
+
 }
+
 
 .beritaNavWrap {
+  
   position: sticky;
+  
   top: 0;
+  
   z-index: 40;
+  
   background: rgba(255, 255, 255, 0.96);
+  
   border-bottom: 1px solid #e7efe2;
+  
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  
   backdrop-filter: blur(12px);
+
 }
+
 
 .beritaNav {
+  
   height: 72px;
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+
 }
+
 
 .beritaNavLogo {
+  
   width: 36px;
+  
   height: 36px;
+  
   border-radius: 8px;
+  
   object-fit: cover;
+
 }
+
 
 .beritaNavLinks {
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 6px;
+  
   margin-right: auto;
+  
   margin-left: 16px;
+
 }
+
 
 .beritaNavLinks button {
+  
   border: 0;
+  
   background: transparent;
+  
   color: #344942;
+  
   font-size: 14px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+  
   height: 38px;
+  
   padding: 0 14px;
+  
   border-radius: 999px;
+  
   transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+
 }
+
 
 .beritaNavLinks button:hover {
+  
   background: #f1f7ee;
+  
   color: #23452c;
+
 }
+
 
 .beritaNavLinks button:nth-child(3) {
+  
   background: linear-gradient(180deg, #eff8e8 0%, #e4f2db 100%);
+  
   color: #2e5b21;
+  
   box-shadow: inset 0 0 0 1px #d6e7ca;
+
 }
+
 
 .beritaNavRight {
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 8px;
+
 }
+
 
 .beritaNavIconBtn {
+  
   width: 38px;
+  
   height: 38px;
+  
   border: 1px solid #dce7d6;
+  
   border-radius: 999px;
+  
   background: #ffffff;
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
+  
   transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+
 }
+
 
 .beritaNavIconBtn:hover {
+  
   background: #f5faf2;
+  
   transform: translateY(-1px);
+  
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.09);
+
 }
+
 
 .beritaNavIconBtn img {
+  
   width: 14px;
+  
   height: 14px;
+  
   object-fit: contain;
+  
   filter: brightness(0) saturate(100%) invert(19%) sepia(10%) saturate(1151%) hue-rotate(96deg) brightness(95%) contrast(89%);
+
 }
+
 
 .beritaProfileWrap {
+  
   position: relative;
+
 }
+
 
 .beritaNotifWrap {
+  
   position: relative;
+
 }
+
 
 .beritaNotifBadge {
+  
   position: absolute;
+  
   top: 6px;
+  
   right: 6px;
+  
   width: 8px;
+  
   height: 8px;
+  
   border-radius: 999px;
+  
   background: #ff4a4a;
+  
   border: 1.5px solid #fff;
+
 }
+
 
 .beritaNotifMenu {
+  
   position: absolute;
+  
   top: 48px;
+  
   right: 0;
+  
   width: 240px;
+  
   padding: 8px;
+  
   border-radius: 10px;
+  
   background: #ffffff;
+  
   border: 1px solid #e4ece0;
+  
   box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12);
+
 }
+
 
 .beritaNotifList {
+  
   list-style: none;
+  
   margin: 0;
+  
   padding: 0;
+
 }
+
 
 .beritaNotifItem {
+  
   color: #1f2937;
+  
   font-size: 12px;
+  
   line-height: 1.45;
+  
   padding: 8px 10px;
+  
   border-radius: 8px;
+  
   background: #f6faf4;
+
 }
+
 
 .beritaNotifEmpty {
+  
   margin: 0;
+  
   color: #4b5563;
+  
   font-size: 12px;
+  
   line-height: 1.4;
+  
   padding: 8px 10px;
+
 }
+
 
 .beritaNotifClearBtn {
+  
   width: 100%;
+  
   margin-top: 8px;
+  
   height: 32px;
+  
   border: 0;
+  
   border-radius: 8px;
+  
   background: #edf7e6;
+  
   color: #2f5f1d;
+  
   font-size: 12px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+
 }
+
 
 .beritaNotifClearBtn:hover {
+  
   background: #e3f0da;
+
 }
+
 
 .beritaProfileMenu {
+  
   position: absolute;
+  
   top: 48px;
+  
   right: 0;
+  
   min-width: 146px;
+  
   padding: 8px;
+  
   border-radius: 12px;
+  
   background: #ffffff;
+  
   border: 1px solid #e4ece0;
+  
   box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12);
+  
   z-index: 80;
+
 }
+
 
 .beritaProfileMenu button {
+  
   width: 100%;
+  
   height: 38px;
+  
   border: 0;
+  
   border-radius: 10px;
+  
   background: transparent;
+  
   color: #1f2937;
+  
   font-size: 14px;
+  
   font-weight: 600;
+  
   cursor: pointer;
+
 }
+
 
 .beritaProfileMenu button:hover {
+  
   background: #f5faf2;
+
 }
+
 
 .beritaRoleInfo {
+  
   color: #4b5563;
+  
   font-size: 12px;
+  
   line-height: 1.4;
+  
   padding: 8px 10px;
+
 }
+
 
 .beritaMain {
+  
   padding: 34px 0 56px;
+
 }
+
 
 .beritaTitle {
+  
   margin: 0 0 22px;
+  
   font-size: 28px;
+  
   line-height: 1.1;
+  
   font-weight: 700;
+
 }
+
 
 .beritaGrid {
+  
   display: grid;
+  
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  
   gap: 34px;
+
 }
+
 
 .beritaCard {
+  
   background: #ffffff;
+  
   border-radius: 20px;
+  
   overflow: hidden;
+  
   box-shadow: 0 22px 46px rgba(30, 41, 59, 0.1);
+
 }
+
 
 .beritaCardImg {
+  
   position: relative;
+  
   padding: 14px;
+
 }
+
 
 .beritaCardImg img {
+  
   width: 100%;
+  
   height: 260px;
+  
   object-fit: cover;
+  
   border-radius: 18px;
+
 }
+
 
 .beritaNextBtn {
+  
   position: absolute;
+  
   right: 24px;
+  
   bottom: 22px;
+  
   width: 34px;
+  
   height: 34px;
+  
   border-radius: 999px;
+  
   border: 0;
+  
   background: #fff;
+  
   cursor: pointer;
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   box-shadow: 0 10px 18px rgba(0, 0, 0, 0.15);
+
 }
+
 
 .beritaNextBtn::before {
+  
   content: "";
+  
   width: 8px;
+  
   height: 8px;
+  
   border-top: 2px solid #4f8e33;
+  
   border-right: 2px solid #4f8e33;
+  
   transform: rotate(45deg);
+  
   margin-left: -2px;
+
 }
+
 
 .beritaCardBody {
+  
   padding: 0 24px 24px;
+  
   text-align: left;
+
 }
+
 
 .beritaCardDate {
+  
   color: #638157;
+  
   font-size: 12px;
+  
   font-weight: 800;
+  
   letter-spacing: 0.06em;
+  
   text-transform: uppercase;
+
 }
+
 
 .beritaCardBody h3 {
+  
   margin: 4px 0 8px;
+  
   font-size: 22px;
+  
   line-height: 1.25;
+  
   font-weight: 700;
+
 }
+
 
 .beritaCardBody p {
+  
   margin: 0;
+  
   font-size: 13px;
+  
   line-height: 1.5;
+  
   color: #3f3f3f;
+
 }
+
 
 .beritaDetailCard {
+  
   background: #ffffff;
+  
   border-radius: 20px;
+  
   overflow: hidden;
+  
   box-shadow: 0 24px 52px rgba(0, 0, 0, 0.1);
+
 }
+
 
 .beritaDetailHero {
+  
   width: 100%;
+  
   height: 420px;
+  
   object-fit: cover;
+
 }
+
 
 .beritaDetailBody {
+  
   padding: 20px 28px 30px;
+
 }
+
 
 .beritaDate {
+  
   font-size: 14px;
+  
   margin-bottom: 10px;
+  
   color: #3a3a3a;
+
 }
+
 
 .beritaDetailBody h2 {
+  
   margin: 0 0 18px;
+  
   font-size: 48px;
+  
   line-height: 1.15;
+  
   font-weight: 700;
+
 }
+
 
 .beritaRichText {
+  
   display: flex;
+  
   flex-direction: column;
+  
   gap: 16px;
+
 }
+
 
 .beritaRichText p {
+  
   margin: 0;
+  
   font-size: 16px;
+  
   line-height: 1.8;
+  
   color: #223126;
+  
   text-align: justify;
+
 }
+
 
 .pemainSection {
+  
   margin-top: 46px;
+
 }
+
 
 .pemainSection h3 {
+  
   text-align: center;
+  
   font-size: 24px;
+  
   margin: 0 0 20px;
+
 }
+
 
 .pemainGrid {
+  
   background: #ffffff;
+  
   border: 1px solid #e4ebe0;
+  
   border-radius: 26px;
+  
   box-shadow: 0 18px 34px rgba(31, 41, 55, 0.08);
+  
   padding: 26px;
+  
   display: grid;
+  
   grid-template-columns: repeat(6, minmax(0, 1fr));
+  
   gap: 22px 14px;
+
 }
+
 
 .pemainCard {
+  
   text-align: center;
+
 }
+
 
 .pemainAvatarWrap {
+  
   width: 72px;
+  
   height: 72px;
+  
   border-radius: 999px;
+  
   margin: 0 auto 8px;
+  
   overflow: hidden;
+  
   background: #fff;
+  
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+
 }
+
 
 .pemainAvatar {
+  
   width: 100%;
+  
   height: 100%;
+  
   object-fit: cover;
+
 }
+
 
 .pemainName {
+  
   font-size: 13px;
+  
   font-weight: 600;
+  
   color: #17361f;
+
 }
+
 
 .pemainCard small {
+  
   display: block;
+  
   margin-top: 4px;
+  
   color: #6b7d6d;
+  
   font-size: 12px;
+  
   font-weight: 700;
+
 }
+
 
 .beritaEmptyState {
+  
   border: 1px dashed #cad8c3;
+  
   border-radius: 22px;
+  
   background: #ffffff;
+  
   color: #5f7465;
+  
   font-size: 15px;
+  
   font-weight: 600;
+  
   padding: 30px 22px;
+  
   text-align: center;
+
 }
+
 
 .beritaFooter {
+  
   background: #2a2a2a;
+  
   color: rgba(255, 255, 255, 0.8);
+
 }
+
 
 .beritaFooterInner {
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 20px;
+  
   padding: 22px 0;
+
 }
+
 
 .beritaFooterLogo {
+  
   width: 112px;
+  
   height: 112px;
+  
   border-radius: 10px;
+  
   overflow: hidden;
+  
   background: rgba(255, 255, 255, 0.08);
+
 }
+
 
 .beritaFooterLogo img {
+  
   width: 100%;
+  
   height: 100%;
+  
   object-fit: cover;
+
 }
+
 
 .beritaFooterTitle {
+  
   margin-bottom: 8px;
+  
   color: #fff;
+  
   font-weight: 700;
+
 }
+
 
 .beritaFooterText {
+  
   font-size: 12px;
+  
   line-height: 1.4;
+
 }
 
+
 @media (max-width: 960px) {
+  
   .beritaNav {
+    
     height: 64px;
+  
   }
 
+  
   .beritaNavLinks {
+    
     gap: 2px;
+    
     margin-left: 10px;
+  
   }
 
+  
   .beritaNavLinks button {
+    
     height: 32px;
+    
     padding: 0 8px;
+    
     font-size: 12px;
+  
   }
 
+  
   .beritaNavIconBtn {
+    
     width: 34px;
+    
     height: 34px;
+  
   }
 
+  
   .beritaTitle {
+    
     font-size: 26px;
+  
   }
 
+  
   .beritaGrid {
+    
     grid-template-columns: 1fr;
+    
     gap: 26px;
+  
   }
 
+  
   .beritaCardImg img {
+    
     height: 220px;
+  
   }
 
+  
   .beritaCardBody {
+    
     padding: 0 18px 20px;
+  
   }
 
+  
   .beritaCardBody h3 {
+    
     font-size: 24px;
+  
   }
 
+  
   .beritaCardBody p {
+    
     font-size: 15px;
+  
   }
 
+  
   .beritaDetailHero {
+    
     height: 240px;
+  
   }
 
+  
   .beritaDetailBody {
+    
     padding: 16px;
+  
   }
 
+  
   .beritaDetailBody h2 {
+    
     font-size: 28px;
+  
   }
 
+  
   .beritaDetailBody p,
+  
   .beritaDate {
+    
     font-size: 14px;
+  
   }
 
+  
   .pemainSection h3 {
+    
     font-size: 32px;
+  
   }
 
+  
   .pemainGrid {
+    
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  
   }
 
+  
   .pemainAvatarWrap {
+    
     width: 64px;
+    
     height: 64px;
+  
   }
 
+  
   .pemainName {
+    
     font-size: 13px;
+  
   }
 
+  
   .beritaFooterInner {
+    
     flex-direction: column;
+    
     align-items: flex-start;
+  
   }
 
+  
   .beritaFooterLogo {
+    
     width: 84px;
+    
     height: 84px;
+  
   }
 
+  
   .beritaFooterText {
+    
     font-size: 14px;
+  
   }
+
 }

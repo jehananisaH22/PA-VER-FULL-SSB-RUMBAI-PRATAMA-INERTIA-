@@ -1,626 +1,1166 @@
+
 .coachPerformanceInputCard {
+  
   margin-top: 12px;
+  
   min-height: 520px;
+  
   padding: 24px 24px 22px;
+  
   border-color: #e1e6ee;
+  
   box-shadow: 0 2px 10px rgba(17, 24, 39, 0.04);
+  
   display: flex;
+  
   flex-direction: column;
+
 }
+
 
 .coachPerformanceInputCard h2 {
+  
   margin: 0;
+  
   font-size: 30px;
+  
   line-height: 1.2;
+  
   font-weight: 700;
+  
   color: #0f172a;
+
 }
+
 
 .coachPerformanceFilters {
+  
   margin-top: 18px;
+  
   display: grid;
+  
   grid-template-columns: 1fr 1.3fr 1fr;
+  
   gap: 14px;
+
 }
+
 
 .coachPerformanceField {
+  
   display: flex;
+  
   flex-direction: column;
+  
   gap: 8px;
+  
   min-width: 0;
+  
   position: relative;
+
 }
+
 
 .coachPerformanceField > span {
+  
   font-size: 13px;
+  
   font-weight: 700;
+  
   color: #334155;
+
 }
+
 
 .coachPerformanceCustomSelect,
+
 .coachPerformanceDatePicker {
+  
   position: relative;
+  
   width: 100%;
+  
   min-width: 0;
+
 }
+
 
 .coachPerformanceSelectTrigger,
+
 .coachPerformanceDateTrigger {
+  
   width: 100%;
+  
   height: 38px;
+  
   border: 1px solid #d6dde7;
+  
   border-radius: 10px;
+  
   padding: 0 11px;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+  
   gap: 10px;
+  
   font-size: 13px;
+  
   color: #1f2937;
+  
   background: #ffffff;
+  
   outline: none;
+  
   text-align: left;
+  
   cursor: pointer;
+  
   transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+
 }
+
 
 .coachPerformanceSelectTrigger > span:first-child,
+
 .coachPerformanceDateTrigger > span:first-child {
+  
   min-width: 0;
+  
   overflow: hidden;
+  
   text-overflow: ellipsis;
+  
   white-space: nowrap;
+
 }
+
 
 .coachPerformanceSelectTrigger:hover,
+
 .coachPerformanceDateTrigger:hover {
+  
   border-color: #a8ca96;
+  
   background: #fbfef9;
+
 }
+
 
 .coachPerformanceCustomSelect.isOpen .coachPerformanceSelectTrigger,
+
 .coachPerformanceDatePicker.isOpen .coachPerformanceDateTrigger,
+
 .coachPerformanceSelectTrigger:focus-visible,
+
 .coachPerformanceDateTrigger:focus-visible {
+  
   border-color: #85b86a;
+  
   background: #ffffff;
+  
   outline: none;
+  
   box-shadow: 0 0 0 3px rgba(133, 184, 106, 0.13);
+
 }
+
 
 .coachPerformanceSelectIcon,
+
 .coachPerformanceDateIcon {
+  
   width: 17px;
+  
   height: 17px;
+  
   color: #475569;
+  
   flex: 0 0 auto;
+  
   transition: color 180ms ease, transform 180ms ease;
+
 }
+
 
 .coachPerformanceSelectIcon svg,
+
 .coachPerformanceDateIcon svg {
+  
   width: 100%;
+  
   height: 100%;
+
 }
+
 
 .coachPerformanceCustomSelect.isOpen .coachPerformanceSelectIcon {
+  
   color: #4f8a2f;
+  
   transform: rotate(180deg);
+
 }
+
 
 .coachPerformanceDatePicker.isOpen .coachPerformanceDateIcon {
+  
   color: #4f8a2f;
+
 }
+
 
 .coachPerformanceSelectMenu,
+
 .coachPerformanceCalendar {
+  
   position: absolute;
+  
   top: calc(100% + 7px);
+  
   left: 0;
+  
   right: 0;
+  
   z-index: 40;
+  
   border: 1px solid #cfe5c3;
+  
   background: #ffffff;
+  
   box-shadow: 0 16px 30px rgba(42, 84, 31, 0.13);
+
 }
+
 
 .coachPerformanceSelectMenu {
+  
   padding: 7px;
+  
   border-radius: 12px;
+
 }
+
 
 .coachPerformanceSelectOption {
+  
   width: 100%;
+  
   min-height: 32px;
+  
   border: 0;
+  
   border-radius: 9px;
+  
   background: transparent;
+  
   color: #1f2937;
+  
   font-size: 13px;
+  
   font-weight: 600;
+  
   text-align: left;
+  
   padding: 0 13px;
+  
   cursor: pointer;
+  
   transition: background-color 180ms ease, color 180ms ease;
+
 }
+
 
 .coachPerformanceSelectOption + .coachPerformanceSelectOption {
+  
   margin-top: 3px;
+
 }
+
 
 .coachPerformanceSelectOption:hover,
+
 .coachPerformanceSelectOption:focus-visible {
+  
   outline: none;
+  
   background: #f0f8eb;
+  
   color: #25571c;
+
 }
+
 
 .coachPerformanceSelectOption.isSelected {
+  
   background: #dff2d6;
+  
   color: #214d17;
+
 }
+
 
 .coachPerformanceCalendar {
+  
   width: min(100%, 290px);
+  
   right: auto;
+  
   padding: 12px;
+  
   border-radius: 14px;
+
 }
+
 
 .coachPerformanceCalendarHead {
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+  
   gap: 10px;
+  
   margin-bottom: 10px;
+
 }
+
 
 .coachPerformanceCalendarHead strong {
+  
   color: #1f2937;
+  
   font-size: 13px;
+  
   line-height: 1.2;
+
 }
+
 
 .coachPerformanceCalendarNav {
+  
   display: inline-flex;
+  
   align-items: center;
+  
   gap: 4px;
+
 }
+
 
 .coachPerformanceCalendarNav button {
+  
   width: 28px;
+  
   height: 28px;
+  
   border: 0;
+  
   border-radius: 8px;
+  
   background: #f3faef;
+  
   color: #355f25;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   cursor: pointer;
+
 }
+
 
 .coachPerformanceCalendarNav button:hover,
+
 .coachPerformanceCalendarNav button:focus-visible {
+  
   outline: none;
+  
   background: #dff2d6;
+
 }
+
 
 .coachPerformanceCalendarNav svg {
+  
   width: 16px;
+  
   height: 16px;
+
 }
+
 
 .coachPerformanceCalendarGrid {
+  
   display: grid;
+  
   grid-template-columns: repeat(7, minmax(0, 1fr));
+  
   gap: 4px;
+
 }
+
 
 .coachPerformanceCalendarWeekday {
+  
   min-height: 24px;
+  
   display: grid;
+  
   place-items: center;
+  
   color: #64748b;
+  
   font-size: 11px;
+  
   font-weight: 700;
+
 }
+
 
 .coachPerformanceCalendarDay {
+  
   aspect-ratio: 1;
+  
   min-width: 0;
+  
   border: 1px solid transparent;
+  
   border-radius: 8px;
+  
   background: transparent;
+  
   color: #1f2937;
+  
   font-size: 12px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+  
   transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+
 }
+
 
 .coachPerformanceCalendarDay:hover,
+
 .coachPerformanceCalendarDay:focus-visible {
+  
   outline: none;
+  
   background: #f0f8eb;
+  
   border-color: #cfe5c3;
+
 }
+
 
 .coachPerformanceCalendarDay.isMuted {
+  
   color: #94a3b8;
+
 }
+
 
 .coachPerformanceCalendarDay.isToday {
+  
   border-color: #a8ca96;
+
 }
+
 
 .coachPerformanceCalendarDay.isSelected {
+  
   background: #dff2d6;
+  
   border-color: #85b86a;
+  
   color: #214d17;
+
 }
+
 
 .coachPerformanceCalendarDay.isDisabled,
+
 .coachPerformanceCalendarDay:disabled {
+  
   color: #cbd5e1;
+  
   background: #f8fafc;
+  
   cursor: not-allowed;
+
 }
+
 
 .coachPerformanceCalendarToday {
+  
   min-height: 30px;
+  
   border: 0;
+  
   border-radius: 9px;
+  
   background: #f3faef;
+  
   color: #2f6420;
+  
   font-size: 12px;
+  
   font-weight: 800;
+  
   padding: 0 12px;
+  
   margin-top: 10px;
+  
   cursor: pointer;
+
 }
+
 
 .coachPerformanceCalendarToday:hover,
+
 .coachPerformanceCalendarToday:focus-visible {
+  
   outline: none;
+  
   background: #dff2d6;
+
 }
+
 
 .coachPerformanceCalendarToday:disabled {
+  
   color: #cbd5e1;
+  
   background: #f8fafc;
+  
   cursor: not-allowed;
+
 }
+
 
 .coachPerformanceInputTableWrap {
+  
   margin-top: 18px;
+
 }
+
 
 .coachPerformanceInputTable {
+  
   table-layout: fixed;
+
 }
+
 
 .coachPerformanceInputTable th,
+
 .coachPerformanceInputTable td {
+  
   vertical-align: middle;
+
 }
+
 
 .coachPerformanceInputTable th:nth-child(1),
+
 .coachPerformanceInputTable td:nth-child(1) {
+  
   width: 38%;
+
 }
+
 
 .coachPerformanceInputTable th:nth-child(2),
+
 .coachPerformanceInputTable td:nth-child(2),
+
 .coachPerformanceInputTable th:nth-child(3),
+
 .coachPerformanceInputTable td:nth-child(3),
+
 .coachPerformanceInputTable th:nth-child(4),
+
 .coachPerformanceInputTable td:nth-child(4) {
+  
   width: 20.66%;
+
 }
+
 
 .coachScoreInput {
+  
   width: 100%;
+  
   height: 38px;
+  
   border: 1px solid #d6dde7;
+  
   border-radius: 10px;
+  
   background: #ffffff;
+  
   padding: 0 10px;
+  
   text-align: center;
+  
   font-size: 13px;
+  
   font-weight: 600;
+  
   color: #1f2937;
+  
   outline: none;
+
 }
+
 
 .coachScoreInput:focus {
+  
   border-color: #b7c4d4;
+  
   box-shadow: 0 0 0 3px rgba(183, 196, 212, 0.15);
+
 }
+
 
 .coachPerformanceSaveRow {
+  
   margin-top: auto;
+  
   padding-top: 18px;
+  
   display: flex;
+  
   justify-content: flex-end;
+
 }
+
 
 .coachPerformanceSaveBtn {
+  
   min-width: 108px;
+  
   height: 42px;
+  
   border: 0;
+  
   border-radius: 999px;
+  
   background: linear-gradient(135deg, #66b73c, #519f2d);
+  
   color: #ffffff;
+  
   font-size: 16px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+
 }
+
 
 .coachPerformanceSaveBtn:disabled {
+  
   background: #d1d5db;
+  
   color: #f8fafc;
+  
   cursor: not-allowed;
+
 }
+
 
 .coachPerformanceToast {
+  
   position: fixed;
+  
   top: 86px;
+  
   right: 18px;
+  
   z-index: 1300;
+  
   width: min(420px, calc(100vw - 28px));
+  
   min-height: 70px;
+  
   border: 1px solid #cfe8c3;
+  
   border-left: 6px solid #53a52d;
+  
   border-radius: 8px;
+  
   background: #f2fbec;
+  
   color: #24591d;
+  
   box-shadow: 0 18px 36px rgba(15, 23, 42, 0.16);
+  
   padding: 14px 46px 14px 18px;
+  
   font-size: 14px;
+  
   line-height: 1.4;
+  
   display: flex;
+  
   align-items: center;
+
 }
+
 
 .coachPerformanceToast.isError {
+  
   border-color: #fecaca;
+  
   border-left-color: #dc2626;
+  
   background: #fff1f2;
+  
   color: #b91c1c;
+
 }
+
 
 .coachPerformanceToastText {
+  
   display: grid;
+  
   gap: 4px;
+  
   min-width: 0;
+
 }
+
 
 .coachPerformanceToastText strong {
+  
   font-size: 15px;
+  
   line-height: 1.2;
+
 }
+
 
 .coachPerformanceToastText span {
+  
   color: #4b5f4b;
+  
   font-size: 14px;
+  
   font-weight: 500;
+
 }
+
 
 .coachPerformanceToast.isError .coachPerformanceToastText span {
+  
   color: #6f3b3b;
+
 }
+
 
 .coachPerformanceToastClose {
+  
   position: absolute;
+  
   top: 12px;
+  
   right: 12px;
+  
   width: 30px;
+  
   height: 30px;
+  
   border: 0;
+  
   border-radius: 999px;
+  
   background: rgba(36, 89, 29, 0.1);
+  
   color: inherit;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   font-size: 18px;
+  
   font-weight: 800;
+  
   line-height: 1;
+  
   cursor: pointer;
+
 }
+
 
 .coachPerformanceToastClose:hover,
+
 .coachPerformanceToastClose:focus-visible {
+  
   outline: none;
+  
   background: rgba(36, 89, 29, 0.16);
+
 }
+
 
 .coachPerformanceHistoryCard {
+  
   margin-top: 12px;
+
 }
+
 
 .coachPerformanceHistoryHead {
+  
   display: grid;
+  
   grid-template-columns: minmax(220px, 1fr) minmax(420px, 560px);
+  
   align-items: start;
+  
   gap: 16px;
+
 }
+
 
 .coachPerformanceHistoryFilters {
+  
   display: grid;
+  
   grid-template-columns: minmax(130px, 1fr) minmax(110px, 0.8fr) minmax(150px, 1fr);
+  
   gap: 10px;
+
 }
+
 
 .coachPerformanceHistoryCard h2 {
+  
   margin: 0;
+  
   font-size: 24px;
+  
   line-height: 1.25;
+  
   font-weight: 700;
+  
   color: #0f172a;
+
 }
+
 
 .coachPerformanceHistoryCard .coachTableWrap {
+  
   margin-top: 12px;
+  
   overflow-x: auto;
+
 }
+
 
 .coachPerformanceHistoryCard .coachTable th {
+  
   font-size: 14px;
+
 }
+
 
 .coachPerformanceMatrixTable {
+  
   min-width: 1120px;
+  
   table-layout: auto;
+
 }
+
 
 .coachPerformanceExtraMatrixTable {
+  
   min-width: 860px;
+
 }
+
 
 .coachAdditionalRecapBlock {
+  
   margin-top: 18px;
+
 }
+
 
 .coachAdditionalRecapHead {
+  
   display: flex;
+  
   align-items: flex-start;
+  
   justify-content: space-between;
+  
   gap: 16px;
+  
   margin-bottom: 10px;
+
 }
+
 
 .coachAdditionalRecapHead h2 {
+  
   margin: 0;
+
 }
+
 
 .coachAdditionalRecapHead p {
+  
   margin: 4px 0 0;
+  
   color: #64748b;
+  
   font-size: 13px;
+  
   font-weight: 600;
+
 }
+
 
 .coachPerformanceMatrixTable th,
+
 .coachPerformanceMatrixTable td {
+  
   text-align: center;
+  
   vertical-align: middle;
+
 }
+
 
 .coachPerformanceMatrixTable th:nth-child(2),
+
 .coachPerformanceMatrixTable td:nth-child(2) {
+  
   min-width: 190px;
+  
   text-align: left;
+
 }
+
 
 .coachPerformanceMatrixTable th:nth-child(3),
+
 .coachPerformanceMatrixTable td:nth-child(3) {
+  
   min-width: 100px;
+
 }
+
 
 .coachPerformanceMeetingHead {
+  
   display: grid;
+  
   justify-items: center;
+  
   gap: 2px;
+  
   line-height: 1.1;
+
 }
+
 
 .coachPerformanceMeetingHead span {
+  
   font-size: 13px;
+  
   font-weight: 800;
+
 }
+
 
 .coachPerformanceMeetingHead small {
+  
   font-size: 10px;
+  
   font-weight: 700;
+  
   color: #64748b;
+
 }
+
 
 .coachPerformanceScoreBadge {
+  
   min-width: 48px;
+  
   min-height: 28px;
+  
   border-radius: 999px;
+  
   padding: 5px 10px;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   border: 1px solid #9ed485;
+  
   background: #dff2d6;
+  
   color: #2f6420;
+  
   font-size: 13px;
+  
   font-weight: 800;
+
 }
+
 
 .coachPerformanceScoreBadge.isEmpty {
+  
   border-color: #dbe3ee;
+  
   background: #f8fafc;
+  
   color: #94a3b8;
+
 }
+
 
 .coachPerformanceScoreDate {
+  
   display: block;
+  
   margin-top: 4px;
+  
   color: #64748b;
+  
   font-size: 11px;
+  
   font-weight: 700;
+
 }
+
 
 .coachPerformanceHistoryCategorySelect {
+  
   width: 156px;
+
 }
+
 
 .coachPerformanceHistoryCategorySelect .coachPerformanceSelectTrigger {
+  
   height: 34px;
+  
   border-color: transparent;
+  
   border-radius: 8px;
+  
   background: transparent;
+  
   padding: 0 8px 0 0;
+  
   font-size: 14px;
+  
   font-weight: 700;
+  
   color: #111827;
+
 }
+
 
 .coachPerformanceHistoryCategorySelect .coachPerformanceSelectTrigger:hover,
+
 .coachPerformanceHistoryCategorySelect.isOpen .coachPerformanceSelectTrigger,
+
 .coachPerformanceHistoryCategorySelect .coachPerformanceSelectTrigger:focus-visible {
+  
   border-color: #d6dde7;
+  
   background: #ffffff;
+
 }
+
 
 .coachPerformanceHistoryCategorySelect .coachPerformanceSelectMenu {
+  
   min-width: 156px;
+  
   right: auto;
+  
   left: 0;
+  
   z-index: 80;
+
 }
+
 
 .coachPerformanceHistoryCard .coachTable td {
+  
   font-size: 14px;
+  
   color: #334155;
+
 }
 
+
 @media (max-width: 980px) {
+  
   .coachPerformanceInputCard h2 {
+    
     font-size: 26px;
+  
   }
 
+  
   .coachPerformanceFilters {
+    
     grid-template-columns: 1fr;
+    
     gap: 10px;
+  
   }
 
+  
   .coachPerformanceHistoryHead {
+    
     grid-template-columns: 1fr;
+  
   }
 
+  
   .coachPerformanceHistoryFilters {
+    
     grid-template-columns: 1fr;
+  
   }
 
+  
   .coachPerformanceSaveBtn {
+    
     min-width: 96px;
+    
     height: 40px;
+    
     font-size: 15px;
+  
   }
+
 }

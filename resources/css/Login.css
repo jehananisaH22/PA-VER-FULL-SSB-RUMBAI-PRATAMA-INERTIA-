@@ -1,236 +1,434 @@
+
 .loginPage {
+  
   min-height: 100vh;
+  
   background: #e9e9e9;
+
 }
+
 
 .loginShell {
+  
   min-height: 100vh;
+  
   padding: 16px;
+
 }
+
 
 .loginMain {
+  
   min-height: calc(100vh - 32px);
+  
   background: #f4f4f4;
+  
   border-radius: 18px;
+  
   overflow: hidden;
+  
   display: grid;
+  
   grid-template-columns: minmax(300px, 40%) 1fr;
+  
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.08);
+
 }
+
 
 .loginLeft {
+  
   position: relative;
+  
   min-height: 620px;
+  
   overflow: hidden;
+
 }
+
 
 .loginShape {
+  
   position: absolute;
+  
   inset: 0;
+  
   background: #556d49;
+  
   clip-path: polygon(0 0, 70% 0, 100% 50%, 70% 100%, 0 100%);
+
 }
+
 
 .loginLogo {
+  
   position: absolute;
+  
   top: 20px;
+  
   left: 22px;
+  
   width: 52px;
+  
   height: 52px;
+  
   object-fit: contain;
+  
   z-index: 3;
+
 }
+
 
 .loginBoy {
+  
   position: absolute;
+  
   left: 44%;
+  
   bottom: 0;
+  
   height: 96%;
+  
   width: auto;
+  
   transform: translateX(-50%);
+  
   z-index: 2;
+
 }
+
 
 .loginRight {
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   padding: 40px 30px;
+
 }
+
 
 .loginForm {
+  
   width: min(100%, 560px);
+
 }
+
 
 .loginForm h1 {
+  
   margin: 0 0 20px;
+  
   text-align: center;
+  
   color: #101010;
+  
   font-size: 42px;
+  
   line-height: 1;
+  
   font-weight: 700;
+
 }
+
 
 .loginForm label {
+  
   display: block;
+  
   margin: 12px 0 8px;
+  
   color: #111;
+  
   font-size: 18px;
+  
   font-weight: 600;
+
 }
+
 
 .loginForm input {
+  
   width: 100%;
+  
   height: 60px;
+  
   border: 1.5px solid #b4b4b4;
+  
   border-radius: 999px;
+  
   background: #f4f4f4;
+  
   padding: 0 22px;
+  
   font-size: 15px;
+  
   font-weight: 400;
+  
   color: #1f1f1f;
+  
   outline: none;
+
 }
+
 
 .loginForm input::placeholder {
+  
   color: #9f9f9f;
+
 }
+
 
 .loginForm input:focus {
+  
   border-color: #79a952;
+  
   box-shadow: 0 0 0 3px rgba(121, 169, 82, 0.2);
+
 }
+
 
 .loginPasswordWrap {
+  
   position: relative;
+
 }
+
 
 .loginPasswordWrap input {
+  
   padding-right: 88px;
+
 }
+
 
 .loginPasswordToggle {
+  
   position: absolute;
+  
   right: 14px;
+  
   top: 50%;
+  
   transform: translateY(-50%);
+  
   border: 0;
+  
   background: transparent;
+  
   color: #8a8a8a;
+  
   font-size: 14px;
+  
   font-weight: 600;
+  
   cursor: pointer;
+  
   padding: 4px 6px;
+
 }
+
 
 .loginActions {
+  
   margin-top: 24px;
+  
   display: flex;
+  
   justify-content: flex-end;
+  
   gap: 12px;
+
 }
+
 
 .loginBackBtn,
+
 .loginSubmitBtn {
+  
   min-width: 150px;
+  
   height: 50px;
+  
   border: 0;
+  
   border-radius: 999px;
+  
   font-size: 18px;
+  
   font-weight: 700;
+  
   line-height: 1;
+  
   cursor: pointer;
+
 }
+
 
 .loginBackBtn {
+  
   background: #d0d0d0;
+  
   color: #2f2f2f;
+
 }
+
 
 .loginBackBtn:hover {
+  
   background: #c5c5c5;
+
 }
+
 
 .loginSubmitBtn {
+  
   background: #76a74f;
+  
   color: #fff;
+  
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.14);
+
 }
+
 
 .loginSubmitBtn:hover {
+  
   background: #6a9846;
+
 }
 
+
 @media (max-width: 960px) {
+  
   .loginShell {
+    
     padding: 12px;
+  
   }
 
+  
   .loginMain {
+    
     grid-template-columns: 1fr;
+    
     min-height: auto;
+  
   }
 
+  
   .loginLeft {
+    
     min-height: 300px;
+  
   }
 
+  
   .loginShape {
+    
     clip-path: polygon(0 0, 100% 0, 100% 68%, 0 100%);
+  
   }
 
+  
   .loginBoy {
+    
     left: 34%;
+    
     height: 105%;
+  
   }
 
+  
   .loginLogo {
+    
     width: 44px;
+    
     height: 44px;
+    
     top: 14px;
+    
     left: 14px;
+  
   }
 
+  
   .loginRight {
+    
     padding: 20px 16px 22px;
+  
   }
 
+  
   .loginForm {
+    
     width: 100%;
+    
     max-width: 560px;
+  
   }
 
+  
   .loginForm h1 {
+    
     font-size: 32px;
+  
   }
 
+  
   .loginForm label {
+    
     font-size: 16px;
+  
   }
 
+  
   .loginForm input {
+    
     height: 50px;
+    
     font-size: 15px;
+    
     padding: 0 16px;
+  
   }
 
+  
   .loginPasswordWrap input {
+    
     padding-right: 84px;
+  
   }
 
+  
   .loginPasswordToggle {
+    
     font-size: 14px;
+  
   }
 
+  
   .loginActions {
+    
     margin-top: 18px;
+  
   }
 
+  
   .loginBackBtn,
+  
   .loginSubmitBtn {
+    
     min-width: 110px;
+    
     height: 40px;
+    
     font-size: 15px;
+  
   }
+
 }
 

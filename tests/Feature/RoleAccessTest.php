@@ -12,6 +12,17 @@ use Tests\TestCase;
 
 class RoleAccessTest extends TestCase
 {
+    public function test_admin_logout_clears_session_and_redirects_to_admin_login(): void
+    {
+        $user = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($user)
+            ->post('/logout')
+            ->assertRedirect('/login/admin');
+
+        $this->assertGuest();
+    }
+
     public function test_admin_can_open_admin_dashboard(): void
     {
         $user = User::factory()->create(['role' => 'admin']);

@@ -1,360 +1,672 @@
+
 :root {
+  
   --reupload-bg: #ffffff;
+  
   --reupload-card: #ffffff;
+  
   --reupload-border: #e3e7ee;
+  
   --reupload-title: #1d3b22;
+  
   --reupload-text: #425345;
+  
   --reupload-muted: #5f7162;
+  
   --reupload-primary: #2f7a34;
+  
   --reupload-primary-soft: #eef7ef;
+
 }
+
 
 .parentPage.parentPageReupload {
+  
   background: #ffffff;
+
 }
+
 
 .parentReuploadMain {
+  
   padding: 22px 0 40px;
+  
   background: var(--reupload-bg);
+
 }
+
 
 .parentReuploadCard {
+  
   width: 860px;
+  
   max-width: calc(100% - 24px);
+  
   margin: 0 auto;
+  
   background: var(--reupload-card);
+  
   border: 1px solid var(--reupload-border);
+  
   border-radius: 12px;
+  
   padding: 24px 26px;
+  
   box-shadow: 0 2px 8px rgba(20, 44, 24, 0.04);
+
 }
+
 
 .parentReuploadHead h1 {
+  
   margin: 0;
+  
   font-size: clamp(24px, 2.4vw, 34px);
+  
   font-weight: 650;
+  
   line-height: 1.12;
+  
   letter-spacing: -0.01em;
+  
   color: var(--reupload-title);
+
 }
+
 
 .parentReuploadLead {
+  
   margin: 14px 0 0;
+  
   color: var(--reupload-text);
+  
   font-size: 15px;
+  
   line-height: 1.6;
+  
   max-width: 760px;
+
 }
+
 
 .parentReuploadTargetBox {
+  
   margin-top: 16px;
+  
   border: 1px solid #cfe3d1;
+  
   background: var(--reupload-primary-soft);
+  
   border-radius: 10px;
+  
   padding: 12px;
+
 }
+
 
 .parentReuploadTargetBox p {
+  
   margin: 0;
+  
   font-size: 12px;
+  
   color: var(--reupload-muted);
+  
   font-weight: 600;
+  
   text-transform: uppercase;
+  
   letter-spacing: 0.04em;
+
 }
+
 
 .parentReuploadTargets {
+  
   margin-top: 10px;
+  
   display: flex;
+  
   flex-wrap: wrap;
+  
   gap: 8px;
+
 }
+
 
 .parentReuploadTargets span {
+  
   border-radius: 999px;
+  
   border: 1px solid #b8d7bc;
+  
   background: #fff;
+  
   color: #2f6c36;
+  
   font-size: 12px;
+  
   font-weight: 600;
+  
   line-height: 1;
+  
   padding: 7px 11px;
+
 }
+
 
 .parentReuploadLockInfo {
+  
   margin: 12px 0 0;
+  
   color: #9a6700;
+  
   font-size: 13px;
+  
   font-weight: 600;
+
 }
+
 
 .parentReuploadEmptyInfo {
+  
   margin: 20px 0 0;
+  
   color: #24452b;
+  
   font-size: 16px;
+  
   font-weight: 500;
+  
   line-height: 1.7;
+
 }
+
 
 .parentReuploadForm {
+  
   margin-top: 22px;
+
 }
+
 
 .parentReuploadTextGrid,
+
 .parentReuploadUploadGrid {
+  
   display: grid;
+  
   grid-template-columns: 1fr 1fr;
+  
   gap: 18px 18px;
+
 }
+
 
 .parentReuploadTextGrid label,
+
 .parentReuploadUploadItem {
+  
   border: 1px solid var(--reupload-border);
+  
   border-radius: 10px;
+  
   padding: 12px 13px;
+  
   background: #fafbfc;
+
 }
+
 
 .parentReuploadTextGrid label span {
+  
   display: block;
+  
   margin-bottom: 7px;
+  
   font-size: 12px;
+  
   color: var(--reupload-muted);
+  
   font-weight: 700;
+  
   letter-spacing: 0.02em;
+
 }
+
 
 .parentReuploadTextGrid input {
+  
   width: 100%;
+  
   height: 40px;
+  
   border: 1px solid #c8d7c9;
+  
   border-radius: 10px;
+  
   padding: 0 12px;
+  
   font-size: 14px;
+  
   color: #213126;
+  
   background: #fff;
+
 }
+
 
 .parentReuploadTextGrid input:focus {
+  
   outline: none;
+  
   border-color: #86b98a;
+  
   box-shadow: 0 0 0 3px rgba(63, 125, 35, 0.15);
+
 }
+
 
 .parentReuploadUploadGrid {
+  
   margin-top: 14px;
+
 }
+
 
 .parentReuploadUploadItem p {
+  
   margin: 0 0 10px;
+  
   color: #213126;
+  
   font-size: 15px;
+  
   font-weight: 700;
+  
   line-height: 1.35;
+
 }
+
 
 .parentReuploadUploadItem input {
+  
   display: none;
+
 }
+
 
 .parentReuploadUploadBtn {
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   min-width: 118px;
+  
   height: 38px;
+  
   border-radius: 999px;
+  
   border: 1px solid #2f7a34;
+  
   background: var(--reupload-primary);
+  
   color: #fff;
+  
   font-size: 15px;
+  
   font-weight: 600;
+  
   cursor: pointer;
+
 }
+
 
 .parentReuploadFileRow {
+  
   margin-top: 10px;
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 10px;
+  
   flex-wrap: wrap;
+  
   color: #34463a;
+
 }
+
 
 .parentReuploadFileRow span {
+  
   max-width: 100%;
+  
   word-break: break-word;
+  
   font-size: 12px;
+
 }
+
 
 .parentReuploadFileRow button {
+  
   border: 0;
+  
   background: transparent;
+  
   font-size: 12px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+  
   padding: 0;
+
 }
+
 
 .parentReuploadFileRow button:first-of-type {
+  
   color: #2f7a34;
+
 }
+
 
 .parentReuploadFileRow button:last-of-type {
+  
   color: #b91c1c;
+
 }
+
 
 .parentReuploadActions {
+  
   margin-top: 18px;
+  
   display: flex;
+  
   justify-content: flex-end;
+  
   gap: 10px;
+
 }
+
 
 .parentReuploadActions.isEmpty {
+  
   justify-content: flex-end;
+  
   margin-top: 26px;
+
 }
+
 
 .parentReuploadBackBtn,
+
 .parentReuploadSubmitBtn {
+  
   border: 0;
+  
   border-radius: 12px;
+  
   min-width: 150px;
+  
   height: 42px;
+  
   padding: 0 18px;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   font-size: 15px;
+  
   line-height: 1.1;
+  
   font-weight: 700;
+  
   cursor: pointer;
+  
   white-space: nowrap;
+
 }
+
 
 .parentReuploadBackBtn {
+  
   background: #2f7a34;
+  
   color: #ffffff;
+  
   border: 1px solid #2a6b2e;
+  
   min-width: 224px;
+
 }
+
 
 .parentReuploadBackBtn:hover {
+  
   background: #296b2d;
+
 }
+
 
 .parentReuploadActions.isEmpty .parentReuploadBackBtn {
+  
   height: 44px;
+  
   padding: 0 20px;
+
 }
+
 
 .parentReuploadSubmitBtn {
+  
   background: var(--reupload-primary);
+  
   color: #fff;
+
 }
+
 
 .parentReuploadBackBtn:disabled,
+
 .parentReuploadSubmitBtn:disabled,
+
 .parentReuploadMain .parentNavLinks button:disabled {
+  
   opacity: 0.45;
+  
   cursor: not-allowed;
+
 }
+
 
 .parentReuploadMain .parentLogoBtn:disabled {
+  
   opacity: 1;
+  
   cursor: default;
+
 }
+
 
 .parentReuploadSuccessOverlay {
+  
   position: fixed;
+  
   inset: 0;
+  
   z-index: 90;
+  
   background: rgba(0, 0, 0, 0.42);
+  
   display: grid;
+  
   place-items: center;
+  
   padding: 16px;
+
 }
+
 
 .parentReuploadSuccessCard {
+  
   width: min(480px, 100%);
+  
   border-radius: 12px;
+  
   border: 1px solid #d7deca;
+  
   background: #fff;
+  
   box-shadow: 0 22px 44px rgba(0, 0, 0, 0.18);
+  
   padding: 28px 30px 26px;
+
 }
+
 
 .parentReuploadSuccessCard h3 {
+  
   margin: 0;
+  
   color: var(--reupload-title);
+  
   font-size: 24px;
+  
   font-weight: 650;
+  
   line-height: 1.2;
+
 }
+
 
 .parentReuploadSuccessCard p {
+  
   margin: 12px 0 0;
+  
   color: #34463a;
+  
   font-size: 14px;
+  
   line-height: 1.55;
+  
   font-weight: 400;
+  
   max-width: 420px;
+
 }
+
 
 .parentReuploadSuccessCard p + p {
+  
   margin-top: 10px;
+
 }
+
 
 .parentReuploadSuccessCard button {
+  
   margin-top: 22px;
+  
   border: 0;
+  
   border-radius: 999px;
+  
   min-width: 104px;
+  
   height: 38px;
+  
   background: var(--reupload-primary);
+  
   color: #fff;
+  
   font-size: 14px;
+  
   font-weight: 600;
+  
   cursor: pointer;
+
 }
+
 
 @media (max-width: 1080px) {
+  
   .parentReuploadCard {
+    
     max-width: calc(100% - 18px);
+    
     padding: 20px;
+  
   }
+
 }
+
 
 @media (max-width: 980px) {
+  
   .parentReuploadLead {
+    
     font-size: 17px;
+  
   }
 
+  
   .parentReuploadEmptyInfo {
+    
     font-size: 21px;
+  
   }
 
+  
   .parentReuploadTextGrid,
+  
   .parentReuploadUploadGrid {
+    
     grid-template-columns: 1fr;
+  
   }
 
+  
   .parentReuploadUploadItem p {
+    
     font-size: 14px;
+  
   }
+
 }
 
+
 @media (max-width: 720px) {
+  
   .parentReuploadActions {
+    
     flex-direction: column;
+  
   }
 
+  
   .parentReuploadBackBtn,
+  
   .parentReuploadSubmitBtn {
+    
     width: 100%;
+    
     min-width: 0;
+    
     height: 44px;
+    
     font-size: 15px;
+  
   }
+
 }

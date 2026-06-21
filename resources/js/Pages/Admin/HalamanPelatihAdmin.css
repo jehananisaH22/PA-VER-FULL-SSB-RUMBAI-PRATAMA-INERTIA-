@@ -1,654 +1,1211 @@
+
 .adminCoachesPage {
+  
   display: grid;
+  
   gap: 12px;
+  
   padding-bottom: 18px;
+
 }
+
 
 .adminCoachesCard,
+
 .adminCatatanPelatihCard {
+  
   padding: 14px;
+  
   border: 1px solid #e2e8df;
+  
   border-radius: 14px;
+
 }
+
 
 .adminCoachesToolbar {
+  
   display: flex;
+  
   flex-wrap: wrap;
+  
   align-items: center;
+  
   gap: 10px;
+  
   margin-bottom: 12px;
+
 }
+
 
 .adminCoachesAddBtn {
+  
   height: 32px;
+  
   border: 0;
+  
   border-radius: 999px;
+  
   padding: 0 14px;
+  
   background: #3f7d22;
+  
   color: #ffffff;
+  
   font-size: 12px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+
 }
+
 
 .adminCoachesAddBtn:hover {
+  
   background: #366c1d;
+
 }
+
 
 .adminCoachesToolbar input {
+  
   height: 34px;
+  
   min-width: 240px;
+  
   border: 1px solid #d6dfcf;
+  
   border-radius: 10px;
+  
   background: #ffffff;
+  
   color: #334155;
+  
   padding: 0 12px;
+  
   font-size: 13px;
+
 }
 
+
 .adminCoachesTableWrap,
+
 .adminCatatanPelatihTableWrap {
+  
   max-height: 260px;
+  
   overflow-y: auto;
+  
   padding-right: 2px;
+  
   scrollbar-width: thin;
+  
   scrollbar-color: #c3cad3 transparent;
+
 }
+
 
 .adminCoachesTableWrap::-webkit-scrollbar,
+
 .adminCatatanPelatihTableWrap::-webkit-scrollbar {
+  
   width: 6px;
+
 }
+
 
 .adminCoachesTableWrap::-webkit-scrollbar-thumb,
+
 .adminCatatanPelatihTableWrap::-webkit-scrollbar-thumb {
+  
   background: #c3cad3;
+  
   border-radius: 999px;
+
 }
+
 
 .adminCoachesTableWrap thead th,
+
 .adminCatatanPelatihTableWrap thead th {
+  
   position: sticky;
+  
   top: 0;
+  
   background: #ffffff;
+  
   z-index: 1;
+
 }
+
 
 .adminCoachesDeleteBtn {
+  
   height: 28px;
+  
   min-width: 74px;
+  
   border: 0;
+  
   border-radius: 999px;
+  
   background: #dc2626;
+  
   color: #ffffff;
+  
   font-size: 12px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+
 }
 
+
 .adminCoachesDeleteBtn:hover {
+  
   background: #b91c1c;
+
 }
+
 
 .adminCoachesEmpty {
+  
   text-align: center;
+  
   color: #64748b;
+  
   padding: 18px 10px;
+
 }
+
 
 .adminCatatanPelatihHead {
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+  
   gap: 10px;
+  
   margin-bottom: 10px;
+
 }
+
 
 .adminCatatanPelatihHead h3 {
+  
   margin: 0;
+  
   font-size: 28px;
+  
   color: #111827;
+
 }
 
+
 .adminCatatanPelatihHead select {
+  
   height: 34px;
+  
   border: 1px solid #d6dfcf;
+  
   border-radius: 10px;
+  
   background: #ffffff;
+  
   color: #334155;
+  
   padding: 0 10px;
+  
   font-size: 12px;
+
 }
+
 
 .adminCoachNotesGreenSelect {
+  
   min-width: 150px;
+
 }
+
 
 .adminCoachNotesGreenSelect .greenSelectTrigger {
+  
   min-height: 34px;
+  
   border-color: #d6dfcf;
+  
   border-radius: 10px;
+  
   color: #334155;
+  
   font-size: 12px;
+  
   padding: 0 10px;
+
 }
+
 
 .adminCatatanPelatihPagination {
+  
   position: relative;
+  
   z-index: 2;
+  
   margin-bottom: 24px;
+
 }
+
 
 .adminCoachesModalOverlay {
+  
   position: fixed;
+  
   inset: 0;
+  
   z-index: 9999;
+  
   background: rgba(17, 24, 39, 0.64);
+  
   display: grid;
+  
   place-items: center;
+  
   padding: 16px;
+
 }
 
+
 .adminCoachesModalCard {
+  
   width: min(420px, 100%);
+  
   border-radius: 14px;
+  
   border: 1px solid #e5e7eb;
+  
   background: #ffffff;
+  
   box-shadow: 0 20px 36px rgba(0, 0, 0, 0.22);
+  
   padding: 16px 16px 14px;
+
 }
+
 
 .adminCoachesModalCard h4 {
+  
   margin: 0;
+  
   font-size: 30px;
+  
   font-weight: 600;
+  
   color: #111827;
+
 }
+
 
 .adminCoachesModalCard p {
+  
   margin: 10px 0 0;
+  
   color: #374151;
+  
   font-size: 15px;
+  
   font-weight: 400;
+
 }
+
 
 .adminCoachesAddModalCard {
+  
   width: min(460px, 100%);
+
 }
+
 
 .adminCoachesAddForm {
+  
   margin-top: 12px;
+  
   display: grid;
+  
   gap: 10px;
+
 }
+
 
 .adminCoachesAddForm label {
+  
   display: grid;
+  
   gap: 6px;
+
 }
+
 
 .adminCoachesAddForm label span {
+  
   font-size: 12px;
+  
   font-weight: 700;
+  
   color: #374151;
+
 }
 
+
 .adminCoachesAddForm input {
+  
   height: 38px;
+  
   border: 1px solid #d1d5db;
+  
   border-radius: 10px;
+  
   background: #ffffff;
+  
   color: #111827;
+  
   padding: 0 12px;
+  
   font-size: 13px;
+
 }
+
 
 .adminCoachesAddForm input:focus {
+  
   outline: none;
+  
   border-color: #7fb26f;
+  
   box-shadow: 0 0 0 3px rgba(95, 167, 72, 0.14);
+
 }
+
 
 .adminCoachesPasswordField {
+  
   position: relative;
+  
   display: flex;
+  
   align-items: center;
+
 }
+
 
 .adminCoachesPasswordField input {
+  
   width: 100%;
+  
   padding-right: 42px;
+
 }
+
 
 .adminCoachesPasswordToggle {
+  
   position: absolute;
+  
   right: 8px;
+  
   width: 28px;
+  
   height: 28px;
+  
   border: 0;
+  
   border-radius: 8px;
+  
   background: transparent;
+  
   color: #64748b;
+  
   display: grid;
+  
   place-items: center;
+  
   cursor: pointer;
+
 }
+
 
 .adminCoachesPasswordToggle:hover {
+  
   background: #f1f5f9;
+  
   color: #2f7a22;
+
 }
+
 
 .adminCoachesPasswordToggle svg {
+  
   width: 18px;
+  
   height: 18px;
+  
   fill: none;
+  
   stroke: currentColor;
+  
   stroke-width: 2;
+  
   stroke-linecap: round;
+  
   stroke-linejoin: round;
+
 }
+
 
 .adminCoachesFormError {
+  
   margin: 0;
+  
   color: #b91c1c;
+  
   font-size: 12px;
+  
   font-weight: 600;
+
 }
+
 
 .adminCoachesToast {
+  
   position: fixed;
+  
   top: 92px;
+  
   right: 24px;
+  
   z-index: 10000;
+  
   width: min(360px, calc(100vw - 32px));
+  
   border: 1px solid #cfe8c3;
+  
   border-radius: 12px;
+  
   background: #f2fbec;
+  
   color: #24591d;
+  
   box-shadow: 0 18px 36px rgba(15, 23, 42, 0.16);
+  
   padding: 14px 18px;
+  
   font-size: 14px;
+  
   line-height: 1.4;
+  
   font-weight: 700;
+
 }
+
 
 .adminCoachesToast.isError {
+  
   border-color: #fecaca;
+  
   background: #fff1f2;
+  
   color: #b91c1c;
+
 }
+
 
 .adminCoachesModalActions {
+  
   margin-top: 14px;
+  
   display: flex;
+  
   justify-content: flex-end;
+  
   gap: 8px;
+
 }
 
+
 .adminCoachesModalBtn {
+  
   height: 36px;
+  
   border: 0;
+  
   border-radius: 10px;
+  
   padding: 0 14px;
+  
   font-size: 13px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+
 }
+
 
 .adminCoachesModalBtn:disabled {
+  
   opacity: 0.7;
+  
   cursor: not-allowed;
+
 }
+
 
 .adminCoachesModalBtn.ghost {
+  
   background: #f3f4f6;
+  
   color: #1f2937;
+
 }
+
 
 .adminCoachesModalBtn.danger {
+  
   background: #dc2626;
+  
   color: #ffffff;
+
 }
+
 
 .adminCoachesModalBtn.success {
+  
   background: #3f7d22;
+  
   color: #ffffff;
+
 }
+
 
 .adminCoachesModalBtn.success:hover {
+  
   background: #366c1d;
+
 }
+
 
 @media (max-width: 720px) {
+  
   .adminCoachesToolbar input {
+    
     width: 100%;
+    
     min-width: 0;
+  
   }
 
+  
   .adminCatatanPelatihHead {
+    
     flex-direction: column;
+    
     align-items: flex-start;
+  
   }
+
 }
+
 
 /* Clean admin coaches view: visual polish only. */
+
 .adminCoachesPage,
+
 .adminCatatanPelatihCard,
-.adminCoachesCard,
-.adminCoachesModalCard {
-  color: #102033;
-}
 
 .adminCoachesCard,
-.adminCatatanPelatihCard,
+
 .adminCoachesModalCard {
-  border-radius: 8px;
-  border-color: #dfe8dd;
-  background: #ffffff;
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.045);
+  
+  color: #102033;
+
 }
+
+
+.adminCoachesCard,
+
+.adminCatatanPelatihCard,
+
+.adminCoachesModalCard {
+  
+  border-radius: 8px;
+  
+  border-color: #dfe8dd;
+  
+  background: #ffffff;
+  
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.045);
+
+}
+
 
 .adminCoachesToolbar {
+  
   gap: 12px;
+  
   padding-bottom: 14px;
+  
   border-bottom: 1px solid #e7eee4;
+
 }
 
+
 .adminCoachesToolbar input,
+
 .adminCatatanPelatihHead select,
+
 .adminCoachesAddForm input {
+  
   border-color: #dce8d8;
+  
   border-radius: 8px;
+  
   background: #ffffff;
+  
   color: #102033;
+  
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.035);
+
 }
+
 
 .adminCoachesModalBtn {
+  
   border-radius: 8px;
+
 }
+
 
 /* Reference coaches layout */
+
 .adminCoachesPage {
+  
   gap: 14px;
+
 }
+
 
 .adminCoachesCard,
+
 .adminCatatanPelatihCard {
+  
   border: 1px solid #e2e8f0;
+  
   border-radius: 16px;
+  
   background: #ffffff;
+  
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055);
+  
   padding: 16px;
+
 }
+
 
 .adminCoachesToolbar {
+  
   border-bottom: 0;
+  
   padding-bottom: 8px;
+  
   margin-bottom: 8px;
+
 }
+
 
 .adminCoachesAddBtn {
+  
   height: 34px;
+  
   border-radius: 999px;
+  
   background: #347c20;
+  
   padding: 0 18px;
+
 }
 
+
 .adminCoachesToolbar input {
+  
   height: 38px;
+  
   width: 240px;
+  
   border: 1px solid #cfe4c6;
+  
   border-radius: 8px;
+  
   box-shadow: none;
+
 }
+
 
 .adminCoachesTableWrap,
+
 .adminCatatanPelatihTableWrap {
+  
   max-height: 310px;
+
 }
+
 
 .adminCoachesTableWrap table,
+
 .adminCatatanPelatihTableWrap table {
+  
   width: 100%;
+  
   border-collapse: collapse;
+
 }
 
+
 .adminCoachesTableWrap th,
+
 .adminCoachesTableWrap td,
+
 .adminCatatanPelatihTableWrap th,
+
 .adminCatatanPelatihTableWrap td {
+  
   padding: 16px 10px;
+  
   border-bottom: 1px solid #e9eef4;
+  
   font-size: 14px;
+
 }
 
+
 .adminCoachesTableWrap th,
+
 .adminCatatanPelatihTableWrap th {
+  
   color: #111827;
+  
   font-weight: 800;
+
 }
+
 
 .adminCoachesDeleteBtn {
+  
   height: 34px;
+  
   min-width: 74px;
+  
   border-radius: 999px;
+  
   background: #db0f14;
+
 }
+
 
 .adminCatatanPelatihHead {
+  
   margin-bottom: 16px;
+
 }
+
 
 .adminCatatanPelatihHead h3 {
+  
   color: #111827;
+  
   font-size: 30px;
+  
   font-weight: 800;
+
 }
 
+
 .adminCatatanPelatihHead select {
+  
   min-height: 38px;
+  
   border: 1px solid #cfe4c6;
+  
   border-radius: 8px;
+
 }
+
 
 /* Moderate font weight tuning to match the reference. */
+
 .adminCatatanPelatihHead h3 {
+  
   font-weight: 650;
+
 }
+
 
 .adminCoachesTableWrap th,
+
 .adminCatatanPelatihTableWrap th,
+
 .adminCoachesAddBtn,
+
 .adminCoachesDeleteBtn {
+  
   font-weight: 600;
+
 }
 
+
 .adminCoachesTableWrap td,
+
 .adminCatatanPelatihTableWrap td,
+
 .adminCoachesToolbar input,
+
 .adminCatatanPelatihHead select {
+  
   font-weight: 400;
+
 }
+
 
 /* Compact admin scale */
+
 .adminCoachesCard,
+
 .adminCatatanPelatihCard {
+  
   padding: 14px;
+
 }
+
 
 .adminCoachesToolbar {
+  
   margin-bottom: 6px;
+
 }
+
 
 .adminCoachesAddBtn,
+
 .adminCoachesToolbar input,
+
 .adminCatatanPelatihHead select {
+  
   height: 32px;
+  
   font-size: 12px;
+
 }
+
 
 .adminCoachesTableWrap th,
+
 .adminCoachesTableWrap td,
+
 .adminCatatanPelatihTableWrap th,
+
 .adminCatatanPelatihTableWrap td {
+  
   padding: 12px 10px;
+  
   font-size: 13px;
+
 }
+
 
 .adminCoachesDeleteBtn {
+  
   height: 30px;
+  
   font-size: 12px;
+
 }
 
+
 .adminCatatanPelatihHead h3 {
+  
   font-size: 26px;
+
 }
+
 
 /* Balanced admin scale */
+
 .adminCoachesCard,
+
 .adminCatatanPelatihCard {
+  
   padding: 15px;
+
 }
+
 
 .adminCoachesAddBtn,
+
 .adminCoachesToolbar input,
+
 .adminCatatanPelatihHead select {
+  
   height: 34px;
+
 }
+
 
 .adminCoachesTableWrap th,
+
 .adminCoachesTableWrap td,
+
 .adminCatatanPelatihTableWrap th,
+
 .adminCatatanPelatihTableWrap td {
+  
   padding: 13px 10px;
+
 }
+
 
 .adminCatatanPelatihHead h3 {
+  
   font-size: 28px;
+
 }
+
 
 /* Match second reference screenshot for Data Pelatih. */
+
 .adminCoachesPage {
+  
   margin-top: 4px;
+  
   gap: 14px;
+
 }
+
 
 .adminCoachesCard {
+  
   min-height: 344px;
+  
   padding: 14px 14px 13px;
+  
   border: 1px solid #e1e8f0;
+  
   border-radius: 16px;
+  
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055);
+
 }
+
 
 .adminCoachesToolbar {
+  
   gap: 13px;
+  
   margin: 0 0 16px;
+  
   padding: 0;
+  
   border-bottom: 0;
+
 }
+
 
 .adminCoachesAddBtn {
+  
   height: 34px;
+  
   min-width: 132px;
+  
   padding: 0 15px;
+  
   background: #2f7a22;
+  
   font-size: 12px;
+  
   font-weight: 600;
+  
   line-height: 1;
+
 }
+
 
 .adminCoachesAddBtn:hover {
+  
   background: #28691d;
+
 }
+
 
 .adminCoachesToolbar input {
+  
   width: 274px;
+  
   min-width: 274px;
+  
   height: 36px;
+  
   border: 1px solid #cbdcc3;
+  
   border-radius: 10px;
+  
   padding: 0 14px;
+  
   color: #475569;
+  
   font-size: 13px;
+
 }
+
 
 .adminCoachesTableWrap {
+  
   max-height: none;
+  
   overflow: visible;
+  
   padding-right: 0;
+
 }
+
 
 .adminCoachesTableWrap table {
+  
   table-layout: fixed;
+
 }
+
 
 .adminCoachesTableWrap th:nth-child(1),
+
 .adminCoachesTableWrap td:nth-child(1) {
+  
   width: 25%;
+
 }
+
 
 .adminCoachesTableWrap th:nth-child(2),
+
 .adminCoachesTableWrap td:nth-child(2) {
+  
   width: 48%;
+
 }
+
 
 .adminCoachesTableWrap th:nth-child(3),
+
 .adminCoachesTableWrap td:nth-child(3) {
+  
   width: 27%;
+
 }
+
 
 .adminCoachesTableWrap th {
+  
   padding: 9px 11px 13px;
+  
   color: #0f172a;
+  
   font-size: 14px;
+  
   font-weight: 600;
+
 }
+
 
 .adminCoachesTableWrap td {
+  
   height: 51px;
+  
   padding: 0 11px;
+  
   color: #475569;
+  
   font-size: 13px;
+  
   font-weight: 400;
+  
   vertical-align: middle;
+
 }
+
 
 .adminCoachesTableWrap tbody tr:hover {
+  
   background: transparent;
+
 }
+
 
 .adminCoachesDeleteBtn {
+  
   height: 30px;
+  
   min-width: 80px;
+  
   background: #e11117;
+  
   font-size: 12px;
+  
   font-weight: 600;
+
 }
+
 
 .adminCoachesDeleteBtn:hover {
+  
   background: #c90f14;
+
 }
 
+
 @media (max-width: 720px) {
+  
   .adminCoachesCard {
+    
     min-height: auto;
+    
     padding: 14px;
+  
   }
 
+  
   .adminCoachesToolbar input {
+    
     width: 100%;
+    
     min-width: 0;
+  
   }
 
+  
   .adminCoachesTableWrap {
+    
     overflow-x: auto;
+  
   }
 
+  
   .adminCoachesTableWrap table {
+    
     min-width: 640px;
+  
   }
+
 }
 

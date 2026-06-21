@@ -1,75 +1,142 @@
+
 .childPickerOverlay {
+  
   position: fixed;
+  
   inset: 0;
+  
   z-index: 9999;
+  
   background: rgba(15, 23, 42, 0.38);
+  
   display: grid;
+  
   place-items: center;
+  
   padding: 16px;
+  
   backdrop-filter: blur(1px);
+
 }
+
 
 .childPickerCard {
+  
   box-sizing: border-box;
+  
   width: min(calc(100% - 32px), 576px);
+  
   background: #ffffff;
+  
   border: 1px solid #d9e7d5;
+  
   border-radius: 16px;
+  
   box-shadow: 0 28px 54px rgba(15, 23, 42, 0.22);
+  
   padding: 32px 28px 28px;
+
 }
+
 
 .childPickerCard h2 {
+  
   margin: 0;
+  
   font-size: 34px;
+  
   line-height: 1.12;
+  
   font-weight: 700;
+  
   color: #153722;
+
 }
+
 
 .childPickerCard p {
+  
   margin: 14px 0 0;
+  
   color: #486255;
+  
   font-size: 18px;
+  
   font-weight: 400;
+  
   line-height: 1.5;
+
 }
+
 
 .childPickerList {
+  
   margin-top: 18px;
+  
   display: grid;
+  
   gap: 12px;
+
 }
+
 
 .childPickerItem {
+  
   height: 56px;
+  
   border: 1px solid #b8d7bc;
+  
   border-radius: 14px;
+  
   background: #f4fbf3;
+  
   color: #1f4b2c;
+  
   font-size: 17px;
+  
   font-weight: 600;
+  
   cursor: pointer;
+  
   transition: all 0.18s ease;
+
 }
+
 
 .childPickerItem:hover {
+  
   border-color: #7abf7f;
+  
   background: #e9f7e6;
+
 }
+
 
 .childPickerState {
+  
   border: 1px solid #d9e7d5;
+  
   border-radius: 12px;
+  
   background: #f8fbf7;
+  
   color: #486255;
+  
   padding: 12px;
+  
   font-size: 14px;
+  
   line-height: 1.4;
+
 }
 
+
 .childPickerState.is-error {
+  
   border-color: #f0b8b8;
+  
   background: #fff7f7;
+  
   color: #9b2f2f;
+
 }

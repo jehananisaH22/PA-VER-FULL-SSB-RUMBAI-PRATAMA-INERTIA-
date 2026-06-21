@@ -1,1506 +1,2799 @@
+
 .adminPaymentPage {
+  
   --admin-payment-brand: #5ca328;
+  
   --admin-payment-brand-dark: #4a891d;
+  
   --admin-payment-surface: #ffffff;
+  
   --admin-payment-surface-soft: #fcfdfc;
+  
   --admin-payment-border: #d8e1d2;
+  
   --admin-payment-border-strong: #e7edf3;
+  
   --admin-payment-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+  
   --admin-payment-text: #263238;
+  
   --admin-payment-muted: #6b7280;
+  
   display: flex;
+  
   flex-direction: column;
+  
   gap: 24px;
+  
   min-height: calc(100vh - 140px);
+  
   padding-top: 28px;
+  
   padding-bottom: 30px;
+
 }
+
 
 .adminPaymentToolbar {
+  
   display: flex;
+  
   flex-direction: column;
+  
   align-items: flex-start;
+  
   gap: 20px;
+  
   max-width: 760px;
+
 }
+
 
 .adminPaymentSearchBar,
+
 .adminPaymentFilterSearch {
+  
   position: relative;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   width: min(100%, 276px);
+
 }
+
 
 .adminPaymentSearchBar input,
+
 .adminPaymentFilterSearch input {
+  
   width: 100%;
+  
   min-height: 42px;
+  
   border: 1px solid var(--admin-payment-border);
+  
   border-radius: 999px;
+  
   background: var(--admin-payment-surface);
+  
   box-shadow: var(--admin-payment-shadow);
+  
   color: var(--admin-payment-text);
+  
   font-size: 13px;
+  
   font-weight: 500;
+  
   line-height: 1.4;
+  
   padding: 0 42px 0 18px;
+  
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+
 }
 
+
 .adminPaymentFilterRow select,
+
 .adminPaymentStatusSelect {
+  
   min-height: 38px;
+  
   border: 1px solid var(--admin-payment-border);
+  
   border-radius: 999px;
+  
   background: var(--admin-payment-surface);
+  
   box-shadow: var(--admin-payment-shadow);
+  
   color: var(--admin-payment-text);
+  
   font-size: 13px;
+  
   font-weight: 500;
+  
   line-height: 1.4;
+  
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+
 }
+
 
 .adminPaymentSearchBar input::placeholder,
+
 .adminPaymentFilterSearch input::placeholder {
+  
   color: #94a3b8;
+
 }
+
 
 .adminPaymentSearchBar input:focus,
+
 .adminPaymentFilterSearch input:focus,
+
 .adminPaymentFilterRow select:focus,
+
 .adminPaymentStatusSelect:focus,
+
 .adminPaymentComposeCard textarea:focus {
+  
   outline: none;
+  
   border-color: rgba(79, 148, 38, 0.55);
+  
   box-shadow: 0 0 0 4px rgba(79, 148, 38, 0.12);
+
 }
+
 
 .adminPaymentSearchBar span,
+
 .adminPaymentFilterSearch span {
+  
   position: absolute;
+  
   right: 13px;
+  
   width: 16px;
+  
   height: 16px;
+  
   color: #9aa7b4;
+  
   pointer-events: none;
+
 }
+
 
 .adminPaymentSearchBar span svg,
+
 .adminPaymentFilterSearch span svg {
+  
   width: 100%;
+  
   height: 100%;
+  
   display: block;
+
 }
+
 
 .adminPaymentStudentDropdown {
+  
   position: absolute;
+  
   top: calc(100% + 8px);
+  
   left: 0;
+  
   right: 0;
+  
   z-index: 18;
+  
   padding: 8px;
+  
   border-radius: 16px;
+  
   border: 1px solid #dbe9d0;
+  
   background: #ffffff;
+  
   box-shadow: 0 18px 30px rgba(15, 23, 42, 0.12);
+
 }
+
 
 .adminPaymentStudentOption {
+  
   width: 100%;
+  
   min-height: 38px;
+  
   border: 0;
+  
   border-radius: 10px;
+  
   background: transparent;
+  
   padding: 0 12px;
+  
   text-align: left;
+  
   color: #18324a;
+  
   font-size: 13px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+  
   transition: background-color 180ms ease, color 180ms ease;
+
 }
+
 
 .adminPaymentStudentOption + .adminPaymentStudentOption {
+  
   margin-top: 4px;
+
 }
+
 
 .adminPaymentStudentOption:hover {
+  
   background: #f3faee;
+  
   color: #2f6420;
+
 }
+
 
 .adminPaymentStudentOption.is-selected {
+  
   background: linear-gradient(180deg, #74c13a 0%, #63ae2f 100%);
+  
   color: #ffffff;
+  
   box-shadow: 0 10px 18px rgba(99, 174, 47, 0.18);
+
 }
+
 
 .adminPaymentStudentEmpty {
+  
   margin: 0;
+  
   padding: 8px 10px;
+  
   color: #64748b;
+  
   font-size: 12px;
+  
   font-weight: 600;
+
 }
+
 
 .adminPaymentTabs {
+  
   display: flex;
+  
   flex-wrap: wrap;
+  
   gap: 16px;
+  
   align-items: center;
+
 }
 
+
 .adminPaymentTabs button,
+
 .adminPaymentPrimaryBtn {
+  
   border: 0;
+  
   min-height: 38px;
+  
   padding: 0 20px;
+  
   border-radius: 999px;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   gap: 8px;
+  
   background: #4f9426;
+  
   color: #ffffff;
+  
   font-size: 12px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+  
   box-shadow: 0 8px 20px rgba(79, 148, 38, 0.18);
+  
   transition: transform 180ms ease, filter 180ms ease, opacity 180ms ease, box-shadow 180ms ease;
+
 }
+
 
 .adminPaymentTabs button:hover,
+
 .adminPaymentPrimaryBtn:hover {
+  
   transform: translateY(-1px);
+  
   filter: brightness(1.04);
+  
   box-shadow: 0 10px 22px rgba(79, 148, 38, 0.22);
+
 }
 
+
 .adminPaymentTabs button.is-active {
+  
   background: #45871f;
+  
   box-shadow: 0 10px 24px rgba(69, 135, 31, 0.22);
+
 }
+
 
 .adminPaymentTabLabel {
+  
   white-space: nowrap;
+
 }
 
+
 .adminPaymentTabIcon {
+  
   width: 13px;
+  
   height: 13px;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   opacity: 0.95;
+
 }
+
 
 .adminPaymentTabIcon svg {
+  
   width: 100%;
+  
   height: 100%;
+  
   display: block;
+
 }
+
 
 .adminPaymentPrimaryBtn:disabled {
+  
   opacity: 0.55;
+  
   cursor: not-allowed;
+  
   transform: none;
+  
   filter: none;
+
 }
+
 
 .adminPaymentFilterRow {
+  
   display: flex;
+  
   flex-wrap: wrap;
+  
   gap: 12px;
+  
   align-items: center;
+  
   justify-content: flex-start;
+  
   margin-top: 2px;
+
 }
 
+
 .adminPaymentFilterSelect {
+  
   position: relative;
+  
   width: min(100%, 168px);
+  
   min-width: 168px;
+
 }
+
 
 .adminPaymentFilterSelectWide {
+  
   width: min(100%, 238px);
+  
   min-width: 238px;
+
 }
 
+
 .adminPaymentFilterSelectTrigger {
+  
   width: 100%;
+  
   min-height: 36px;
+  
   border: 1px solid #9fd17a;
+  
   border-radius: 999px;
+  
   background: linear-gradient(180deg, #fcfff9 0%, #f3faee 100%);
+  
   box-shadow: 0 8px 18px rgba(117, 170, 74, 0.1);
+  
   padding: 0 12px 0 14px;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+  
   gap: 8px;
+  
   color: #245019;
+  
   font-size: 11px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+  
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease, background 180ms ease;
+
 }
+
 
 .adminPaymentFilterSelectTrigger:hover {
+  
   border-color: #8bc463;
+  
   box-shadow: 0 10px 20px rgba(117, 170, 74, 0.14);
+
 }
+
 
 .adminPaymentFilterSelect.is-open .adminPaymentFilterSelectTrigger {
+  
   border-color: #7db34f;
+  
   background: linear-gradient(180deg, #fbfff8 0%, #eff8e8 100%);
+  
   box-shadow: 0 0 0 4px rgba(125, 179, 79, 0.14);
+
 }
 
+
 .adminPaymentFilterSelectIcon {
+  
   width: 14px;
+  
   height: 14px;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   color: #597444;
+  
   transition: transform 180ms ease, color 180ms ease;
+
 }
+
 
 .adminPaymentFilterSelect.is-open .adminPaymentFilterSelectIcon {
+  
   transform: rotate(180deg);
+  
   color: #4f9426;
+
 }
+
 
 .adminPaymentFilterSelectIcon svg {
+  
   width: 100%;
+  
   height: 100%;
+  
   display: block;
+
 }
+
 
 .adminPaymentFilterSelectMenu {
+  
   position: absolute;
+  
   top: calc(100% + 12px);
+  
   left: 0;
+  
   right: 0;
+  
   z-index: 15;
+  
   padding: 10px 10px 8px;
+  
   border-radius: 20px;
+  
   border: 1px solid #dbe9d0;
+  
   background: #ffffff;
+  
   box-shadow: 0 18px 30px rgba(15, 23, 42, 0.12);
+
 }
+
 
 .adminPaymentFilterSelectOption {
+  
   width: 100%;
+  
   min-height: 36px;
+  
   border: 0;
+  
   border-radius: 12px;
+  
   background: transparent;
+  
   padding: 0 14px;
+  
   text-align: left;
+  
   color: #18324a;
+  
   font-size: 12px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+  
   transition: background-color 180ms ease, color 180ms ease;
+
 }
+
 
 .adminPaymentFilterSelectOption + .adminPaymentFilterSelectOption {
+  
   margin-top: 4px;
+
 }
+
 
 .adminPaymentFilterSelectOption:hover {
+  
   background: #f3faee;
+  
   color: #2f6420;
+
 }
+
 
 .adminPaymentFilterSelectOption.is-selected {
+  
   background: linear-gradient(180deg, #74c13a 0%, #63ae2f 100%);
+  
   color: #ffffff;
+  
   box-shadow: 0 10px 18px rgba(99, 174, 47, 0.18);
+
 }
+
 
 .adminPaymentFilterRow select {
+  
   width: min(100%, 165px);
+  
   min-width: 165px;
+  
   padding: 0 34px 0 14px;
+  
   appearance: none;
+  
   background-image:
+    
     linear-gradient(45deg, transparent 50%, #64748b 50%),
+    
     linear-gradient(135deg, #64748b 50%, transparent 50%);
+  
   background-position:
+    
     calc(100% - 18px) calc(50% - 2px),
+    
     calc(100% - 12px) calc(50% - 2px);
+  
   background-size: 5px 5px, 5px 5px;
+  
   background-repeat: no-repeat;
+
 }
+
 
 .adminPaymentSurface {
+  
   min-height: 430px;
+  
   display: flex;
+  
   flex-direction: column;
+  
   padding: 12px 18px 18px;
+  
   border-radius: 18px;
+  
   background: linear-gradient(180deg, #ffffff 0%, var(--admin-payment-surface-soft) 100%);
+  
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  
   margin-bottom: 4px;
+
 }
+
 
 .adminPaymentSurfaceHead {
+  
   min-height: 68px;
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+  
   gap: 16px;
+  
   padding: 4px 6px 14px;
+  
   border-bottom: 1px solid var(--admin-payment-border-strong);
+  
   margin-bottom: 2px;
+
 }
+
 
 .adminPaymentSurfaceHead span {
+  
   display: block;
+  
   color: #5f6f7f;
+  
   font-size: 11px;
+  
   font-weight: 700;
+  
   line-height: 1.2;
+
 }
 
+
 .adminPaymentSurfaceHead h2 {
+  
   margin: 4px 0 0;
+  
   color: #111827;
+  
   font-size: 24px;
+  
   line-height: 1.2;
+  
   font-weight: 700;
+
 }
+
 
 .adminPaymentSurfaceHead > svg {
+  
   width: 34px;
+  
   height: 34px;
+  
   color: #4f9426;
+  
   flex: 0 0 auto;
+
 }
 
+
 .adminPaymentTableWrap {
+  
   max-height: 500px;
+  
   overflow: auto;
+  
   margin-top: 0;
+  
   scrollbar-width: thin;
+  
   scrollbar-color: #cbd5e1 transparent;
+
 }
+
 
 .adminPaymentTableWrap::-webkit-scrollbar {
+  
   width: 8px;
+  
   height: 8px;
+
 }
+
 
 .adminPaymentTableWrap::-webkit-scrollbar-thumb {
+  
   background: #cbd5e1;
+  
   border-radius: 999px;
+
 }
 
+
 .adminPaymentTableWrap table {
+  
   min-width: 880px;
+
 }
+
 
 .adminPaymentTableWrap thead th {
+  
   position: sticky;
+  
   top: 0;
+  
   background: rgba(255, 255, 255, 0.96);
+  
   backdrop-filter: blur(10px);
+  
   z-index: 2;
+
 }
+
 
 .adminPaymentTableWrap th,
+
 .adminPaymentTableWrap td {
+  
   padding: 14px 10px;
+  
   border-bottom: 1px solid var(--admin-payment-border-strong);
+
 }
+
 
 .adminPaymentTableWrap th {
+  
   font-size: 12px;
+  
   letter-spacing: -0.01em;
+  
   color: #111827;
+  
   font-weight: 700;
+
 }
 
+
 .adminPaymentTableWrap td {
+  
   font-size: 12px;
+  
   color: #1f2937;
+  
   overflow: visible;
+
 }
+
 
 .adminPaymentTableWrap tbody tr {
+  
   transition: background-color 180ms ease;
+
 }
+
 
 .adminPaymentTableWrap tbody tr:hover {
+  
   background: #fafcf9;
+
 }
 
+
 .adminPaymentNameCell strong {
+  
   display: block;
+  
   color: #111827;
+  
   font-size: 12px;
+  
   line-height: 1.35;
+  
   font-weight: 500;
+
 }
+
 
 .adminTablePagination {
+  
   width: 100%;
+  
   display: flex;
+  
   justify-content: flex-end;
+  
   margin-top: 18px;
+
 }
+
 
 .adminPaymentNameCell small {
+  
   display: inline-flex;
+  
   margin-top: 4px;
+  
   color: var(--admin-payment-muted);
+  
   font-size: 11px;
+  
   font-weight: 600;
+  
   letter-spacing: 0.01em;
+
 }
 
+
 .adminPaymentProofBtn {
+  
   border: 0;
+  
   min-height: 30px;
+  
   min-width: 108px;
+  
   padding: 0 12px;
+  
   border-radius: 999px;
+  
   background: #e8f4e2;
+  
   color: #2f6420;
+  
   font-size: 11px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+  
   transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+
 }
+
 
 .adminPaymentProofBtn:hover:not(:disabled) {
+  
   transform: translateY(-1px);
+  
   filter: brightness(1.02);
+  
   box-shadow: 0 10px 18px rgba(79, 148, 38, 0.14);
+
 }
+
 
 .adminPaymentProofBtn:disabled {
+  
   background: #f2f4f7;
+  
   color: #98a2b3;
+  
   cursor: not-allowed;
+
 }
+
 
 .adminPaymentMonthlyInfo {
+  
   display: inline-flex;
+  
   flex-direction: column;
+  
   align-items: flex-start;
+  
   gap: 2px;
+  
   min-width: 138px;
+  
   color: #9a3412;
+
 }
+
 
 .adminPaymentMonthlyInfo strong {
+  
   font-size: 13px;
+  
   line-height: 1.2;
+  
   font-weight: 800;
+
 }
+
 
 .adminPaymentMonthlyInfo small {
+  
   font-size: 11px;
+  
   line-height: 1.2;
+  
   color: #64748b;
+  
   white-space: nowrap;
+
 }
+
 
 .adminPaymentMonthlyInfo.isComplete {
+  
   color: #2f7d1f;
+
 }
+
 
 .adminPaymentMonthlyDash {
+  
   color: #94a3b8;
+
 }
+
 
 .adminPaymentStatusSelect {
+  
   width: auto;
+  
   min-width: 160px;
+  
   padding: 0 34px 0 14px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+  
   appearance: none;
+  
   background-image:
+    
     linear-gradient(45deg, transparent 50%, currentColor 50%),
+    
     linear-gradient(135deg, currentColor 50%, transparent 50%);
+  
   background-position:
+    
     calc(100% - 18px) calc(50% - 2px),
+    
     calc(100% - 12px) calc(50% - 2px);
+  
   background-size: 5px 5px, 5px 5px;
+  
   background-repeat: no-repeat;
+
 }
+
 
 .adminPaymentStatusDropdown {
+  
   position: relative;
+  
   width: fit-content;
+  
   min-width: 142px;
+  
   z-index: 6;
+
 }
 
+
 .adminPaymentStatusTrigger {
+  
   width: 100%;
+  
   min-height: 32px;
+  
   border: 1px solid #a8d185;
+  
   border-radius: 999px;
+  
   background: linear-gradient(180deg, #ffffff 0%, #f4faef 100%);
+  
   box-shadow: 0 6px 14px rgba(117, 170, 74, 0.1);
+  
   padding: 0 10px 0 12px;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+  
   gap: 8px;
+  
   color: #2a4f1f;
+  
   font-size: 11px;
+  
   font-weight: 700;
+  
   white-space: nowrap;
+  
   cursor: pointer;
+  
   transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease, transform 180ms ease;
+
 }
+
 
 .adminPaymentStatusTrigger:hover {
+  
   border-color: #8fc463;
+  
   box-shadow: 0 8px 16px rgba(117, 170, 74, 0.14);
+
 }
+
 
 .adminPaymentStatusTrigger.is-paid {
+  
   border-color: #56a53a;
+  
   background: linear-gradient(180deg, #f4fff0 0%, #e4f8dc 100%);
+  
   color: #216314;
+
 }
+
 
 .adminPaymentStatusTrigger.is-paid .adminPaymentStatusTriggerIcon {
+  
   color: #216314;
+
 }
+
 
 .adminPaymentStatusTrigger.is-unpaid {
+  
   border-color: #ef7d7d;
+  
   background: linear-gradient(180deg, #fff7f7 0%, #ffe8e8 100%);
+  
   color: #a31616;
+
 }
+
 
 .adminPaymentStatusTrigger.is-unpaid .adminPaymentStatusTriggerIcon {
+  
   color: #a31616;
+
 }
+
 
 .adminPaymentStatusTrigger.is-pending {
+  
   border-color: #e5b84f;
+  
   background: linear-gradient(180deg, #fffdf5 0%, #fff1c8 100%);
+  
   color: #8a5a00;
+
 }
+
 
 .adminPaymentStatusTrigger.is-pending .adminPaymentStatusTriggerIcon {
+  
   color: #8a5a00;
+
 }
+
 
 .adminPaymentStatusDropdown.is-open .adminPaymentStatusTrigger {
+  
   box-shadow: 0 0 0 4px rgba(125, 179, 79, 0.14);
+
 }
 
+
 .adminPaymentStatusTriggerIcon {
+  
   width: 13px;
+  
   height: 13px;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: center;
+  
   color: #5f7d48;
+  
   transition: transform 180ms ease, color 180ms ease;
+  
   flex: 0 0 auto;
+
 }
+
 
 .adminPaymentStatusDropdown.is-open .adminPaymentStatusTriggerIcon {
+  
   transform: rotate(180deg);
+  
   color: #4f9426;
+
 }
+
 
 .adminPaymentStatusTriggerIcon svg {
+  
   width: 100%;
+  
   height: 100%;
+  
   display: block;
+
 }
+
 
 .adminPaymentStatusMenu {
+  
   position: absolute;
+  
   top: calc(100% + 8px);
+  
   right: 0;
+  
   width: 100%;
+  
   min-width: 150px;
+  
   max-width: 158px;
+  
   z-index: 20;
+  
   padding: 8px;
+  
   border-radius: 14px;
+  
   border: 1px solid #dbe9d0;
+  
   background: #ffffff;
+  
   box-shadow: 0 18px 30px rgba(15, 23, 42, 0.12);
+  
   overflow-y: auto;
+  
   overscroll-behavior: contain;
+
 }
+
 
 .adminPaymentStatusMenuPortal {
+  
   top: 0;
+  
   right: auto;
+  
   margin-top: 0;
+  
   z-index: 140;
+
 }
+
 
 .adminPaymentStatusOption {
+  
   width: 100%;
+  
   min-height: 32px;
+  
   border: 0;
+  
   border-radius: 10px;
+  
   background: transparent;
+  
   padding: 0 12px;
+  
   text-align: left;
+  
   color: #18324a;
+  
   font-size: 11px;
+  
   font-weight: 700;
+  
   white-space: nowrap;
+  
   cursor: pointer;
+  
   transition: background-color 180ms ease, color 180ms ease;
+  
   line-height: 1.2;
+
 }
+
 
 .adminPaymentStatusOption + .adminPaymentStatusOption {
+  
   margin-top: 4px;
+
 }
+
 
 .adminPaymentStatusOption:hover {
+  
   background: #f3faee;
+  
   color: #2f6420;
+
 }
+
 
 .adminPaymentStatusOption.is-selected {
+  
   background: linear-gradient(180deg, #74c13a 0%, #63ae2f 100%);
+  
   color: #ffffff;
+  
   box-shadow: 0 8px 14px rgba(99, 174, 47, 0.16);
+
 }
+
 
 .adminPaymentStatusOption.is-paid {
+  
   color: #216314;
+
 }
+
 
 .adminPaymentStatusOption.is-paid.is-selected {
+  
   background: linear-gradient(180deg, #6ac83f 0%, #4fae2c 100%);
+  
   color: #ffffff;
+  
   box-shadow: 0 8px 14px rgba(79, 174, 44, 0.18);
+
 }
+
 
 .adminPaymentStatusOption.is-unpaid {
+  
   color: #a31616;
+
 }
+
 
 .adminPaymentStatusOption.is-unpaid.is-selected {
+  
   background: linear-gradient(180deg, #ef6b6b 0%, #d93636 100%);
+  
   color: #ffffff;
+  
   box-shadow: 0 8px 14px rgba(217, 54, 54, 0.18);
+
 }
+
 
 .adminPaymentStatusOption.is-pending {
+  
   color: #8a5a00;
+
 }
+
 
 .adminPaymentStatusOption.is-pending.is-selected {
+  
   background: linear-gradient(180deg, #ffd978 0%, #f3b82e 100%);
+  
   color: #6b4100;
+  
   box-shadow: 0 8px 14px rgba(221, 157, 18, 0.2);
+
 }
+
 
 .adminPaymentEmptyCell {
+  
   padding: 34px 16px !important;
+  
   color: #94a3b8 !important;
+  
   text-align: center !important;
+
 }
+
 
 .adminPaymentComposeCard {
+  
   min-height: 320px;
+  
   padding: 18px;
+  
   border-radius: 18px;
+  
   display: flex;
+  
   flex-direction: column;
+  
   gap: 14px;
+  
   background: linear-gradient(180deg, #ffffff 0%, var(--admin-payment-surface-soft) 100%);
+  
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+
 }
 
+
 .adminPaymentComposeCard textarea {
+  
   width: 100%;
+  
   min-height: 220px;
+  
   border: 1px solid #d2dde7;
+  
   border-radius: 16px;
+  
   padding: 16px 18px;
+  
   resize: vertical;
+  
   font: inherit;
+  
   color: #263238;
+  
   background: #ffffff;
+
 }
+
 
 .adminPaymentComposeActions {
+  
   display: flex;
+  
   justify-content: flex-end;
+
 }
+
 
 .adminPaymentOverlay {
+  
   position: fixed;
+  
   inset: 0;
+  
   background: rgba(15, 23, 42, 0.32);
+  
   display: grid;
+  
   place-items: center;
+  
   padding: 20px;
+  
   z-index: 120;
+
 }
 
+
 .adminPaymentPreviewCard {
+  
   width: min(100%, 520px);
+  
   background: #ffffff;
+  
   border-radius: 24px;
+  
   box-shadow: 0 24px 40px rgba(15, 23, 42, 0.18);
+
 }
 
+
 .adminPaymentPreviewCard {
+  
   width: min(100%, 780px);
+  
   overflow: hidden;
+
 }
+
 
 .adminPaymentToast {
+  
   position: fixed;
+  
   top: 24px;
+  
   right: 24px;
+  
   z-index: 140;
+  
   min-height: 52px;
+  
   max-width: min(360px, calc(100vw - 32px));
+  
   border: 1px solid #cfe7c3;
+  
   border-radius: 8px;
+  
   background: #ffffff;
+  
   color: #142235;
+  
   box-shadow: 0 16px 34px rgba(15, 23, 42, 0.16);
+  
   display: grid;
+  
   grid-template-columns: 30px minmax(0, 1fr) 24px;
+  
   align-items: center;
+  
   gap: 10px;
+  
   padding: 10px 12px;
+  
   animation: adminPaymentToastIn 180ms ease-out;
+
 }
+
 
 .adminPaymentToastIcon {
+  
   width: 30px;
+  
   height: 30px;
+  
   border-radius: 999px;
+  
   background: #4aa326;
+  
   color: #ffffff;
+  
   display: grid;
+  
   place-items: center;
+
 }
+
 
 .adminPaymentToastIcon svg {
+  
   width: 18px;
+  
   height: 18px;
+
 }
+
 
 .adminPaymentToast span {
+  
   font-size: 14px;
+  
   font-weight: 500;
+  
   line-height: 1.35;
+
 }
+
 
 .adminPaymentToast button {
+  
   width: 24px;
+  
   height: 24px;
+  
   border: 0;
+  
   border-radius: 6px;
+  
   background: transparent;
+  
   color: #64748b;
+  
   font-size: 14px;
+  
   line-height: 1;
+  
   cursor: pointer;
+
 }
+
 
 .adminPaymentToast button:hover {
+  
   background: #f1f5f9;
+  
   color: #152238;
+
 }
+
 
 @keyframes adminPaymentToastIn {
+  
   from {
+    
     opacity: 0;
+    
     transform: translate(12px, -8px);
+  
   }
+  
   to {
+    
     opacity: 1;
+    
     transform: translate(0, 0);
+  
   }
+
 }
+
 
 .adminPaymentPreviewHead {
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+  
   gap: 16px;
+  
   padding: 22px 24px;
+  
   border-bottom: 1px solid #edf1f6;
+
 }
+
 
 .adminPaymentPreviewHead h3 {
+  
   margin: 0;
+  
   color: #0f172a;
+  
   font-size: 22px;
+  
   font-weight: 800;
+
 }
+
 
 .adminPaymentPreviewHead p {
+  
   margin: 6px 0 0;
+  
   color: #64748b;
+  
   font-size: 13px;
+  
   font-weight: 600;
+
 }
+
 
 .adminPaymentPreviewClose {
+  
   border: 0;
+  
   min-height: 42px;
+  
   padding: 0 18px;
+  
   border-radius: 999px;
+  
   background: #eef5eb;
+  
   color: #2f6420;
+  
   font-weight: 700;
+  
   cursor: pointer;
+
 }
+
 
 .adminPaymentPreviewBody {
+  
   max-height: 72vh;
+  
   overflow: auto;
+  
   padding: 18px;
+  
   background: #f8fafc;
+
 }
+
 
 .adminPaymentPreviewBody img {
+  
   width: 100%;
+  
   display: block;
+  
   border-radius: 14px;
+  
   object-fit: contain;
+
 }
+
 
 @media (max-width: 768px) {
+  
   .adminPaymentPage {
+    
     gap: 18px;
+    
     padding-top: 18px;
+  
   }
 
+  
   .adminPaymentToolbar {
+    
     align-items: stretch;
+    
     gap: 14px;
+  
   }
 
+  
   .adminPaymentSearchBar,
+  
   .adminPaymentFilterSearch {
+    
     width: 100%;
+  
   }
 
+  
   .adminPaymentTabs {
+    
     gap: 12px;
+  
   }
 
+  
   .adminPaymentTabs button {
+    
     min-height: 38px;
+    
     flex: 1 1 calc(50% - 10px);
+    
     justify-content: center;
+  
   }
 
+  
   .adminPaymentFilterRow select,
+  
   .adminPaymentStatusSelect,
+  
   .adminPaymentFilterSelect {
+    
     width: 100%;
+    
     min-width: 100%;
+  
   }
 
+  
   .adminPaymentStatusDropdown {
+    
     width: 100%;
+    
     min-width: 100%;
+  
   }
 
+  
   .adminPaymentSurface,
+  
   .adminPaymentComposeCard {
+    
     padding: 16px;
+    
     border-radius: 18px;
+  
   }
 
+  
   .adminPaymentTableWrap table {
+    
     min-width: 760px;
+  
   }
 
+  
   .adminPaymentComposeActions {
+    
     justify-content: stretch;
+  
   }
 
+  
   .adminPaymentPrimaryBtn {
+    
     width: 100%;
+  
   }
 
+  
   .adminPaymentPreviewHead {
+    
     align-items: flex-start;
+    
     flex-direction: column;
+  
   }
+
 }
+
 
 /* Clean admin payment view: visual polish only. */
+
 .adminPaymentPage {
+  
   --admin-payment-border: #dce8d8;
+  
   --admin-payment-border-strong: #e7eee4;
+  
   --admin-payment-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+  
   gap: 18px;
+  
   padding-top: 8px;
+
 }
+
 
 .adminPaymentToolbar {
+  
   gap: 16px;
+  
   max-width: none;
+  
   padding: 0 0 2px;
+
 }
+
 
 .adminPaymentSearchBar input,
+
 .adminPaymentFilterSearch input,
+
 .adminPaymentFilterRow select,
+
 .adminPaymentStatusSelect,
+
 .adminPaymentFilterSelectTrigger,
+
 .adminPaymentStatusSelectTrigger {
+  
   border-radius: 8px;
+  
   background: #ffffff;
+  
   color: #102033;
+  
   box-shadow: var(--admin-payment-shadow);
+
 }
+
 
 .adminPaymentTabs {
+  
   gap: 10px;
+
 }
 
+
 .adminPaymentTabs button,
+
 .adminPaymentPrimaryBtn {
+  
   min-height: 38px;
+  
   border-radius: 8px;
+  
   box-shadow: 0 8px 18px rgba(63, 125, 34, 0.14);
+
 }
+
 
 .adminPaymentSurface,
+
 .adminPaymentComposeCard,
+
 .adminPaymentPreviewCard {
+  
   border: 1px solid #dfe8dd;
+  
   border-radius: 8px;
+  
   background: #ffffff;
+  
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.045);
+
 }
+
 
 .adminPaymentSurface {
+  
   padding: 18px;
+
 }
+
 
 .adminPaymentSurfaceHead {
+  
   min-height: auto;
+  
   padding: 0 0 14px;
+  
   border-bottom-color: #e7eee4;
+
 }
 
+
 .adminPaymentSurfaceHead h2 {
+  
   color: #102033;
+  
   font-size: 22px;
+  
   font-weight: 750;
+
 }
+
 
 .adminPaymentSurfaceHead span {
+  
   color: #607264;
+
 }
+
 
 .adminPaymentTableWrap {
+  
   margin-top: 14px;
+  
   border: 1px solid #e6ece4;
+  
   border-radius: 8px;
+  
   background: #ffffff;
+
 }
+
 
 .adminPaymentTableWrap table {
+  
   border-collapse: separate;
+  
   border-spacing: 0;
+
 }
+
 
 .adminPaymentTableWrap th,
+
 .adminPaymentTableWrap td {
+  
   padding: 13px 14px;
+  
   border-bottom-color: #edf2eb;
+  
   line-height: 1.45;
+
 }
+
 
 .adminPaymentTableWrap th {
+  
   background: #f7faf6;
+  
   color: #334155;
+  
   font-size: 12px;
+  
   font-weight: 700;
+
 }
 
+
 .adminPaymentTableWrap td {
+  
   color: #34445a;
+
 }
+
 
 .adminPaymentTableWrap tbody tr:last-child td {
+  
   border-bottom: 0;
+
 }
 
+
 .adminPaymentNameCell strong {
+  
   color: #102033;
+  
   font-weight: 650;
+
 }
+
 
 .adminPaymentNameCell small,
+
 .adminPaymentStudentEmpty {
+  
   color: #5f6f63;
+
 }
+
 
 .adminPaymentComposeCard {
+  
   padding: 18px;
+
 }
+
 
 .adminPaymentComposeCard textarea {
+  
   border-color: #dce8d8;
+  
   border-radius: 8px;
+  
   background: #fbfdfb;
+
 }
+
 
 /* Reference payment layout */
+
 .adminPaymentPage {
+  
   gap: 20px;
+  
   padding-top: 6px;
+
 }
 
+
 .adminPaymentToolbar {
+  
   align-items: flex-start;
+  
   gap: 20px;
+
 }
+
 
 .adminPaymentSearchBar,
+
 .adminPaymentFilterSearch {
+  
   width: 276px;
+
 }
+
 
 .adminPaymentSearchBar input,
+
 .adminPaymentFilterSearch input {
+  
   min-height: 42px;
+  
   border: 1px solid #d7e5d0;
+  
   border-radius: 999px;
+  
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+
 }
+
 
 .adminPaymentTabs button,
+
 .adminPaymentPrimaryBtn {
+  
   min-height: 40px;
+  
   border-radius: 999px;
+  
   background: #347c20;
+  
   padding: 0 20px;
+  
   box-shadow: 0 12px 24px rgba(52, 124, 32, 0.16);
+
 }
+
 
 .adminPaymentTabs button.is-active {
+  
   background: #347c20;
+
 }
+
 
 .adminPaymentFilterSelectTrigger,
+
 .adminPaymentStatusSelectTrigger,
+
 .adminPaymentFilterRow select {
+  
   min-height: 40px;
+  
   border: 1px solid #9ed18a;
+  
   border-radius: 999px;
+  
   background: #fbfff8;
+  
   color: #1f3f1d;
+  
   font-weight: 750;
+
 }
 
+
 .adminPaymentSurface {
+  
   min-height: 430px;
+  
   padding: 24px 28px;
+  
   border: 1px solid #e2e8f0;
+  
   border-radius: 18px;
+  
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055);
+
 }
+
 
 .adminPaymentSurfaceHead {
+  
   border-bottom: 0;
+  
   padding-bottom: 8px;
+
 }
+
 
 .adminPaymentSurfaceHead h2 {
+  
   font-size: 28px;
+  
   color: #111827;
+  
   font-weight: 800;
+
 }
+
 
 .adminPaymentTableWrap {
+  
   margin-top: 12px;
+  
   border: 0;
+  
   border-radius: 0;
+
 }
+
 
 .adminPaymentTableWrap table {
+  
   width: 100%;
+  
   min-width: 900px;
+  
   border-collapse: collapse;
+
 }
+
 
 .adminPaymentTableWrap th,
+
 .adminPaymentTableWrap td {
+  
   padding: 20px 10px;
+  
   border-bottom: 1px solid #e9eef4;
+  
   font-size: 14px;
+
 }
+
 
 .adminPaymentTableWrap th {
+  
   background: #ffffff;
+  
   color: #111827;
+  
   font-weight: 800;
+
 }
 
+
 .adminPaymentProofBtn {
+  
   min-height: 32px;
+  
   border-radius: 999px;
+
 }
+
 
 /* Moderate font weight tuning to match the reference. */
+
 .adminPaymentSurfaceHead h2 {
+  
   font-weight: 650;
+
 }
 
+
 .adminPaymentTableWrap th,
+
 .adminPaymentTabs button,
+
 .adminPaymentPrimaryBtn,
+
 .adminPaymentFilterSelectTrigger,
+
 .adminPaymentStatusSelectTrigger,
+
 .adminPaymentFilterRow select,
+
 .adminPaymentNameCell strong {
+  
   font-weight: 600;
+
 }
+
 
 .adminPaymentTableWrap td,
+
 .adminPaymentSearchBar input,
+
 .adminPaymentFilterSearch input {
+  
   font-weight: 400;
+
 }
+
 
 /* Compact admin scale */
+
 .adminPaymentPage {
+  
   gap: 16px;
+
 }
+
 
 .adminPaymentToolbar {
+  
   gap: 16px;
+
 }
+
 
 .adminPaymentSearchBar input,
+
 .adminPaymentFilterSearch input {
+  
   min-height: 38px;
+  
   font-size: 12px;
+
 }
+
 
 .adminPaymentTabs button,
+
 .adminPaymentPrimaryBtn,
+
 .adminPaymentFilterSelectTrigger,
+
 .adminPaymentStatusSelectTrigger,
+
 .adminPaymentFilterRow select {
+  
   min-height: 36px;
+  
   font-size: 12px;
+
 }
+
 
 .adminPaymentSurface {
+  
   min-height: 380px;
+  
   padding: 20px 24px;
+
 }
+
 
 .adminPaymentSurfaceHead h2 {
+  
   font-size: 24px;
+
 }
+
 
 .adminPaymentTableWrap th,
+
 .adminPaymentTableWrap td {
+  
   padding: 15px 10px;
+  
   font-size: 13px;
+
 }
 
+
 .adminPaymentProofBtn {
+  
   min-height: 28px;
+  
   font-size: 12px;
+
 }
+
 
 /* Balanced admin scale */
+
 .adminPaymentSearchBar input,
+
 .adminPaymentFilterSearch input {
+  
   min-height: 40px;
+
 }
+
 
 .adminPaymentTabs button,
+
 .adminPaymentPrimaryBtn,
+
 .adminPaymentFilterSelectTrigger,
+
 .adminPaymentStatusSelectTrigger,
+
 .adminPaymentFilterRow select {
+  
   min-height: 38px;
+
 }
 
+
 .adminPaymentSurface {
+  
   min-height: 400px;
+  
   padding: 22px 26px;
+
 }
+
 
 .adminPaymentSurfaceHead h2 {
+  
   font-size: 25px;
+
 }
+
 
 .adminPaymentTableWrap th,
+
 .adminPaymentTableWrap td {
+  
   padding: 16px 10px;
+
 }
+
 
 /* Match second reference screenshot for Pembayaran. */
+
 .adminPaymentPage {
+  
   gap: 20px;
+  
   padding-top: 12px;
+
 }
+
 
 .adminPaymentToolbar {
+  
   gap: 18px;
+
 }
+
 
 .adminPaymentSearchBar {
+  
   width: 300px;
+
 }
+
 
 .adminPaymentSearchBar input {
+  
   min-height: 44px;
+  
   padding-left: 20px;
+  
   padding-right: 44px;
+  
   border-color: #d8e5d2;
+  
   font-size: 13px;
+  
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+
 }
+
 
 .adminPaymentSearchBar span {
+  
   right: 15px;
+  
   width: 16px;
+  
   height: 16px;
+
 }
+
 
 .adminPaymentTabs {
+  
   gap: 14px;
+
 }
+
 
 .adminPaymentTabs button {
+  
   min-height: 40px;
+  
   padding: 0 20px;
+  
   background: #3b8b24;
+  
   font-size: 12px;
+  
   font-weight: 600;
+  
   box-shadow: 0 14px 28px rgba(59, 139, 36, 0.18);
+
 }
+
 
 .adminPaymentTabs button.is-active {
+  
   background: #3b8b24;
+
 }
+
 
 .adminPaymentTabIcon {
+  
   width: 14px;
+  
   height: 14px;
+
 }
+
 
 .adminPaymentFilterSelect {
+  
   width: 180px;
+  
   min-width: 180px;
+
 }
+
 
 .adminPaymentFilterSelectTrigger {
+  
   min-height: 38px;
+  
   padding: 0 14px 0 16px;
+  
   border-color: #9bd180;
+  
   background: #fbfff8;
+  
   font-size: 12px;
+  
   font-weight: 600;
+  
   box-shadow: none;
+
 }
+
 
 .adminPaymentFilterSelectIcon {
+  
   width: 16px;
+  
   height: 16px;
+
 }
+
 
 .adminPaymentSurface {
+  
   min-height: 430px;
+  
   padding: 18px 22px 22px;
+  
   border: 1px solid #e1e8f0;
+  
   border-radius: 18px;
+  
   background: #ffffff;
+  
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.055);
+
 }
+
 
 .adminPaymentTableWrap {
+  
   margin-top: 0;
+  
   border: 0;
+  
   overflow: visible;
+
 }
+
 
 .adminPaymentTableWrap table {
+  
   width: 100%;
+  
   min-width: 900px;
+  
   table-layout: fixed;
+
 }
+
 
 .adminPaymentTableWrap th:nth-child(1),
+
 .adminPaymentTableWrap td:nth-child(1) {
+  
   width: 14%;
+
 }
+
 
 .adminPaymentTableWrap th:nth-child(2),
+
 .adminPaymentTableWrap td:nth-child(2) {
+  
   width: 17%;
+
 }
+
 
 .adminPaymentTableWrap th:nth-child(3),
+
 .adminPaymentTableWrap td:nth-child(3) {
+  
   width: 12%;
+
 }
+
 
 .adminPaymentTableWrap th:nth-child(4),
+
 .adminPaymentTableWrap td:nth-child(4) {
+  
   width: 13%;
+
 }
+
 
 .adminPaymentTableWrap th:nth-child(5),
+
 .adminPaymentTableWrap td:nth-child(5) {
+  
   width: 16%;
+
 }
+
 
 .adminPaymentTableWrap th:nth-child(6),
+
 .adminPaymentTableWrap td:nth-child(6) {
+  
   width: 18%;
+
 }
+
 
 .adminPaymentTableWrap th {
+  
   padding: 24px 12px 15px;
+  
   background: #ffffff;
+  
   color: #101827;
+  
   font-size: 13px;
+  
   font-weight: 600;
+
 }
+
 
 .adminPaymentTableWrap td {
+  
   height: 62px;
+  
   padding: 0 12px;
+  
   color: #1f2937;
+  
   font-size: 13px;
+  
   font-weight: 400;
+  
   vertical-align: middle;
+
 }
+
 
 .adminPaymentTableWrap tbody tr:hover {
+  
   background: transparent;
+
 }
+
 
 .adminPaymentNameCell strong {
+  
   color: #111827;
+  
   font-size: 13px;
+  
   font-weight: 500;
+
 }
+
 
 .adminPaymentProofBtn {
+  
   min-height: 31px;
+  
   min-width: 118px;
+  
   padding: 0 13px;
+  
   background: #f1f3f7;
+  
   color: #9aa4b2;
+  
   font-size: 11px;
+  
   font-weight: 600;
+
 }
+
 
 .adminPaymentStatusDropdown {
+  
   min-width: 142px;
+
 }
+
 
 .adminPaymentStatusTrigger {
+  
   min-height: 32px;
+  
   padding: 0 10px 0 12px;
+  
   font-size: 12px;
+  
   font-weight: 600;
+  
   box-shadow: none;
+
 }
+
 
 .adminPaymentStatusTriggerIcon {
+  
   width: 13px;
+  
   height: 13px;
+
 }
+
 
 .adminPaymentEmptyCell {
+  
   padding-top: 58px !important;
+
 }
+
 
 @media (max-width: 768px) {
+  
   .adminPaymentPage {
+    
     gap: 18px;
+    
     padding-top: 16px;
+  
   }
 
+  
   .adminPaymentSearchBar,
+  
   .adminPaymentFilterSelect {
+    
     width: 100%;
+    
     min-width: 0;
+  
   }
 
+  
   .adminPaymentTabs {
+    
     gap: 12px;
+  
   }
 
+  
   .adminPaymentTabs button {
+    
     min-height: 40px;
+    
     padding: 0 16px;
+  
   }
 
+  
   .adminPaymentSurface {
+    
     min-height: auto;
+    
     padding: 16px;
+  
   }
 
+  
   .adminPaymentTableWrap {
+    
     overflow-x: auto;
+  
   }
+
 }
+
 
 /* Keep payment status controls compact inside table rows. */
+
 .adminPaymentTableWrap .adminPaymentStatusDropdown {
+  
   width: 148px;
+  
   min-width: 148px;
+  
   max-width: 148px;
+
 }
+
 
 .adminPaymentTableWrap .adminPaymentStatusTrigger {
+  
   min-height: 28px;
+  
   height: 28px;
+  
   padding: 0 9px 0 12px;
+  
   border-radius: 999px;
+  
   font-size: 12px;
+  
   line-height: 1;
+  
   font-weight: 600;
+  
   box-shadow: none;
+
 }
+
 
 .adminPaymentTableWrap .adminPaymentStatusTrigger > span:first-child {
+  
   display: block;
+  
   min-width: 0;
+  
   overflow: hidden;
+  
   text-overflow: ellipsis;
+  
   white-space: nowrap;
+
 }
+
 
 .adminPaymentTableWrap .adminPaymentStatusTriggerIcon {
+  
   width: 12px;
+  
   height: 12px;
+
 }
 
+
 .adminPaymentStatusMenuPortal .adminPaymentStatusOption {
+  
   min-height: 30px;
+  
   font-size: 12px;
+  
   line-height: 1;
+
 }

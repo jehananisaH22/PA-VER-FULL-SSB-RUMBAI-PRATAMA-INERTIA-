@@ -1,1205 +1,2234 @@
+
 .adminStudentsPage {
+  
   animation: studentsPageIn 420ms ease-out both;
+
 }
+
 
 @keyframes studentsPageIn {
+  
   from {
+    
     opacity: 0;
+    
     transform: translateY(10px);
+  
   }
+  
   to {
+    
     opacity: 1;
+    
     transform: translateY(0);
+  
   }
+
 }
+
 
 @keyframes studentsCardIn {
+  
   from {
+    
     opacity: 0;
+    
     transform: translateY(12px);
+  
   }
+  
   to {
+    
     opacity: 1;
+    
     transform: translateY(0);
+  
   }
+
 }
+
 
 @keyframes studentsRowIn {
+  
   from {
+    
     opacity: 0;
+    
     transform: translateX(-8px);
+  
   }
+  
   to {
+    
     opacity: 1;
+    
     transform: translateX(0);
+  
   }
+
 }
+
 
 @keyframes studentsDonutIn {
+  
   from {
+    
     opacity: 0;
+    
     transform: rotate(-90deg) scale(0.94);
+  
   }
+  
   to {
+    
     opacity: 1;
+    
     transform: rotate(-90deg) scale(1);
+  
   }
+
 }
+
 
 @keyframes studentsSegmentIn {
+  
   from {
+    
     opacity: 0.3;
+    
     transform: scale(0.98);
+  
   }
+  
   to {
+    
     opacity: 1;
+    
     transform: scale(1);
+  
   }
+
 }
+
 
 @keyframes studentsBarGrow {
+  
   from {
+    
     width: 0;
+  
   }
+  
   to {
+    
     width: var(--bar-width);
+  
   }
+
 }
+
 
 @keyframes studentsDonutPop {
+  
   0% {
+    
     opacity: 0;
+    
     transform: scale(0.9);
+  
   }
+  
   70% {
+    
     opacity: 1;
+    
     transform: scale(1.02);
+  
   }
+  
   100% {
+    
     opacity: 1;
+    
     transform: scale(1);
+  
   }
+
 }
+
 
 @keyframes studentsBarsIn {
+  
   from {
+    
     opacity: 0;
+    
     transform: translateY(10px);
+  
   }
+  
   to {
+    
     opacity: 1;
+    
     transform: translateY(0);
+  
   }
+
 }
+
 
 @keyframes studentsBarRowIn {
+  
   from {
+    
     opacity: 0;
+    
     transform: translateX(8px);
+  
   }
+  
   to {
+    
     opacity: 1;
+    
     transform: translateX(0);
+  
   }
+
 }
+
 
 @keyframes studentsSwitchCard {
+  
   0% {
+    
     opacity: 0.35;
+    
     transform: translateY(12px) scale(0.985);
+  
   }
+  
   100% {
+    
     opacity: 1;
+    
     transform: translateY(0) scale(1);
+  
   }
+
 }
+
 
 @keyframes studentsTableSwap {
+  
   from {
+    
     opacity: 0;
+    
     transform: translateY(10px);
+  
   }
+  
   to {
+    
     opacity: 1;
+    
     transform: translateY(0);
+  
   }
+
 }
+
 
 @keyframes studentsChartSwap {
+  
   from {
+    
     opacity: 0;
+    
     transform: translateY(14px) scale(0.985);
+  
   }
+  
   to {
+    
     opacity: 1;
+    
     transform: translateY(0) scale(1);
+  
   }
+
 }
+
 
 .adminStudentsPage {
+  
   margin-top: 8px;
+  
   padding-bottom: 24px;
+
 }
+
 
 .adminStudentsCard {
+  
   padding: 14px;
+  
   animation: studentsCardIn 440ms ease-out both;
+
 }
+
 
 .adminStudentsToolbar {
+  
   display: flex;
+  
   flex-wrap: wrap;
+  
   align-items: center;
+  
   gap: 10px;
+  
   margin-bottom: 12px;
+
 }
 
+
 .adminStudentsToolbar input {
+  
   height: 38px;
+  
   border: 1px solid #cfe1ce;
+  
   border-radius: 9px;
+  
   background: #f8fcf7;
+  
   color: #334155;
+  
   padding: 0 12px;
+  
   font-size: 13px;
+  
   width: min(520px, 100%);
+
 }
 
+
 .adminStudentsToolbar input {
+  
   min-width: 0;
+
 }
+
 
 .adminStudentsToolbar .adminStudentsTimePicker {
+  
   min-width: 132px;
+
 }
+
 
 .adminStudentsTableWrap {
+  
   max-height: 60vh;
+  
   animation: studentsTableSwap 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
 }
 
+
 .adminStudentsDeleteBtn {
+  
   height: 28px;
+  
   min-width: 70px;
+  
   border: 0;
+  
   border-radius: 999px;
+  
   padding: 0 10px;
+  
   font-size: 12px;
+  
   font-weight: 700;
+  
   color: #ffffff;
+  
   background: #d41010;
+  
   cursor: pointer;
+
 }
+
 
 .adminStudentsDeleteBtn:hover {
+  
   background: #b90f0f;
+
 }
+
 
 .adminStudentsActionGroup {
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 8px;
+  
   flex-wrap: wrap;
+
 }
 
+
 .adminStudentsProfileBtn {
+  
   min-height: 34px;
+  
   border: 0;
+  
   border-radius: 999px;
+  
   padding: 0 13px;
+  
   font-size: 12px;
+  
   font-weight: 700;
+  
   color: #ffffff;
+  
   background: #4f8f2f;
+  
   cursor: pointer;
+
 }
+
 
 .adminStudentsProfileBtn:hover {
+  
   background: #3f7a25;
+
 }
+
 
 .adminStudentsModalOverlay {
+  
   position: fixed !important;
+  
   top: 0;
+  
   right: 0;
+  
   bottom: 0;
+  
   left: 0;
+  
   width: 100vw;
+  
   height: 100vh;
+  
   z-index: 9999;
+  
   background: rgba(17, 24, 39, 0.66);
+  
   backdrop-filter: blur(1px);
+  
   display: grid;
+  
   place-items: center;
+  
   padding: 16px;
+
 }
 
+
 .adminStudentsModalCard {
+  
   width: min(420px, 100%);
+  
   background: #ffffff;
+  
   border: 1px solid #e5e7eb;
+  
   border-radius: 14px;
+  
   box-shadow: 0 18px 36px rgba(0, 0, 0, 0.22);
+  
   padding: 18px 18px 16px;
+
 }
+
 
 .adminStudentsModalCard h4 {
+  
   margin: 0;
+  
   font-size: 22px;
+  
   font-weight: 700;
+  
   color: #111827;
+
 }
+
 
 .adminStudentsModalCard p {
+  
   margin: 10px 0 0;
+  
   font-size: 15px;
+  
   line-height: 1.5;
+  
   font-weight: 400;
+  
   color: #374151;
+
 }
+
 
 .adminStudentsModalActions {
+  
   margin-top: 16px;
+  
   display: flex;
+  
   justify-content: flex-end;
+  
   gap: 8px;
+
 }
+
 
 .adminStudentsModalBtn {
+  
   border: 0;
+  
   height: 36px;
+  
   border-radius: 10px;
+  
   padding: 0 14px;
+  
   font-size: 13px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+
 }
+
 
 .adminStudentsModalBtn:disabled {
+  
   opacity: 0.65;
+  
   cursor: not-allowed;
+
 }
+
 
 .adminStudentsModalBtn.ghost {
+  
   background: #f3f4f6;
+  
   color: #1f2937;
+
 }
+
 
 .adminStudentsModalBtn.ghost:hover {
+  
   background: #e5e7eb;
+
 }
+
 
 .adminStudentsModalBtn.danger {
+  
   background: #dc2626;
+  
   color: #ffffff;
+
 }
+
 
 .adminStudentsModalBtn.danger:hover {
+  
   background: #b91c1c;
+
 }
 
+
 .adminStudentsToast {
+  
   position: fixed;
+  
   top: 24px;
+  
   right: 24px;
+  
   z-index: 10020;
+  
   width: min(260px, calc(100vw - 32px));
+  
   border: 1px solid #cfe4c6;
+  
   border-left: 6px solid #438b2a;
+  
   border-radius: 8px;
+  
   background: #ffffff;
+  
   box-shadow: 0 18px 38px rgba(15, 23, 42, 0.16);
+  
   padding: 14px 16px;
+  
   display: flex;
+  
   flex-direction: column;
+  
   gap: 4px;
+
 }
+
 
 .adminStudentsToast strong {
+  
   color: #234d22;
+  
   font-size: 14px;
+  
   font-weight: 800;
+
 }
+
 
 .adminStudentsToast span {
+  
   color: #4d5f52;
+  
   font-size: 13px;
+  
   font-weight: 600;
+  
   line-height: 1.45;
+
 }
+
 
 .adminStudentsToast.isError {
+  
   border-color: #f0c8c0;
+  
   border-left-color: #d93025;
+
 }
+
 
 .adminStudentsToast.isError strong {
+  
   color: #bd3d2d;
+
 }
+
 
 .adminStudentsNameBtn {
+  
   border: 0;
+  
   padding: 0;
+  
   background: transparent;
+  
   color: #334155;
+  
   cursor: pointer;
+  
   text-decoration: none;
+  
   font-size: 14px;
+
 }
+
 
 .adminStudentsNameBtn.isActive {
+  
   color: #0f172a;
+  
   font-weight: 700;
+
 }
+
 
 .adminStudentsEmpty {
+  
   text-align: center;
+  
   color: #64748b;
+  
   padding: 18px 10px;
+
 }
 
+
 .adminStudentsChartsGrid {
+  
   margin-top: 12px;
+  
   display: grid;
+  
   grid-template-columns: minmax(380px, 1fr) minmax(380px, 1fr);
+  
   gap: 12px;
+  
   align-items: stretch;
+  
   animation: studentsChartSwap 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
 }
+
 
 .adminStudentsChartsGrid.isSwitching .adminStudentsChartCard {
+  
   animation: studentsSwitchCard 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
 }
+
 
 .adminStudentsChartsGrid.isSwitching .adminStudentsDonutChart {
+  
   animation: studentsDonutPop 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
 }
+
 
 .adminStudentsChartsGrid.isSwitching .adminStudentsBarTrack span {
+  
   animation: studentsBarGrow 780ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  
   animation-delay: var(--bar-delay, 0ms);
+
 }
 
+
 .adminStudentsChartCard {
+  
   padding: 14px 14px 12px;
+  
   border: 1px solid #e2e8df;
+  
   border-radius: 14px;
+  
   height: 100%;
+  
   display: flex;
+  
   flex-direction: column;
+  
   animation: studentsCardIn 520ms ease-out both;
+
 }
+
 
 .adminStudentsChartsGrid .adminStudentsChartCard:nth-child(1) {
+  
   animation-delay: 70ms;
+
 }
+
 
 .adminStudentsChartsGrid .adminStudentsChartCard:nth-child(2) {
+  
   animation-delay: 130ms;
+
 }
+
 
 .adminStudentsChartHead {
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+  
   gap: 8px;
+  
   margin-bottom: 6px;
+
 }
 
+
 .adminStudentsChartCard h3 {
+  
   margin: 0;
+  
   font-size: 17px;
+  
   color: #0f172a;
+
 }
+
 
 .adminStudentsTimeControls {
+  
   display: inline-flex;
+  
   gap: 8px;
+  
   position: relative;
+
 }
+
 
 .adminStudentsTimePicker {
+  
   position: relative;
+
 }
 
+
 .adminStudentsTimeTrigger {
+  
   height: 36px;
+  
   min-width: 116px;
+  
   border: 1px solid #c9dcc8;
+  
   border-radius: 12px;
+  
   background: linear-gradient(180deg, #f7fcf6 0%, #eef7ec 100%);
+  
   color: #2f4a33;
+  
   padding: 0 12px;
+  
   font-size: 13px;
+  
   font-weight: 500;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+  
   gap: 8px;
+  
   cursor: pointer;
+  
   transition: border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
+
 }
+
 
 .adminStudentsTimeTrigger i {
+  
   width: 8px;
+  
   height: 8px;
+  
   border-right: 2px solid #4f7352;
+  
   border-bottom: 2px solid #4f7352;
+  
   transform: rotate(45deg) translateY(-1px);
+  
   transition: transform 140ms ease;
+
 }
+
 
 .adminStudentsTimeTrigger.isOpen i {
+  
   transform: rotate(-135deg) translateY(-1px);
+
 }
+
 
 .adminStudentsTimeTrigger:hover {
+  
   border-color: #b6d3b4;
+  
   background: linear-gradient(180deg, #f5fbf4 0%, #e9f4e7 100%);
+
 }
+
 
 .adminStudentsTimeTrigger:focus,
+
 .adminStudentsTimeTrigger:focus-visible {
+  
   outline: none;
+  
   border-color: #8fca8b;
+  
   box-shadow: 0 0 0 3px rgba(111, 182, 104, 0.18);
+
 }
+
 
 .adminStudentsTimeMenu {
+  
   position: absolute;
+  
   top: calc(100% + 6px);
+  
   left: 0;
+  
   min-width: 100%;
+  
   padding: 6px;
+  
   border: 1px solid #d3e2d2;
+  
   border-radius: 10px;
+  
   background: #fdfefd;
+  
   box-shadow: 0 10px 24px rgba(43, 72, 38, 0.12);
+  
   z-index: 20;
+
 }
+
 
 .adminStudentsTimeItem {
+  
   width: 100%;
+  
   border: 0;
+  
   border-radius: 8px;
+  
   height: 34px;
+  
   background: transparent;
+  
   color: #334155;
+  
   font-size: 13px;
+  
   text-align: left;
+  
   padding: 0 10px;
+  
   cursor: pointer;
+
 }
+
 
 .adminStudentsTimeItem:hover {
+  
   background: #f1f8ef;
+  
   color: #233a27;
+
 }
+
 
 .adminStudentsTimeItem.isActive {
+  
   background: #e5f2e2;
+  
   color: #1f5b2a;
+  
   font-weight: 700;
+
 }
 
+
 .adminStudentsHint {
+  
   margin: 0 0 12px;
+  
   font-size: 12px;
+  
   line-height: 1.45;
+  
   color: #64748b;
+
 }
+
 
 .adminStudentsSelectHint {
+  
   margin: 10px 2px 2px;
+
 }
+
 
 .adminStudentsDonutWrap {
+  
   display: grid;
+  
   place-items: center;
+  
   align-self: center;
+
 }
+
 
 .adminStudentsAttendanceBody {
+  
   display: grid;
+  
   grid-template-columns: 250px 190px;
+  
   align-items: center;
+  
   justify-content: center;
+  
   column-gap: 20px;
+  
   flex: 1;
+  
   align-content: start;
+  
   width: fit-content;
+  
   margin: 0 auto;
+  
   padding-top: 2px;
+
 }
+
 
 .adminStudentsDonutChart {
+  
   width: 250px;
+  
   height: 250px;
+  
   position: relative;
+  
   filter: drop-shadow(0 8px 14px rgba(15, 23, 42, 0.07));
+  
   animation: studentsDonutPop 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
 }
+
 
 .adminStudentsDonutSvg {
+  
   width: 250px;
+  
   height: 250px;
+  
   transform: rotate(-90deg);
+  
   animation: studentsDonutIn 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
 }
+
 
 .adminStudentsDonutSegment {
+  
   transition: transform 160ms ease, opacity 160ms ease;
+  
   transform-origin: center;
+  
   animation: studentsSegmentIn 420ms ease-out both;
+
 }
+
 
 .adminStudentsDonutSegment:nth-child(1) {
+  
   animation-delay: 80ms;
+
 }
+
 
 .adminStudentsDonutSegment:nth-child(2) {
+  
   animation-delay: 150ms;
+
 }
+
 
 .adminStudentsDonutSegment:nth-child(3) {
+  
   animation-delay: 220ms;
+
 }
+
 
 .adminStudentsDonutCenterRingOuter {
+  
   position: absolute;
+  
   width: 126px;
+  
   height: 126px;
+  
   top: 50%;
+  
   left: 50%;
+  
   transform: translate(-50%, -50%);
+  
   border-radius: 999px;
+  
   background: #f7f8fa;
+  
   border: 1px solid #e4e8ef;
+  
   box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+
 }
+
 
 .adminStudentsDonutCenterRingInner {
+  
   position: absolute;
+  
   width: 98px;
+  
   height: 98px;
+  
   top: 50%;
+  
   left: 50%;
+  
   transform: translate(-50%, -50%);
+  
   border-radius: 999px;
+  
   background: #f4f6f9;
+  
   border: 1px solid #d7deea;
+
 }
+
 
 .adminStudentsDonutCenterValue {
+  
   position: absolute;
+  
   inset: 0;
+  
   display: flex;
+  
   flex-direction: column;
+  
   align-items: center;
+  
   justify-content: center;
+  
   text-align: center;
+  
   opacity: 0;
+  
   transition: opacity 120ms ease;
+  
   pointer-events: none;
+
 }
+
 
 .adminStudentsDonutCenterValue.show {
+  
   opacity: 1;
+
 }
+
 
 .adminStudentsDonutCenterNumber {
+  
   font-size: 28px;
+  
   font-weight: 800;
+  
   color: #223047;
+  
   line-height: 1;
+
 }
+
 
 .adminStudentsDonutCenterLabel {
+  
   margin-top: 6px;
+  
   font-size: 11px;
+  
   font-weight: 500;
+  
   color: #5b6678;
+
 }
+
 
 .adminStudentsDonutCenterIdle {
+  
   font-size: 12px;
+  
   color: #94a3b8;
+  
   font-weight: 600;
+
 }
+
 
 .adminStudentsLegend,
+
 .adminStudentsPerfLegend {
+  
   margin: 10px 0 0;
+  
   padding: 0;
+  
   list-style: none;
+  
   display: flex;
+  
   flex-wrap: wrap;
+  
   gap: 12px;
+
 }
+
 
 .adminStudentsLegend li,
+
 .adminStudentsPerfLegend li {
+  
   display: inline-flex;
+  
   align-items: center;
+  
   gap: 7px;
+  
   font-size: 13px;
+  
   color: #111827;
+
 }
+
 
 .adminStudentsLegend span,
+
 .adminStudentsPerfLegend span {
+  
   width: 14px;
+  
   height: 14px;
+  
   border-radius: 999px;
+
 }
+
 
 .adminStudentsLegendDetailed {
+  
   display: grid;
+  
   gap: 2px;
+  
   margin-top: 0;
+  
   min-width: 0;
+  
   width: auto;
+  
   justify-items: start;
+  
   margin-left: 44px;
+
 }
+
 
 .adminStudentsLegendDetailed li {
+  
   display: grid;
+  
   grid-template-columns: 16px max-content max-content;
+  
   align-items: center;
+  
   gap: 6px;
+  
   font-size: 13px;
+  
   color: #334155;
+  
   cursor: pointer;
+  
   line-height: 1.2;
+  
   min-height: 26px;
+  
   animation: studentsRowIn 360ms ease-out both;
+
 }
+
 
 .adminStudentsLegendDetailed li:nth-child(1) {
+  
   animation-delay: 120ms;
+
 }
+
 
 .adminStudentsLegendDetailed li:nth-child(2) {
+  
   animation-delay: 180ms;
+
 }
+
 
 .adminStudentsLegendDetailed li:nth-child(3) {
+  
   animation-delay: 240ms;
+
 }
+
 
 .adminStudentsLegendDetailed li label {
+  
   margin: 0;
+  
   font-size: 15px;
+  
   color: #334155;
+  
   letter-spacing: 0.01em;
+
 }
+
 
 .adminStudentsLegendDetailed li strong {
+  
   margin: 0;
+  
   font-size: 16px;
+  
   color: #1f2937;
+  
   font-weight: 700;
+  
   font-variant-numeric: tabular-nums;
+  
   justify-self: start;
+
 }
+
 
 .adminStudentsLegendDetailed li span {
+  
   width: 16px;
+  
   height: 16px;
+
 }
+
 
 .adminStudentsBars {
+  
   display: grid;
+  
   gap: 10px;
+  
   margin-top: 4px;
+  
   animation: studentsBarsIn 360ms ease-out both;
+
 }
+
 
 .adminStudentsBarRow {
+  
   display: grid;
+  
   grid-template-columns: 86px 1fr 48px;
+  
   gap: 10px;
+  
   align-items: center;
+  
   animation: studentsBarRowIn 380ms ease-out both;
+
 }
+
 
 .adminStudentsBarRow:nth-child(1) {
+  
   animation-delay: 60ms;
+
 }
+
 
 .adminStudentsBarRow:nth-child(2) {
+  
   animation-delay: 120ms;
+
 }
+
 
 .adminStudentsBarRow:nth-child(3) {
+  
   animation-delay: 180ms;
+
 }
+
 
 .adminStudentsBarLabel {
+  
   margin: 0;
+  
   font-size: 13px;
+  
   color: #334155;
+  
   font-weight: 600;
+
 }
+
 
 .adminStudentsBarTrack {
+  
   height: 22px;
+  
   border-radius: 999px;
+  
   background: #eaf2e8;
+  
   overflow: hidden;
+
 }
+
 
 .adminStudentsBarTrack span {
+  
   display: block;
+  
   height: 100%;
+  
   border-radius: 999px;
+  
   width: var(--bar-width);
+  
   animation: studentsBarGrow 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  
   animation-delay: var(--bar-delay, 0ms);
+
 }
+
 
 .adminStudentsBarRow strong {
+  
   font-size: 14px;
+  
   color: #1f2937;
+  
   text-align: right;
+
 }
+
 
 .adminStudentsPerformanceCard .adminStudentsPerfLegend {
+  
   margin-top: 10px;
+  
   padding-top: 8px;
+  
   border-top: 1px solid #e7eee6;
+
 }
+
 
 .adminStudentsPerformanceCard .adminStudentsBars {
+  
   flex: 1;
+  
   align-content: start;
+
 }
+
 
 .adminStudentsTableWrap tbody tr {
+  
   animation: studentsRowIn 520ms ease-out both;
+  
   animation-delay: calc(var(--row-index, 0) * 80ms);
+
 }
+
 
 @media (prefers-reduced-motion: reduce) {
+  
   .adminStudentsPage,
+  
   .adminStudentsCard,
+  
   .adminStudentsChartCard,
+  
   .adminStudentsDonutSvg,
+  
   .adminStudentsDonutSegment,
+  
   .adminStudentsLegendDetailed li,
+  
   .adminStudentsBarTrack span,
+  
   .adminStudentsTableWrap tbody tr,
+  
   .adminStudentsTableWrap,
+  
   .adminStudentsChartsGrid {
+    
     animation: none !important;
+    
     transition: none !important;
+  
   }
+
 }
+
 
 @media (max-width: 720px) {
+  
   .adminStudentsToolbar input {
+    
     width: 100%;
+  
   }
 
+  
   .adminStudentsChartsGrid {
+    
     grid-template-columns: 1fr;
+  
   }
 
+  
   .adminStudentsChartHead {
+    
     flex-direction: column;
+    
     align-items: flex-start;
+  
   }
 
+  
   .adminStudentsDonutChart {
+    
     width: 220px;
+    
     height: 220px;
+  
   }
 
+  
   .adminStudentsDonutSvg {
+    
     width: 220px;
+    
     height: 220px;
+  
   }
 
+  
   .adminStudentsDonutCenterRingOuter {
+    
     width: 108px;
+    
     height: 108px;
+  
   }
 
+  
   .adminStudentsDonutCenterRingInner {
+    
     width: 84px;
+    
     height: 84px;
+  
   }
 
+  
   .adminStudentsDonutCenterNumber {
+    
     font-size: 24px;
+  
   }
 
+  
   .adminStudentsDonutCenterLabel {
+    
     font-size: 10px;
+  
   }
 
+  
   .adminStudentsLegendDetailed li {
+    
     font-size: 13px;
+  
   }
 
+  
   .adminStudentsLegendDetailed li label {
+    
     font-size: 14px;
+  
   }
 
+  
   .adminStudentsLegendDetailed li strong {
+    
     font-size: 16px;
+  
   }
 
+  
   .adminStudentsBarRow {
+    
     grid-template-columns: 78px 1fr 44px;
+    
     gap: 8px;
+  
   }
 
+  
   .adminStudentsAttendanceBody {
+    
     grid-template-columns: 1fr;
+    
     row-gap: 10px;
+    
     width: 100%;
+    
     padding-top: 0;
+  
   }
 
+  
   .adminStudentsLegendDetailed {
+    
     min-width: 0;
+    
     width: 100%;
+    
     max-width: 220px;
+    
     margin: 0 auto;
+  
   }
+
 }
+
 
 /* Clean admin students view: visual polish only. */
+
 .adminStudentsPage {
+  
   margin-top: 6px;
+
 }
+
 
 .adminStudentsCard,
+
 .adminStudentsChartCard,
+
 .adminStudentsModalCard {
+  
   border-radius: 8px;
+  
   border-color: #dfe8dd;
+  
   background: #ffffff;
+  
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.045);
+
 }
+
 
 .adminStudentsCard {
+  
   padding: 18px;
+
 }
+
 
 .adminStudentsToolbar {
+  
   gap: 12px;
+  
   margin-bottom: 16px;
+  
   padding-bottom: 14px;
+  
   border-bottom: 1px solid #e7eee4;
+
 }
 
+
 .adminStudentsToolbar input {
+  
   height: 40px;
+  
   border-color: #dce8d8;
+  
   border-radius: 8px;
+  
   background: #ffffff;
+  
   color: #102033;
+  
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.035);
+
 }
+
 
 .adminStudentsToolbar input::placeholder {
+  
   color: #8a988c;
+
 }
+
 
 .adminStudentsTimeTrigger {
+  
   border-color: #dce8d8;
+  
   border-radius: 8px;
+  
   background: #ffffff;
+  
   color: #2f4d25;
+  
   font-weight: 650;
+  
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.035);
+
 }
+
 
 .adminStudentsTableWrap {
+  
   border: 1px solid #e6ece4;
+  
   border-radius: 8px;
+  
   background: #ffffff;
+  
   overflow: auto;
+
 }
+
 
 .adminStudentsTableWrap table {
+  
   border-collapse: separate;
+  
   border-spacing: 0;
+
 }
+
 
 .adminStudentsTableWrap th,
+
 .adminStudentsTableWrap td {
+  
   padding: 13px 14px;
+  
   border-bottom-color: #edf2eb;
+  
   line-height: 1.45;
+
 }
+
 
 .adminStudentsTableWrap th {
+  
   background: #f7faf6;
+  
   color: #334155;
+  
   font-size: 12px;
+  
   font-weight: 700;
+
 }
 
+
 .adminStudentsTableWrap td {
+  
   color: #34445a;
+
 }
+
 
 .adminStudentsTableWrap tbody tr:last-child td {
+  
   border-bottom: 0;
+
 }
+
 
 .adminStudentsDeleteBtn {
+  
   min-height: 30px;
+  
   border-radius: 8px;
+  
   box-shadow: 0 8px 16px rgba(180, 24, 24, 0.12);
+
 }
+
 
 .adminStudentsChartsGrid {
+  
   gap: 16px;
+  
   margin-top: 16px;
+
 }
+
 
 .adminStudentsChartCard {
+  
   padding: 18px;
+
 }
+
 
 .adminStudentsChartHead {
+  
   margin-bottom: 12px;
+  
   padding-bottom: 10px;
+  
   border-bottom: 1px solid #edf2eb;
+
 }
 
+
 .adminStudentsChartCard h3 {
+  
   color: #102033;
+  
   font-size: 18px;
+  
   font-weight: 750;
+
 }
+
 
 .adminStudentsHint,
+
 .adminStudentsEmpty {
+  
   color: #5f6f63;
+
 }
+
 
 @media (max-width: 900px) {
+  
   .adminStudentsChartsGrid {
+    
     grid-template-columns: 1fr;
+  
   }
+
 }
+
 
 /* Reference students layout */
+
 .adminStudentsPage {
+  
   margin-top: 0;
+
 }
+
 
 .adminStudentsCard,
+
 .adminStudentsChartCard,
+
 .adminStudentsModalCard {
+  
   border: 1px solid #e2e8f0;
+  
   border-radius: 16px;
+  
   background: #ffffff;
+  
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055);
+
 }
+
 
 .adminStudentsCard {
+  
   padding: 16px;
+
 }
 
+
 .adminStudentsToolbar {
+  
   border-bottom: 0;
+  
   padding-bottom: 4px;
+  
   margin-bottom: 12px;
+
 }
+
 
 .adminStudentsToolbar input {
+  
   width: min(520px, 100%);
+  
   height: 38px;
+  
   border: 1px solid #cfe4c6;
+  
   border-radius: 8px;
+  
   background: #ffffff;
+  
   color: #0b1f3b;
+  
   box-shadow: none;
+
 }
 
+
 .adminStudentsTimeTrigger {
+  
   height: 38px;
+  
   border: 1px solid #cfe4c6;
+  
   border-radius: 10px;
+  
   background: #fbfff8;
+  
   color: #1f3f1d;
+  
   box-shadow: none;
+
 }
+
 
 .adminStudentsTableWrap {
+  
   max-height: 360px;
+  
   border: 0;
+  
   border-radius: 0;
+  
   background: #ffffff;
+
 }
+
 
 .adminStudentsTableWrap table {
+  
   width: 100%;
+  
   border-collapse: collapse;
+
 }
 
+
 .adminStudentsTableWrap th,
+
 .adminStudentsTableWrap td {
+  
   padding: 16px 10px;
+  
   border-bottom: 1px solid #e9eef4;
+  
   font-size: 14px;
+
 }
+
 
 .adminStudentsTableWrap th {
+  
   background: #ffffff;
+  
   color: #111827;
+  
   font-weight: 800;
+
 }
+
 
 .adminStudentsTableWrap td {
+  
   color: #42526a;
+
 }
+
 
 .adminStudentsTableWrap td:nth-child(2) {
+  
   color: #111827;
+  
   font-weight: 750;
+
 }
+
 
 .adminStudentsDeleteBtn {
+  
   min-height: 34px;
+  
   min-width: 70px;
+  
   border-radius: 999px;
+  
   background: #db0f14;
+  
   box-shadow: none;
+
 }
+
 
 .adminStudentsProfileBtn {
+  
   min-height: 34px;
+  
   border-radius: 999px;
+  
   background: #4f8f2f;
+  
   box-shadow: none;
+
 }
+
 
 .adminStudentsChartsGrid {
+  
   gap: 12px;
+  
   margin-top: 16px;
+
 }
 
+
 .adminStudentsChartCard {
+  
   min-height: 360px;
+  
   padding: 16px;
+
 }
+
 
 .adminStudentsChartHead {
+  
   border-bottom: 0;
+  
   padding-bottom: 0;
+  
   margin-bottom: 6px;
+
 }
+
 
 .adminStudentsChartCard h3 {
+  
   color: #111827;
+  
   font-size: 18px;
+  
   font-weight: 800;
+
 }
 
+
 .adminStudentsHint {
+  
   font-size: 12px;
+  
   color: #5a6b82;
+
 }
+
 
 /* Moderate font weight tuning to match the reference. */
+
 .adminStudentsChartCard h3,
+
 .adminStudentsTableWrap td:nth-child(2) {
+  
   font-weight: 650;
+
 }
 
+
 .adminStudentsTableWrap th,
+
 .adminStudentsTimeTrigger,
+
 .adminStudentsDeleteBtn {
+  
   font-weight: 600;
+
 }
+
 
 .adminStudentsTableWrap td,
+
 .adminStudentsToolbar input,
+
 .adminStudentsHint {
+  
   font-weight: 400;
+
 }
+
 
 /* Compact admin scale */
+
 .adminStudentsCard {
+  
   padding: 14px;
+
 }
+
 
 .adminStudentsToolbar {
+  
   margin-bottom: 8px;
+
 }
+
 
 .adminStudentsToolbar input,
+
 .adminStudentsTimeTrigger {
+  
   height: 34px;
+  
   font-size: 12px;
+
 }
 
+
 .adminStudentsTableWrap th,
+
 .adminStudentsTableWrap td {
+  
   padding: 12px 10px;
+  
   font-size: 13px;
+
 }
+
 
 .adminStudentsDeleteBtn {
+  
   min-height: 30px;
+  
   font-size: 12px;
+
 }
+
 
 .adminStudentsProfileBtn {
+  
   min-height: 30px;
+  
   font-size: 12px;
+
 }
+
 
 .adminStudentsChartsGrid {
+  
   gap: 10px;
+  
   margin-top: 12px;
+
 }
+
 
 .adminStudentsChartCard {
+  
   min-height: 320px;
+  
   padding: 14px;
+
 }
 
+
 .adminStudentsChartCard h3 {
+  
   font-size: 16px;
+
 }
+
 
 /* Balanced admin scale */
+
 .adminStudentsCard {
+  
   padding: 15px;
+
 }
+
 
 .adminStudentsToolbar input,
+
 .adminStudentsTimeTrigger {
+  
   height: 36px;
+
 }
+
 
 .adminStudentsTableWrap th,
+
 .adminStudentsTableWrap td {
+  
   padding: 13px 10px;
+
 }
+
 
 .adminStudentsChartCard {
+  
   min-height: 335px;
+  
   padding: 15px;
+
 }
+
 
 .adminStudentsChartCard h3 {
+  
   font-size: 17px;
+
 }
 
+
 /* Keep status toast away from the action column. */
+
 .adminStudentsToast {
+  
   top: 24px;
+  
   right: 24px;
+  
   bottom: auto;
+  
   width: min(260px, calc(100vw - 32px));
+
 }

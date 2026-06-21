@@ -335,7 +335,9 @@ class FullSystemFlowTest extends TestCase
                 'id_siswa' => $siswa->id_siswa,
                 'jenis' => 'Harian',
                 'jumlah' => 100000,
-                'monthly_remaining_amount' => 0,
+                'monthly_paid_amount' => 0,
+                'monthly_pending_amount' => 100000,
+                'monthly_remaining_amount' => 100000,
                 'status' => 'Belum',
             ]);
 
@@ -352,6 +354,10 @@ class FullSystemFlowTest extends TestCase
         $siswa->update(['user_id' => $parentUser->id]); // DIUBAH
         session(['id_siswa' => $siswa->id_siswa]);
         $parentPayload = SsbInertiaData::parentPayload();
+
+        $this->assertSame(100000.0, $parentPayload['monthlyPaymentSummary']['paidAmount']);
+        $this->assertSame(0.0, $parentPayload['monthlyPaymentSummary']['pendingAmount']);
+        $this->assertEquals(0, $parentPayload['monthlyPaymentSummary']['remainingAmount']);
 
         $this->assertTrue(collect($parentPayload['trainingSchedules'])->contains(
             fn ($schedule) => (int) $schedule['rawId'] === (int) $scheduleId

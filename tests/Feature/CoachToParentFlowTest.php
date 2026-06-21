@@ -204,24 +204,26 @@ class CoachToParentFlowTest extends TestCase
             'jadwal' => $jadwal,
         ] = $this->createCoachParentFlowData();
 
+        $jadwal->update(['tanggal' => '2026-06-03']);
+
         $this->actingAs($coachUser)
             ->postJson('/api/pelatih/presensi/input', [
                 'id_jadwal' => $jadwal->id_jadwal,
-                'tanggal' => '2026-06-08', 
+                'tanggal' => '2026-06-10', 
                 'data' => [
                     ['id_siswa' => $siswa->id_siswa, 'status' => 'hadir'],
                 ],
             ])
             ->assertOk()
             ->assertJsonPath('status', true)
-            ->assertJsonPath('schedule.tanggal', '2026-06-01');
+            ->assertJsonPath('schedule.tanggal', '2026-06-03');
 
         $storedAttendance = DB::table('presensi')
             ->where('id_jadwal', $jadwal->id_jadwal)
             ->where('id_siswa', $siswa->id_siswa)
             ->first();
 
-        $this->assertSame('2026-06-08', substr((string) $storedAttendance->created_at, 0, 10));
+        $this->assertSame('2026-06-10', substr((string) $storedAttendance->created_at, 0, 10));
     }
 
     public function test_coach_attendance_rejects_daily_date_outside_schedule_day(): void
@@ -242,6 +244,79 @@ class CoachToParentFlowTest extends TestCase
             ])
             ->assertStatus(422)
             ->assertJsonPath('status', false);
+    }
+
+    public function test_additional_schedule_requires_exact_date_for_attendance_and_performance(): void
+    {
+        [
+            'coachUser' => $coachUser,
+            'siswa' => $siswa,
+            'jadwal' => $jadwal,
+        ] = $this->createCoachParentFlowData();
+
+        $attendancePayload = [
+            'id_jadwal' => $jadwal->id_jadwal,
+            'tanggal' => '2026-06-08',
+            'data' => [
+                ['id_siswa' => $siswa->id_siswa, 'status' => 'hadir'],
+            ],
+        ];
+
+        $this->actingAs($coachUser)
+            ->postJson('/api/pelatih/presensi/input', $attendancePayload)
+            ->assertStatus(422)
+            ->assertJsonPath('status', false);
+
+        $this->actingAs($coachUser)
+            ->postJson("/api/pelatih/performa-siswa/input/{$jadwal->id_jadwal}", [
+                'tanggal_penilaian' => '2026-06-08',
+                'data' => [[
+                    'id_siswa' => $siswa->id_siswa,
+                    'dribbling' => 80,
+                    'passing' => 80,
+                    'shooting' => 80,
+                ]],
+            ])
+            ->assertStatus(422)
+            ->assertJsonPath('status', false);
+
+        $this->assertDatabaseMissing('presensi', ['id_jadwal' => $jadwal->id_jadwal]);
+        $this->assertDatabaseMissing('performa_siswa', ['id_jadwal' => $jadwal->id_jadwal]);
+    }
+
+    public function test_coach_cannot_input_performance_for_another_coachs_schedule(): void
+    {
+        [
+            'coachUser' => $coachUser,
+            'siswa' => $siswa,
+            'jadwal' => $jadwal,
+        ] = $this->createCoachParentFlowData();
+
+        $otherCoachUser = User::factory()->create([
+            'role' => 'pelatih',
+            'email' => 'other-coach@example.com',
+        ]);
+        $otherCoach = Pelatih::create([
+            'user_id' => $otherCoachUser->id,
+            'nama_pelatih' => 'Coach Lain',
+            'email' => $otherCoachUser->email,
+            'no_hp' => '083333333333',
+        ]);
+        $jadwal->update(['id_pelatih' => $otherCoach->id_pelatih]);
+
+        $this->actingAs($coachUser)
+            ->postJson("/api/pelatih/performa-siswa/input/{$jadwal->id_jadwal}", [
+                'tanggal_penilaian' => '2026-06-01',
+                'data' => [[
+                    'id_siswa' => $siswa->id_siswa,
+                    'dribbling' => 80,
+                    'passing' => 80,
+                    'shooting' => 80,
+                ]],
+            ])
+            ->assertNotFound();
+
+        $this->assertDatabaseMissing('performa_siswa', ['id_jadwal' => $jadwal->id_jadwal]);
     }
 
     public function test_parent_dashboard_requires_child_picker_when_no_child_is_selected(): void
@@ -343,8 +418,9 @@ class CoachToParentFlowTest extends TestCase
         $this->assertSame('harian', $coachPaymentRows->first()['paymentType']);
         $this->assertSame(100000.0, $coachPaymentRows->first()['amount']);
         $this->assertSame(100000.0, $coachPaymentRows->first()['monthlyTarget']);
-        $this->assertSame(100000.0, $coachPaymentRows->first()['monthlyPaidAmount']);
-        $this->assertEquals(0, $coachPaymentRows->first()['monthlyRemainingAmount']);
+        $this->assertSame(0.0, $coachPaymentRows->first()['monthlyPaidAmount']);
+        $this->assertSame(100000.0, $coachPaymentRows->first()['monthlyPendingAmount']);
+        $this->assertEquals(100000, $coachPaymentRows->first()['monthlyRemainingAmount']);
         $this->assertSame('Menunggu Verifikasi', $coachPaymentRows->first()['status']);
         $this->assertTrue(collect(SsbInertiaData::adminNotifications($admin->id))->contains(
             fn ($notification) => str_contains($notification['text'], 'Bukti Pembayaran Pelatih')
@@ -358,12 +434,14 @@ class CoachToParentFlowTest extends TestCase
                 'id_siswa' => $siswa->id_siswa,
                 'jenis' => 'Harian',
                 'jumlah' => 100000,
-                'monthly_remaining_amount' => 0,
+                'monthly_paid_amount' => 0,
+                'monthly_pending_amount' => 100000,
+                'monthly_remaining_amount' => 100000,
                 'status' => 'Belum',
             ]);
     }
 
-    public function test_coach_can_note_upload_payment_and_input_performance_for_any_active_scheduled_student(): void
+    public function test_coach_can_note_upload_payment_and_input_performance_for_shared_active_schedule(): void
     {
         Storage::fake('public');
 
@@ -389,15 +467,8 @@ class CoachToParentFlowTest extends TestCase
             'umur' => 11,
             'status' => 'Active',
         ]);
-        $otherCoachUser = User::factory()->create(['role' => 'pelatih']); // DIUBAH: Bind user_id yang sah
-        $otherCoach = Pelatih::create([
-            'user_id' => $otherCoachUser->id, // DIUBAH
-            'nama_pelatih' => 'Coach Lain',
-            'email' => 'other-coach@example.com',
-            'no_hp' => '084444444444',
-        ]);
         $otherSchedule = Jadwal_Latihan::create([
-            'id_pelatih' => $otherCoach->id_pelatih,
+            'id_pelatih' => null,
             'tanggal' => '2026-06-02', 
             'jam_mulai' => '08:00:00',
             'jam_selesai' => '10:00:00',

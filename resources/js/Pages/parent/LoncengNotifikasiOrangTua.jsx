@@ -1,45 +1,45 @@
-import { useEffect, useRef, useState } from "react";
-import NotifIcon from "../../../assets/notif.png";
-import "./LoncengNotifikasiOrangTua.css";
+import { useEffect, useRef, useState } from "react"; 
+import NotifIcon from "../../../assets/notif.png"; 
+import "./LoncengNotifikasiOrangTua.css"; 
 
 export default function LoncengNotifikasiOrangTua({ notifications = [], onClearNotifications }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [localNotifications, setLocalNotifications] = useState(notifications);
-  const [isMarkingRead, setIsMarkingRead] = useState(false);
-  const notifRef = useRef(null);
-  const notifCount = localNotifications.filter((item) => !item.read).length;
-  const hasNotifications = localNotifications.length > 0;
+  const [isOpen, setIsOpen] = useState(false); 
+  const [localNotifications, setLocalNotifications] = useState(notifications); 
+  const [isMarkingRead, setIsMarkingRead] = useState(false); 
+  const notifRef = useRef(null); 
+  const notifCount = localNotifications.filter((item) => !item.read).length; 
+  const hasNotifications = localNotifications.length > 0; 
 
   useEffect(() => {
     setLocalNotifications(notifications);
-  }, [notifications]);
+  }, [notifications]); 
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notifRef.current && !notifRef.current.contains(event.target)) {
         setIsOpen(false);
       }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
+    }; 
+    document.addEventListener("mousedown", handleClickOutside); 
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, []); 
 
   const markAllAsRead = async () => {
-    if (isMarkingRead || notifCount === 0) return;
+    if (isMarkingRead || notifCount === 0) return; 
 
-    const unreadIds = localNotifications
-      .filter((item) => !item.read && item.id)
-      .map((item) => item.id);
+    const unreadIds = localNotifications.
+    filter((item) => !item.read && item.id).
+    map((item) => item.id); 
 
-    setIsMarkingRead(true);
-    setLocalNotifications((prev) => prev.map((item) => ({ ...item, read: true })));
+    setIsMarkingRead(true); 
+    setLocalNotifications((prev) => prev.map((item) => ({ ...item, read: true }))); 
 
     try {
       if (window.axios && unreadIds.length > 0) {
         await Promise.allSettled(
           unreadIds.map((id) => window.axios.post(`/api/notifikasi/baca/${id}`))
         );
-      }
+      } 
 
       if (onClearNotifications) {
         onClearNotifications();
@@ -47,51 +47,50 @@ export default function LoncengNotifikasiOrangTua({ notifications = [], onClearN
     } finally {
       setIsMarkingRead(false);
     }
-  };
+  }; 
 
   return (
     <div className="parentNotifWrap" ref={notifRef}>
-      <button
+       <button
         type="button"
         className="parentNotifBtn"
         aria-label="Notif"
-        onClick={() => setIsOpen((prev) => !prev)}
-      >
-        <img src={NotifIcon} alt="" />
+        onClick={() => setIsOpen((prev) => !prev)}>
+        
+         <img src={NotifIcon} alt="" />
         {notifCount > 0 && (
-          <span className="parentNotifBadge">{notifCount > 99 ? "99+" : notifCount}</span>
-        )}
+        <span className="parentNotifBadge">{notifCount > 99 ? "99+" : notifCount}</span>)
+        }
       </button>
       {isOpen && (
-        <div className="parentNotifMenu">
+      <div className="parentNotifMenu">
           {hasNotifications ? (
-            <>
-              <ul className="parentNotifList">
+        <>
+               <ul className="parentNotifList">
                 {localNotifications.map((item) => (
-                  <li
-                    key={item.id}
-                    className={`parentNotifItem ${!item.read ? "isUnread" : "isRead"}`}
-                  >
-                    <span className="parentNotifItemDot" aria-hidden="true" />
-                    <span className="parentNotifItemText">{item.text}</span>
-                  </li>
-                ))}
+            <li
+              key={item.id}
+              className={`parentNotifItem ${!item.read ? "isUnread" : "isRead"}`}>
+              
+                     <span className="parentNotifItemDot" aria-hidden="true" />
+                     <span className="parentNotifItemText">{item.text}</span>
+                  </li>)
+            )}
               </ul>
-              <button
-                type="button"
-                className="parentNotifClearBtn"
-                disabled={notifCount === 0 || isMarkingRead}
-                onClick={markAllAsRead}
-              >
+               <button
+            type="button"
+            className="parentNotifClearBtn"
+            disabled={notifCount === 0 || isMarkingRead}
+            onClick={markAllAsRead}>
+            
                 {isMarkingRead ? "Menandai..." : "Tandai sudah dibaca"}
               </button>
-            </>
-          ) : (
-            <p className="parentNotifEmpty">Tidak ada notifikasi</p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
+            </>) : (
 
+        <p className="parentNotifEmpty">Tidak ada notifikasi</p>)
+        }
+        </div>)
+      }
+    </div>);
+
+}

@@ -1,639 +1,1183 @@
+
 .coachGridTwo {
+  
   margin-top: 14px;
+  
   display: grid;
+  
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  
   gap: 16px;
+
 }
+
 
 .coachPanel {
+  
   min-height: 236px;
+  
   padding: 22px;
+  
   transition: box-shadow 0.25s ease, border-color 0.25s ease;
+
 }
+
 
 .coachPanel h2 {
+  
   margin: 0;
+  
   font-size: 18px;
+  
   line-height: 1.25;
+  
   font-weight: 650;
+  
   color: #111827;
+
 }
+
 
 .coachList {
+  
   margin-top: 16px;
+  
   max-height: 210px;
+  
   overflow-y: auto;
+  
   padding-right: 4px;
+
 }
+
 
 .coachListItem {
+  
   padding: 10px 0;
+  
   border-bottom: 1px solid #eef1f4;
+
 }
+
 
 .coachListItem h3 {
+  
   margin: 0;
+  
   font-size: 15px;
+  
   font-weight: 650;
+  
   color: #111827;
+
 }
+
 
 .coachListItem p {
+  
   margin: 4px 0 0;
+  
   font-size: 14px;
+  
   line-height: 1.45;
+  
   color: #374151;
+
 }
+
 
 .coachIdentity {
+  
   min-height: 112px;
+  
   padding: 16px 20px;
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 14px;
+
 }
+
 
 .coachIdentityAvatar {
+  
   width: 84px;
+  
   height: 84px;
+  
   border-radius: 999px;
+  
   border: 1px solid #d9d9d9;
+  
   background: #eef2f7;
+  
   display: grid;
+  
   place-items: center;
+
 }
+
 
 .coachIdentityAvatar img {
+  
   width: 52px;
+  
   height: 52px;
+
 }
+
 
 .coachIdentity h2 {
+  
   margin: 0;
+  
   font-size: 44px;
+  
   line-height: 1.05;
+  
   font-weight: 700;
+
 }
+
 
 .coachIdentity p {
+  
   margin: 4px 0 0;
+  
   font-size: 18px;
+  
   color: #374151;
+
 }
+
 
 .coachAttendanceHead {
+  
   display: flex;
+  
   align-items: flex-start;
+  
   justify-content: space-between;
+  
   gap: 14px;
+  
   margin-bottom: 10px;
+
 }
+
 
 .coachAttendanceHead .coachCategorySelect {
+  
   margin-top: 0;
+
 }
+
 
 .coachDonutChartInteractive {
+  
   width: 172px;
+  
   height: 172px;
+  
   margin: 8px auto 16px;
+  
   position: relative;
+  
   opacity: 0;
+  
   transform: scale(0.92);
+  
   animation: coachDonutIn 0.55s ease forwards;
+
 }
+
 
 .coachDonutSvg {
+  
   width: 100%;
+  
   height: 100%;
+  
   transform: rotate(-90deg);
+
 }
+
 
 .coachDonutSegment {
+  
   cursor: pointer;
+  
   stroke-linecap: round;
+  
   transition: opacity 0.2s ease, transform 0.2s ease;
+  
   transform-origin: 50% 50%;
+
 }
+
 
 .coachDonutSegment:hover {
+  
   opacity: 0.86;
+  
   transform: scale(1.02);
+
 }
+
 
 .coachDonutCenterValue {
+  
   position: absolute;
+  
   inset: 0;
+  
   margin: auto;
+  
   width: 78px;
+  
   height: 78px;
+  
   border-radius: 999px;
+  
   background: #ffffff;
+  
   border: 1px solid #dbe1e8;
+  
   box-shadow: 0 5px 14px rgba(0, 0, 0, 0.08);
+  
   display: flex;
+  
   flex-direction: column;
+  
   justify-content: center;
+  
   align-items: center;
+  
   opacity: 0;
+  
   transform: scale(0.88);
+  
   animation: coachDonutCenterIn 0.45s ease 0.2s forwards;
+
 }
+
 
 .coachDonutCenterNumber {
+  
   font-size: 22px;
+  
   font-weight: 700;
+  
   color: #1f2937;
+  
   line-height: 1;
+
 }
+
 
 .coachDonutCenterLabel {
+  
   margin-top: 4px;
+  
   font-size: 12px;
+  
   font-weight: 600;
+  
   color: #5b6576;
+  
   line-height: 1;
+
 }
+
 
 .coachLegend,
+
 .coachBarLegend {
+  
   list-style: none;
+  
   margin: 0;
+  
   padding: 0;
+  
   display: flex;
+  
   justify-content: center;
+  
   gap: 16px;
+  
   flex-wrap: wrap;
+
 }
+
 
 .coachLegend li,
+
 .coachBarLegend li {
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 6px;
+  
   font-size: 14px;
+  
   color: #1f2937;
+
 }
+
 
 .coachLegend li {
+  
   cursor: pointer;
+  
   opacity: 0;
+  
   transform: translateY(4px);
+  
   animation: coachLegendIn 0.3s ease forwards;
+
 }
+
 
 .coachLegend li:nth-child(1) {
+  
   animation-delay: 0.2s;
+
 }
+
 
 .coachLegend li:nth-child(2) {
+  
   animation-delay: 0.28s;
+
 }
+
 
 .coachLegend li:nth-child(3) {
+  
   animation-delay: 0.36s;
+
 }
+
 
 .coachLegend span,
+
 .coachBarLegend span {
+  
   width: 11px;
+  
   height: 11px;
+  
   border-radius: 999px;
+
 }
+
 
 .coachPerformancePanel .coachBarLegend {
+  
   margin-top: 18px;
+
 }
+
 
 .coachCategorySelect {
+  
   margin-top: 10px;
+  
   position: relative;
+  
   min-width: 178px;
+  
   height: 36px;
+  
   flex: 0 0 auto;
+
 }
+
 
 .coachCategorySelectTrigger {
+  
   width: 100%;
+  
   height: 100%;
+  
   border: 1px solid #d1d5db;
+  
   border-radius: 9px;
+  
   padding: 0 12px;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+  
   gap: 10px;
+  
   font-size: 13px;
+  
   color: #111827;
+  
   background: #ffffff;
+  
   text-align: left;
+  
   cursor: pointer;
+  
   transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+
 }
+
 
 .coachCategorySelectTrigger > span:first-child {
+  
   min-width: 0;
+  
   overflow: hidden;
+  
   text-overflow: ellipsis;
+  
   white-space: nowrap;
+
 }
+
 
 .coachCategorySelectTrigger:hover {
+  
   border-color: #a8ca96;
+  
   background: #fbfef9;
+
 }
+
 
 .coachCategorySelect.isOpen .coachCategorySelectTrigger,
+
 .coachCategorySelectTrigger:focus-visible {
+  
   border-color: #85b86a;
+  
   background: #ffffff;
+  
   outline: none;
+  
   box-shadow: 0 0 0 3px rgba(133, 184, 106, 0.13);
+
 }
+
 
 .coachCategorySelectIcon {
+  
   width: 17px;
+  
   height: 17px;
+  
   color: #475569;
+  
   flex: 0 0 auto;
+  
   transition: color 180ms ease, transform 180ms ease;
+
 }
+
 
 .coachCategorySelectIcon svg {
+  
   width: 100%;
+  
   height: 100%;
+
 }
+
 
 .coachCategorySelect.isOpen .coachCategorySelectIcon {
+  
   color: #4f8a2f;
+  
   transform: rotate(180deg);
+
 }
+
 
 .coachCategorySelectMenu {
+  
   position: absolute;
+  
   top: calc(100% + 7px);
+  
   left: 0;
+  
   right: 0;
+  
   z-index: 45;
+  
   padding: 7px;
+  
   border: 1px solid #cfe5c3;
+  
   border-radius: 12px;
+  
   background: #ffffff;
+  
   box-shadow: 0 16px 30px rgba(42, 84, 31, 0.13);
+
 }
+
 
 .coachCategorySelectOption {
+  
   width: 100%;
+  
   min-height: 32px;
+  
   border: 0;
+  
   border-radius: 9px;
+  
   background: transparent;
+  
   color: #111827;
+  
   font-size: 13px;
+  
   font-weight: 600;
+  
   text-align: left;
+  
   padding: 0 13px;
+  
   cursor: pointer;
+  
   transition: background-color 180ms ease, color 180ms ease;
+
 }
+
 
 .coachCategorySelectOption + .coachCategorySelectOption {
+  
   margin-top: 3px;
+
 }
+
 
 .coachCategorySelectOption:hover,
+
 .coachCategorySelectOption:focus-visible {
+  
   outline: none;
+  
   background: #f0f8eb;
+  
   color: #25571c;
+
 }
+
 
 .coachCategorySelectOption.isSelected {
+  
   background: #dff2d6;
+  
   color: #214d17;
+
 }
+
 
 .coachAttendancePanel {
+  
   background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
+  
   animation: coachCardIn 0.5s ease;
+
 }
+
 
 .coachPerformancePanel {
+  
   background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
+
 }
+
 
 .coachPerformanceHead {
+  
   display: flex;
+  
   align-items: flex-start;
+  
   justify-content: space-between;
+  
   gap: 14px;
+  
   margin-bottom: 26px;
+
 }
+
 
 .coachPerformanceHead .coachCategorySelect {
+  
   margin-top: 0;
+
 }
+
 
 .coachPerformanceRows {
+  
   margin-top: 0;
+  
   display: flex;
+  
   flex-direction: column;
+  
   gap: 14px;
+
 }
+
 
 .coachPerformanceRow {
+  
   display: grid;
+  
   grid-template-columns: 92px minmax(120px, 1fr) 34px;
+  
   align-items: center;
+  
   gap: 12px;
+
 }
+
 
 .coachPerformanceLabel {
+  
   font-size: 13px;
+  
   color: #6b7280;
+  
   font-weight: 600;
+
 }
+
 
 .coachPerformanceTrack {
+  
   height: 20px;
+  
   border-radius: 999px;
+  
   background: #edf2f7;
+  
   overflow: hidden;
+
 }
+
 
 .coachPerformanceFill {
+  
   display: block;
+  
   height: 100%;
+  
   border-radius: 999px;
+  
   transform-origin: left center;
+  
   transform: scaleX(0);
+  
   animation: coachBarIn 0.68s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  
   box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+
 }
+
 
 .coachPerformanceRows .coachPerformanceRow:nth-child(1) .coachPerformanceFill {
+  
   animation-delay: 0.05s;
+
 }
+
 
 .coachPerformanceRows .coachPerformanceRow:nth-child(2) .coachPerformanceFill {
+  
   animation-delay: 0.12s;
+
 }
+
 
 .coachPerformanceRows .coachPerformanceRow:nth-child(3) .coachPerformanceFill {
+  
   animation-delay: 0.19s;
+
 }
+
 
 .coachPerformanceValue {
+  
   min-width: 34px;
+  
   text-align: right;
+  
   font-size: 16px;
+  
   font-weight: 650;
+  
   color: #111827;
+
 }
+
 
 .coachDashItem {
+  
   opacity: 0;
+  
   transform: translateY(16px);
+  
   animation: coachDashboardReveal 0.55s ease forwards;
+
 }
+
 
 .coachDashDelay2 {
+  
   animation-delay: 0.08s;
+
 }
+
 
 .coachDashDelay3 {
+  
   animation-delay: 0.16s;
+
 }
+
 
 .coachDashDelay4 {
+  
   animation-delay: 0.24s;
+
 }
+
 
 .coachScheduleItem {
+  
   display: flex;
+  
   align-items: flex-start;
+  
   gap: 8px;
+  
   padding: 10px 0;
+  
   border-bottom: 1px solid #e5e7eb;
+
 }
+
 
 .coachScheduleItem:last-child {
+  
   border-bottom: 0;
+
 }
+
 
 .coachScheduleIcon {
+  
   width: 24px;
+  
   height: 24px;
+  
   object-fit: contain;
+  
   margin-top: 1px;
+  
   flex: 0 0 auto;
+
 }
+
 
 .coachScheduleItem p {
+  
   margin: 0;
+  
   font-size: 14px;
+  
   line-height: 1.45;
+  
   color: #374151;
+  
   font-weight: 500;
+
 }
+
 
 .coachScheduleItem p b {
+  
   color: #111827;
+  
   font-weight: 650;
+
 }
+
 
 .coachScheduleLine {
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 8px;
+  
   flex-wrap: wrap;
+
 }
+
 
 .coachScheduleBadge {
+  
   display: inline-flex;
+  
   align-items: center;
+  
   min-height: 22px;
+  
   padding: 3px 9px;
+  
   border: 1px solid #f5c56d;
+  
   border-radius: 999px;
+  
   background: #fff7e8;
+  
   color: #9a5b00;
+  
   font-size: 11px;
+  
   font-weight: 800;
+  
   line-height: 1;
+
 }
+
 
 .coachSchedulePlace {
+  
   display: block;
+  
   margin-top: 3px;
+
 }
+
 
 .coachEmptyText {
+  
   margin: 0;
+  
   color: #64748b;
+  
   font-size: 14px;
+  
   line-height: 1.5;
+
 }
+
 
 .coachTableCard {
+  
   margin-top: 16px;
+  
   padding: 22px;
+
 }
+
 
 .coachTableHead {
+  
   display: flex;
+  
   align-items: flex-start;
+  
   justify-content: space-between;
+  
   gap: 14px;
+  
   margin-bottom: 16px;
+
 }
+
 
 .coachTableHead h2 {
+  
   margin: 0;
+  
   font-size: 18px;
+  
   line-height: 1.25;
+  
   font-weight: 650;
+  
   color: #111827;
+
 }
+
 
 .coachTableHead .coachCategorySelect {
+  
   margin-top: 0;
+
 }
+
 
 .coachTableCard > .coachTableWrap {
+  
   max-height: 340px;
+  
   overflow-y: auto;
+  
   overflow-x: hidden;
+  
   padding-right: 4px;
+  
   scrollbar-gutter: stable;
+  
   scrollbar-width: thin;
+  
   scrollbar-color: #c3cad3 transparent;
+
 }
+
 
 .coachTableCard > .coachTableWrap::-webkit-scrollbar {
+  
   width: 6px;
+
 }
+
 
 .coachTableCard > .coachTableWrap::-webkit-scrollbar-thumb {
+  
   background: #c3cad3;
+  
   border-radius: 999px;
+
 }
+
 
 .coachTableCard > .coachTableWrap::-webkit-scrollbar-track {
+  
   background: transparent;
+
 }
+
 
 .coachTableCard > .coachTableWrap .coachTable thead th {
+  
   position: sticky;
+  
   top: 0;
+  
   z-index: 1;
+  
   background: #ffffff;
+
 }
+
 
 .barOne {
+  
   background: #79d840;
+
 }
+
 
 .barTwo {
+  
   background: #5eaf30;
+
 }
+
 
 .barThree {
+  
   background: #458622;
+
 }
+
 
 @keyframes coachCardIn {
+  
   from {
+    
     opacity: 0;
+    
     transform: translateY(10px);
+  
   }
 
+  
   to {
+    
     opacity: 1;
+    
     transform: translateY(0);
+  
   }
+
 }
+
 
 @keyframes coachDashboardReveal {
+  
   to {
+    
     opacity: 1;
+    
     transform: translateY(0);
+  
   }
+
 }
+
 
 @keyframes coachDonutIn {
+  
   to {
+    
     opacity: 1;
+    
     transform: scale(1);
+  
   }
+
 }
+
 
 @keyframes coachDonutCenterIn {
+  
   to {
+    
     opacity: 1;
+    
     transform: scale(1);
+  
   }
+
 }
+
 
 @keyframes coachLegendIn {
+  
   to {
+    
     opacity: 1;
+    
     transform: translateY(0);
+  
   }
+
 }
+
 
 @keyframes coachBarIn {
+  
   0% {
+    
     transform: scaleX(0);
+    
     opacity: 0.35;
+  
   }
 
+  
   70% {
+    
     transform: scaleX(1.03);
+    
     opacity: 1;
+  
   }
 
+  
   100% {
+    
     transform: scaleX(1);
+    
     opacity: 1;
+  
   }
+
 }
+
 
 @media (max-width: 980px) {
+  
   .coachGridTwo {
+    
     grid-template-columns: 1fr;
+  
   }
 
+  
   .coachIdentity h2 {
+    
     font-size: 30px;
+  
   }
 
+  
   .coachIdentity p {
+    
     font-size: 16px;
+  
   }
 
+  
   .coachPanel h2 {
+    
     font-size: 18px;
+  
   }
 
+  
   .coachPerformanceRow {
+    
     grid-template-columns: 72px 1fr auto;
+  
   }
 
+  
   .coachPerformanceLabel {
+    
     font-size: 12px;
+  
   }
+
 }
 
+
 @media (prefers-reduced-motion: reduce) {
+  
   .coachDashItem,
+  
   .coachAttendancePanel,
+  
   .coachDonutChartInteractive,
+  
   .coachDonutCenterValue,
+  
   .coachLegend li,
+  
   .coachPerformanceFill {
+    
     animation: none;
+    
     opacity: 1;
+    
     transform: none;
+  
   }
+
 }

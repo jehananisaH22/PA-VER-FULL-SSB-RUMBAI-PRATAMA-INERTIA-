@@ -270,10 +270,16 @@ public function Input_Presensi(Request $request)
     $isRoutineSchedule = $this->isRoutineSchedule($jadwal);
     $validStudentIds = $this->activeStudentIdsForSchedule($jadwal);
 
-    if ($attendanceDate->dayOfWeek !== $scheduleDate->dayOfWeek) {
+    $attendanceDateMatchesSchedule = $isRoutineSchedule
+        ? $attendanceDate->dayOfWeek === $scheduleDate->dayOfWeek
+        : $attendanceDate->isSameDay($scheduleDate);
+
+    if (! $attendanceDateMatchesSchedule) {
         return response()->json([
             'status' => false,
-            'message' => 'Tanggal absensi tidak sesuai dengan hari jadwal latihan yang dipilih.',
+            'message' => $isRoutineSchedule
+                ? 'Tanggal absensi tidak sesuai dengan hari jadwal latihan yang dipilih.'
+                : 'Tanggal absensi harus sama dengan tanggal jadwal latihan tambahan yang dipilih.',
             'schedule_day' => $scheduleDate->locale('id')->translatedFormat('l'),
             'attendance_day' => $attendanceDate->locale('id')->translatedFormat('l'),
         ], 422);
@@ -415,6 +421,10 @@ public function Performa_Siswa(Request $request, $id)
             $query->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues());
         }])
         ->where('id_jadwal', $id)
+        ->where(function ($query) use ($pelatih) {
+            $query->where('id_pelatih', $pelatih->id_pelatih)
+                ->orWhereNull('id_pelatih');
+        })
         ->first();
 
     if (!$jadwal) {
@@ -447,6 +457,10 @@ public function Input_Performa_Siswa(Request $request, $id)
             $query->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues());
         }])
         ->where('id_jadwal', $id)
+        ->where(function ($query) use ($pelatih) {
+            $query->where('id_pelatih', $pelatih->id_pelatih)
+                ->orWhereNull('id_pelatih');
+        })
         ->first();
 
     if (!$jadwal) {
@@ -471,10 +485,16 @@ public function Input_Performa_Siswa(Request $request, $id)
     $scheduleDate = Carbon::parse($jadwal->tanggal);
     $isRoutineSchedule = $this->isRoutineSchedule($jadwal);
 
-    if ($tanggal->dayOfWeek !== $scheduleDate->dayOfWeek) {
+    $performanceDateMatchesSchedule = $isRoutineSchedule
+        ? $tanggal->dayOfWeek === $scheduleDate->dayOfWeek
+        : $tanggal->isSameDay($scheduleDate);
+
+    if (! $performanceDateMatchesSchedule) {
         return response()->json([
             'status' => false,
-            'message' => 'Tanggal input performa tidak sesuai dengan hari jadwal latihan yang dipilih.',
+            'message' => $isRoutineSchedule
+                ? 'Tanggal input performa tidak sesuai dengan hari jadwal latihan yang dipilih.'
+                : 'Tanggal input performa harus sama dengan tanggal jadwal latihan tambahan yang dipilih.',
             'schedule_day' => $scheduleDate->locale('id')->translatedFormat('l'),
             'input_day' => $tanggal->locale('id')->translatedFormat('l'),
         ], 422);

@@ -1,1410 +1,2617 @@
+
 .trainingScheduleSection {
+  
   margin-top: 16px;
+  
   opacity: 0;
+  
   transform: translateY(18px) scale(0.985);
+  
   animation: trainingScheduleSectionReveal 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  
   padding-bottom: 54px;
+
 }
+
 
 .trainingScheduleToast {
+  
   position: fixed;
+  
   top: 22px;
+  
   right: 24px;
+  
   z-index: 150;
+  
   min-height: 52px;
+  
   max-width: 360px;
+  
   padding: 12px 14px;
+  
   border-radius: 14px;
+  
   border: 1px solid #cfe7c1;
+  
   background: #f6fff1;
+  
   color: #265d18;
+  
   box-shadow: 0 18px 42px rgba(31, 66, 24, 0.18);
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 10px;
+  
   font-size: 14px;
+  
   font-weight: 600;
+  
   animation: trainingScheduleToastIn 180ms ease-out;
+
 }
+
 
 .trainingScheduleToast.isError {
+  
   border-color: #ffc8c8;
+  
   background: #fff3f3;
+  
   color: #b41219;
+
 }
+
 
 .trainingScheduleToastDot {
+  
   width: 10px;
+  
   height: 10px;
+  
   border-radius: 999px;
+  
   background: #4d9d2b;
+  
   flex: 0 0 auto;
+
 }
+
 
 .trainingScheduleToast.isError .trainingScheduleToastDot {
+  
   background: #df1f2d;
+
 }
+
 
 .trainingScheduleToast span:not(.trainingScheduleToastDot) {
+  
   min-width: 0;
+  
   line-height: 1.35;
+
 }
+
 
 .trainingScheduleToast button {
+  
   width: 28px;
+  
   height: 28px;
+  
   border: 0;
+  
   border-radius: 999px;
+  
   background: rgba(38, 93, 24, 0.08);
+  
   color: currentColor;
+  
   font-size: 16px;
+  
   line-height: 1;
+  
   cursor: pointer;
+  
   margin-left: auto;
+
 }
+
 
 .trainingScheduleToast button:hover {
+  
   background: rgba(38, 93, 24, 0.14);
+
 }
+
 
 @keyframes trainingScheduleToastIn {
+  
   from {
+    
     opacity: 0;
+    
     transform: translateY(-8px);
+  
   }
 
+  
   to {
+    
     opacity: 1;
+    
     transform: translateY(0);
+  
   }
+
 }
+
 
 .trainingSchedulePanel {
+  
   padding: 24px;
+  
   border: 1px solid #dbe8d4;
+  
   border-radius: 24px;
+  
   background: #ffffff;
+  
   box-shadow: 0 16px 36px rgba(42, 84, 31, 0.08);
+  
   opacity: 0;
+  
   transform: translateY(22px);
+  
   animation: trainingSchedulePanelReveal 520ms cubic-bezier(0.22, 1, 0.36, 1) 70ms forwards;
+
 }
+
 
 @keyframes trainingScheduleSectionReveal {
+  
   to {
+    
     opacity: 1;
+    
     transform: translateY(0) scale(1);
+  
   }
+
 }
+
 
 @keyframes trainingSchedulePanelReveal {
+  
   to {
+    
     opacity: 1;
+    
     transform: translateY(0);
+  
   }
+
 }
 
+
 .trainingScheduleHeader {
+  
   display: flex;
+  
   align-items: flex-start;
+  
   justify-content: space-between;
+  
   gap: 24px;
+  
   margin-bottom: 20px;
+
 }
+
 
 .trainingScheduleIntro {
+  
   max-width: 760px;
+
 }
+
 
 .trainingScheduleEyebrow {
+  
   display: inline-flex;
+  
   align-items: center;
+  
   min-height: 34px;
+  
   padding: 0 14px;
+  
   margin-bottom: 12px;
+  
   border-radius: 999px;
+  
   background: linear-gradient(180deg, #eff8e8 0%, #e5f2dc 100%);
+  
   color: #42722c;
+  
   font-size: 12px;
+  
   font-weight: 700;
+  
   letter-spacing: 0.06em;
+  
   text-transform: uppercase;
+
 }
+
 
 .trainingScheduleIntro h2 {
+  
   margin: 0 0 10px;
+  
   color: #183f28;
+  
   font-size: 24px;
+  
   line-height: 1.2;
+
 }
+
 
 .trainingScheduleIntro p {
+  
   margin: 0;
+  
   color: #55705b;
+  
   font-size: 14px;
+  
   line-height: 1.7;
+
 }
+
 
 .trainingScheduleHeaderActions {
+  
   display: flex;
+  
   flex-direction: column;
+  
   align-items: flex-end;
+  
   gap: 14px;
+
 }
 
+
 .trainingScheduleAddButton {
+  
   min-height: 46px;
+  
   border: 0;
+  
   border-radius: 999px;
+  
   background: linear-gradient(180deg, #5b9438 0%, #487b2b 100%);
+  
   color: #ffffff;
+  
   font-size: 14px;
+  
   font-weight: 700;
+  
   padding: 0 18px;
+  
   display: inline-flex;
+  
   align-items: center;
+  
   gap: 10px;
+  
   cursor: pointer;
+  
   box-shadow: 0 12px 24px rgba(72, 123, 43, 0.22);
+  
   transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+
 }
+
 
 .trainingScheduleAddButton:hover {
+  
   transform: translateY(-1px);
+  
   box-shadow: 0 14px 28px rgba(72, 123, 43, 0.28);
+  
   filter: brightness(1.02);
+
 }
+
 
 .trainingScheduleAddButton svg {
+  
   width: 18px;
+  
   height: 18px;
+  
   fill: currentColor;
+
 }
+
 
 .trainingScheduleSummary {
+  
   min-width: 190px;
+  
   border: 1px solid #cfe3c3;
+  
   border-radius: 20px;
+  
   background: linear-gradient(180deg, #fcfff9 0%, #ebf7e3 100%);
+  
   padding: 18px 20px;
+  
   display: flex;
+  
   flex-direction: column;
+  
   gap: 6px;
+  
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+
 }
+
 
 .trainingScheduleSummaryLabel {
+  
   font-size: 11px;
+  
   font-weight: 800;
+  
   letter-spacing: 0.08em;
+  
   text-transform: uppercase;
+  
   color: #5c7d46;
+
 }
 
+
 .trainingScheduleSummary strong {
+  
   color: #2f5f1d;
+  
   font-size: 38px;
+  
   line-height: 1;
+
 }
+
 
 .trainingScheduleSummary span {
+  
   color: #4f7440;
+  
   font-size: 13px;
+  
   font-weight: 600;
+
 }
 
+
 .trainingScheduleTableWrap {
+  
   border: 1px solid #dfeadb;
+  
   border-radius: 22px;
+  
   background: #ffffff;
+  
   overflow: visible;
+
 }
+
 
 .trainingScheduleMobileList {
+  
   display: none;
+
 }
+
 
 .trainingScheduleTable {
+  
   width: 100%;
+  
   border-collapse: collapse;
+  
   table-layout: fixed;
+
 }
+
 
 .trainingScheduleColDay {
+  
   width: 14%;
+
 }
+
 
 .trainingScheduleColTime {
+  
   width: 15%;
+
 }
+
 
 .trainingScheduleColPlace {
+  
   width: 28%;
+
 }
+
 
 .trainingScheduleColCategory {
+  
   width: 16%;
+
 }
+
 
 .trainingScheduleColStudent {
+  
   width: 16%;
+
 }
+
 
 .trainingScheduleColAction {
+  
   width: 13%;
+
 }
+
 
 .trainingScheduleTable th,
+
 .trainingScheduleTable td {
+  
   padding: 18px 16px;
+  
   border-bottom: 1px solid #edf2f6;
+  
   text-align: left;
+  
   vertical-align: middle;
+
 }
 
+
 .trainingScheduleTable th {
+  
   color: #57704f;
+  
   font-size: 12px;
+  
   font-weight: 800;
+  
   letter-spacing: 0.06em;
+  
   text-transform: uppercase;
+  
   background: linear-gradient(180deg, #f8fcf6 0%, #f1f8ed 100%);
+
 }
+
 
 .trainingScheduleTable tbody tr {
+  
   position: relative;
+  
   background: #ffffff;
+  
   transition: background-color 180ms ease;
+
 }
+
 
 .trainingScheduleTable tbody tr:hover {
+  
   background: #f9fdf7;
+
 }
+
 
 .trainingScheduleTable tbody tr.isRowMenuOpen {
+  
   z-index: 6;
+
 }
+
 
 .trainingScheduleTable tbody tr:last-child td {
+  
   border-bottom: 0;
+
 }
+
 
 .trainingScheduleInput {
+  
   width: 100%;
+  
   min-height: 46px;
+  
   min-width: 0;
+  
   border: 1px solid #d8e6cf;
+  
   border-radius: 14px;
+  
   background: #ffffff;
+  
   color: #1f3c2e;
+  
   font-size: 14px;
+  
   font-weight: 600;
+  
   padding: 0 14px;
+  
   outline: none;
+  
   transition: border-color 180ms ease, box-shadow 180ms ease;
+
 }
+
 
 .trainingScheduleInputSmall {
+  
   min-width: 0;
+
 }
 
+
 .trainingScheduleTextarea {
+  
   min-height: 74px;
+  
   padding: 12px 14px;
+  
   resize: vertical;
+  
   line-height: 1.45;
+  
   font-family: inherit;
+
 }
+
 
 .trainingScheduleInput:focus,
+
 .trainingScheduleInput:focus-visible {
+  
   border-color: #84b467;
+  
   box-shadow: 0 0 0 4px rgba(132, 180, 103, 0.12);
+
 }
+
 
 .trainingScheduleField {
+  
   min-width: 182px;
+  
   position: relative;
+  
   z-index: 3;
+
 }
+
 
 .trainingScheduleDropdown {
+  
   position: relative;
+
 }
+
 
 .trainingScheduleSelectButton {
+  
   width: 100%;
+  
   min-height: 46px;
+  
   border: 1px solid #b8d49f;
+  
   border-radius: 999px;
+  
   background: linear-gradient(180deg, #ffffff 0%, #f4faef 100%);
+  
   color: #264d20;
+  
   font-size: 14px;
+  
   font-weight: 700;
+  
   padding: 0 16px 0 18px;
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+  
   gap: 12px;
+  
   cursor: pointer;
+  
   transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease,
+    
     transform 180ms ease;
+
 }
+
 
 .trainingScheduleSelectButton:hover {
+  
   border-color: #9dc77f;
+  
   transform: translateY(-1px);
+
 }
+
 
 .trainingScheduleDropdown.isOpen .trainingScheduleSelectButton {
+  
   border-color: #7fb25e;
+  
   background: linear-gradient(180deg, #ffffff 0%, #eef8e7 100%);
+  
   box-shadow: 0 0 0 4px rgba(127, 178, 94, 0.14);
+
 }
+
 
 .trainingScheduleSelectButton:focus,
+
 .trainingScheduleSelectButton:focus-visible {
+  
   border-color: #84b467;
+  
   box-shadow: 0 0 0 4px rgba(132, 180, 103, 0.14);
+
 }
+
 
 .trainingScheduleSelectButton.isDisabled {
+  
   background: #f9fbf8;
+  
   color: #23412f;
+  
   cursor: default;
+  
   transform: none;
+  
   box-shadow: none;
+
 }
+
 
 .trainingScheduleActions,
+
 .trainingScheduleMobileActions {
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: flex-end;
+  
   gap: 8px;
+  
   flex-wrap: wrap;
+
 }
 
+
 .trainingScheduleActionButton {
+  
   min-height: 38px;
+  
   border: 1px solid transparent;
+  
   border-radius: 999px;
+  
   padding: 0 14px;
+  
   font-size: 13px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+  
   transition: transform 180ms ease, background-color 180ms ease, color 180ms ease,
+    
     border-color 180ms ease;
+
 }
+
 
 .trainingScheduleActionButton:hover {
+  
   transform: translateY(-1px);
+
 }
+
 
 .trainingScheduleActionButton.isDelete {
+  
   background: #fff3f2;
+  
   color: #c24131;
+  
   border-color: #f2c5bf;
+
 }
+
 
 .trainingScheduleActionButton.isSave {
+  
   background: #eef8e7;
+  
   color: #2f6f22;
+  
   border-color: #b9dca5;
+
 }
+
 
 .trainingScheduleActionButton.isSave:hover {
+  
   background: #dff1d5;
+  
   border-color: #8fc76d;
+
 }
+
 
 .trainingScheduleSelectChevron {
+  
   width: 10px;
+  
   height: 10px;
+  
   border-right: 2px solid #53763d;
+  
   border-bottom: 2px solid #53763d;
+  
   transform: translateY(-2px) rotate(45deg);
+  
   transition: transform 180ms ease;
+  
   flex: 0 0 auto;
+
 }
+
 
 .trainingScheduleDropdown.isOpen .trainingScheduleSelectChevron {
+  
   transform: translateY(2px) rotate(-135deg);
+
 }
+
 
 .trainingScheduleDropdownMenu {
+  
   position: absolute;
+  
   top: calc(100% + 10px);
+  
   left: 0;
+  
   right: 0;
+  
   padding: 8px;
+  
   border: 1px solid #cfe1c1;
+  
   border-radius: 18px;
+  
   background: #ffffff;
+  
   box-shadow: 0 18px 32px rgba(47, 95, 29, 0.14);
+  
   display: flex;
+  
   flex-direction: column;
+  
   gap: 4px;
+  
   z-index: 20;
+
 }
+
 
 .trainingScheduleDropdown.isMenuTop .trainingScheduleDropdownMenu {
+  
   top: auto;
+  
   bottom: calc(100% + 10px);
+
 }
+
 
 .trainingScheduleDropdownItem {
+  
   min-height: 40px;
+  
   border: 0;
+  
   border-radius: 12px;
+  
   background: transparent;
+  
   color: #24461f;
+  
   font-size: 14px;
+  
   font-weight: 600;
+  
   text-align: left;
+  
   padding: 0 14px;
+  
   cursor: pointer;
+  
   transition: background-color 180ms ease, color 180ms ease;
+
 }
+
 
 .trainingScheduleDropdownItem:hover {
+  
   background: #edf7e6;
+
 }
+
 
 .trainingScheduleDropdownItem.isSelected {
+  
   background: linear-gradient(180deg, #5b9438 0%, #4f852f 100%);
+  
   color: #ffffff;
+
 }
+
 
 .trainingScheduleRadioMark,
+
 .trainingScheduleCheckMark {
+  
   width: 18px;
+  
   height: 18px;
+  
   flex: 0 0 auto;
+  
   border: 2px solid #91b978;
+  
   background: #ffffff;
+  
   transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+
 }
+
 
 .trainingScheduleRadioMark {
+  
   border-radius: 999px;
+
 }
+
 
 .trainingScheduleCheckMark {
+  
   border-radius: 5px;
+
 }
+
 
 .trainingScheduleModalChoice.isSelected .trainingScheduleRadioMark,
-.trainingScheduleModalChoice.isSelected .trainingScheduleCheckMark {
-  border-color: #ffffff;
-  background: #ffffff;
-  box-shadow: inset 0 0 0 4px #4f852f;
-}
 
 .trainingScheduleModalChoice.isSelected .trainingScheduleCheckMark {
-  position: relative;
+  
+  border-color: #ffffff;
+  
+  background: #ffffff;
+  
+  box-shadow: inset 0 0 0 4px #4f852f;
+
 }
+
+
+.trainingScheduleModalChoice.isSelected .trainingScheduleCheckMark {
+  
+  position: relative;
+
+}
+
 
 .trainingScheduleModalChoice.isSelected .trainingScheduleCheckMark::after {
+  
   content: "";
+  
   position: absolute;
+  
   left: 4px;
+  
   top: 1px;
+  
   width: 5px;
+  
   height: 9px;
+  
   border-right: 2px solid #4f852f;
+  
   border-bottom: 2px solid #4f852f;
+  
   transform: rotate(45deg);
+
 }
 
+
 .trainingScheduleStudentModalOverlay {
+  
   position: fixed;
+  
   inset: 0;
+  
   z-index: 80;
+  
   background: rgba(15, 23, 42, 0.36);
+  
   display: grid;
+  
   place-items: center;
+  
   padding: 20px;
+  
   animation: trainingScheduleModalFade 180ms ease both;
+
 }
+
 
 .trainingScheduleDeleteModalOverlay {
+  
   position: fixed;
+  
   inset: 0;
+  
   z-index: 170;
+  
   background: rgba(15, 23, 42, 0.32);
+  
   display: grid;
+  
   place-items: center;
+  
   padding: 24px;
+
 }
+
 
 .trainingScheduleConfirmModalOverlay {
+  
   position: fixed;
+  
   inset: 0;
+  
   z-index: 170;
+  
   background: rgba(15, 23, 42, 0.32);
+  
   display: grid;
+  
   place-items: center;
+  
   padding: 24px;
+
 }
+
 
 .trainingScheduleConfirmModal {
+  
   width: min(480px, 92vw);
+  
   border: 1px solid #cfe7c1;
+  
   border-radius: 14px;
+  
   background: #ffffff;
+  
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+  
   padding: 28px 30px 30px;
+
 }
+
 
 .trainingScheduleConfirmModalHead span {
+  
   display: block;
+  
   color: #2f6f22;
+  
   font-size: 12px;
+  
   font-weight: 750;
+  
   letter-spacing: 0.08em;
+  
   line-height: 1;
+  
   text-transform: uppercase;
+
 }
+
 
 .trainingScheduleConfirmModalHead h3 {
+  
   margin: 14px 0 0;
+  
   color: #111827;
+  
   font-size: 28px;
+  
   font-weight: 650;
+  
   line-height: 1.15;
+
 }
+
 
 .trainingScheduleConfirmModal p {
+  
   max-width: 390px;
+  
   margin: 18px 0 30px;
+  
   color: #4b5563;
+  
   font-size: 15px;
+  
   line-height: 1.55;
+
 }
+
 
 .trainingScheduleConfirmModalActions {
+  
   display: flex;
+  
   justify-content: flex-end;
+  
   gap: 12px;
+
 }
+
 
 .trainingScheduleConfirmCancelBtn,
+
 .trainingScheduleConfirmSaveBtn {
+  
   min-width: 86px;
+  
   min-height: 48px;
+  
   border-radius: 12px;
+  
   padding: 0 22px;
+  
   font-size: 14px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+
 }
+
 
 .trainingScheduleConfirmCancelBtn {
+  
   border: 1px solid #d7e5d0;
+  
   background: #fbfff8;
+  
   color: #315423;
+
 }
+
 
 .trainingScheduleConfirmSaveBtn {
+  
   border: 1px solid #438b2a;
+  
   background: #438b2a;
+  
   color: #ffffff;
+
 }
+
 
 .trainingScheduleConfirmSaveBtn:hover:not(:disabled) {
+  
   border-color: #34751f;
+  
   background: #34751f;
+
 }
+
 
 .trainingScheduleConfirmCancelBtn:disabled,
+
 .trainingScheduleConfirmSaveBtn:disabled {
+  
   opacity: 0.65;
+  
   cursor: wait;
+
 }
+
 
 .trainingScheduleDeleteModal {
+  
   width: min(480px, 92vw);
+  
   border: 1px solid #f3d0cb;
+  
   border-radius: 14px;
+  
   background: #ffffff;
+  
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+  
   padding: 28px 30px 30px;
+
 }
+
 
 .trainingScheduleDeleteModalHead span {
+  
   display: block;
+  
   color: #b42318;
+  
   font-size: 12px;
+  
   font-weight: 750;
+  
   letter-spacing: 0.08em;
+  
   line-height: 1;
+  
   text-transform: uppercase;
+
 }
+
 
 .trainingScheduleDeleteModalHead h3 {
+  
   margin: 14px 0 0;
+  
   color: #111827;
+  
   font-size: 28px;
+  
   font-weight: 650;
+  
   line-height: 1.15;
+
 }
+
 
 .trainingScheduleDeleteModal p {
+  
   max-width: 390px;
+  
   margin: 18px 0 30px;
+  
   color: #4b5563;
+  
   font-size: 15px;
+  
   line-height: 1.55;
+
 }
+
 
 .trainingScheduleDeleteModalActions {
+  
   display: flex;
+  
   justify-content: flex-end;
+  
   gap: 12px;
+
 }
+
 
 .trainingScheduleDeleteCancelBtn,
+
 .trainingScheduleDeleteConfirmBtn {
+  
   min-width: 86px;
+  
   min-height: 48px;
+  
   border-radius: 12px;
+  
   padding: 0 22px;
+  
   font-size: 14px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+
 }
+
 
 .trainingScheduleDeleteCancelBtn {
+  
   border: 1px solid #d7e5d0;
+  
   background: #fbfff8;
+  
   color: #315423;
+
 }
+
 
 .trainingScheduleDeleteConfirmBtn {
+  
   border: 1px solid #dc2626;
+  
   background: #dc2626;
+  
   color: #ffffff;
+
 }
+
 
 .trainingScheduleDeleteConfirmBtn:hover:not(:disabled) {
+  
   border-color: #c81e1e;
+  
   background: #c81e1e;
+
 }
+
 
 .trainingScheduleDeleteCancelBtn:disabled,
+
 .trainingScheduleDeleteConfirmBtn:disabled {
+  
   opacity: 0.65;
+  
   cursor: wait;
+
 }
+
 
 @media (max-width: 560px) {
+  
   .trainingScheduleConfirmModal,
+  
   .trainingScheduleDeleteModal {
+    
     padding: 24px 22px;
+  
   }
 
+  
   .trainingScheduleConfirmModalHead h3,
+  
   .trainingScheduleDeleteModalHead h3 {
+    
     font-size: 25px;
+  
   }
 
+  
   .trainingScheduleConfirmModalActions,
+  
   .trainingScheduleDeleteModalActions {
+    
     flex-direction: column-reverse;
+  
   }
 
+  
   .trainingScheduleConfirmCancelBtn,
+  
   .trainingScheduleConfirmSaveBtn,
+  
   .trainingScheduleDeleteCancelBtn,
+  
   .trainingScheduleDeleteConfirmBtn {
+    
     width: 100%;
+  
   }
+
 }
+
 
 .trainingScheduleStudentModal {
+  
   width: min(460px, 94vw);
+  
   max-height: min(590px, 88vh);
+  
   border: 1px solid #d9e9d0;
+  
   border-radius: 20px;
+  
   background: #ffffff;
+  
   box-shadow: 0 22px 46px rgba(15, 23, 42, 0.2);
+  
   padding: 0;
+  
   display: flex;
+  
   flex-direction: column;
+  
   overflow: hidden;
+  
   animation: trainingScheduleModalIn 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
 }
+
 
 .trainingScheduleStudentModalHead {
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+  
   gap: 16px;
+  
   padding: 18px 20px 16px;
+  
   border-bottom: 1px solid #e8f0e3;
+
 }
+
 
 .trainingScheduleStudentModalHead span {
+  
   display: block;
+  
   color: #5d7752;
+  
   font-size: 11px;
+  
   font-weight: 800;
+  
   letter-spacing: 0.08em;
+  
   text-transform: uppercase;
+
 }
+
 
 .trainingScheduleStudentModalHead h3 {
+  
   margin: 5px 0 0;
+  
   color: #183f28;
+  
   font-size: 24px;
+  
   line-height: 1.2;
+
 }
 
+
 .trainingScheduleStudentModalClose,
+
 .trainingScheduleModalGhostBtn {
+  
   min-height: 38px;
+  
   border: 1px solid #cfe3c3;
+  
   border-radius: 999px;
+  
   background: #fbfef9;
+  
   color: #315423;
+  
   padding: 0 16px;
+  
   font-size: 13px;
+  
   font-weight: 700;
+  
   cursor: pointer;
+  
   transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+
 }
+
 
 .trainingScheduleStudentModalClose:hover,
+
 .trainingScheduleModalGhostBtn:hover {
+  
   border-color: #b8d49f;
+  
   background: #f3faef;
+  
   transform: translateY(-1px);
+
 }
 
+
 .trainingScheduleStudentModalBody {
+  
   min-height: 0;
+  
   padding: 14px 20px;
+  
   overflow-y: auto;
+  
   scrollbar-width: thin;
+  
   scrollbar-color: #b8d49f transparent;
+
 }
+
 
 .trainingScheduleStudentModalBody::-webkit-scrollbar {
+  
   width: 6px;
+
 }
+
 
 .trainingScheduleStudentModalBody::-webkit-scrollbar-thumb {
+  
   background: #b8d49f;
+  
   border-radius: 999px;
+
 }
+
 
 .trainingScheduleStudentModalList {
+  
   display: grid;
+  
   gap: 6px;
+
 }
 
+
 .trainingScheduleModalChoice {
+  
   width: 100%;
+  
   min-height: 46px;
+  
   border: 1px solid transparent;
+  
   border-radius: 12px;
+  
   background: transparent;
+  
   color: #183f28;
+  
   padding: 0 12px;
+  
   display: flex;
+  
   align-items: center;
+  
   gap: 12px;
+  
   font-size: 14px;
+  
   font-weight: 700;
+  
   text-align: left;
+  
   cursor: pointer;
+  
   transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease,
+    
     transform 180ms ease;
+
 }
+
 
 .trainingScheduleModalChoice:hover {
+  
   border-color: #d8e9cf;
+  
   background: #f7fcf4;
+
 }
+
 
 .trainingScheduleModalChoice.isSelected {
+  
   border-color: #4f852f;
+  
   background: linear-gradient(180deg, #5b9438 0%, #4f852f 100%);
+  
   color: #ffffff;
+
 }
+
 
 .trainingScheduleModalAllChoice {
+  
   min-height: 50px;
+  
   margin-bottom: 2px;
+  
   background: #f7fcf4;
+  
   border-color: #dcebd4;
+
 }
+
 
 .trainingScheduleStudentModalDivider {
+  
   height: 1px;
+  
   margin: 10px 0;
+  
   background: #e4efdc;
+
 }
+
 
 .trainingScheduleStudentModalFoot {
+  
   padding: 14px 20px 18px;
+  
   border-top: 1px solid #e8f0e3;
+  
   display: flex;
+  
   align-items: center;
+  
   justify-content: space-between;
+  
   gap: 14px;
+  
   background: #fbfef9;
+
 }
 
+
 .trainingScheduleStudentModalSummary {
+  
   color: #55705b;
+  
   font-size: 13px;
+  
   font-weight: 800;
+
 }
+
 
 .trainingScheduleStudentModalFoot > div {
+  
   display: flex;
+  
   justify-content: flex-end;
+  
   gap: 10px;
+
 }
 
+
 .trainingScheduleModalSaveBtn {
+  
   min-height: 40px;
+  
   border: 0;
+  
   border-radius: 999px;
+  
   background: #4f852f;
+  
   color: #ffffff;
+  
   padding: 0 20px;
+  
   font-size: 13px;
+  
   font-weight: 800;
+  
   cursor: pointer;
+  
   box-shadow: 0 10px 20px rgba(79, 133, 47, 0.2);
+  
   transition: background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+
 }
+
 
 .trainingScheduleModalSaveBtn:hover {
+  
   background: #46782a;
+  
   transform: translateY(-1px);
+  
   box-shadow: 0 12px 24px rgba(79, 133, 47, 0.24);
+
 }
+
 
 @keyframes trainingScheduleModalFade {
+  
   from {
+    
     opacity: 0;
+  
   }
+  
   to {
+    
     opacity: 1;
+  
   }
+
 }
+
 
 @keyframes trainingScheduleModalIn {
+  
   from {
+    
     opacity: 0;
+    
     transform: translateY(14px) scale(0.985);
+  
   }
+  
   to {
+    
     opacity: 1;
+    
     transform: translateY(0) scale(1);
+  
   }
+
 }
+
 
 @media (max-width: 1100px) {
+  
   .trainingScheduleHeader {
+    
     flex-direction: column;
+  
   }
 
+  
   .trainingScheduleHeaderActions {
+    
     width: 100%;
+    
     align-items: stretch;
+  
   }
 
+  
   .trainingScheduleAddButton {
+    
     justify-content: center;
+  
   }
 
+  
   .trainingScheduleTable th,
+  
   .trainingScheduleTable td {
+    
     padding: 16px 12px;
+  
   }
 
+  
   .trainingScheduleInput,
+  
   .trainingScheduleSelectButton {
+    
     font-size: 13px;
+  
   }
+
 }
+
 
 @media (max-width: 700px) {
+  
   .trainingSchedulePanel {
+    
     padding: 18px;
+    
     border-radius: 20px;
+  
   }
 
+  
   .trainingScheduleIntro h2 {
+    
     font-size: 22px;
+  
   }
 
+  
   .trainingScheduleTableWrap {
+    
     border-radius: 18px;
+  
   }
 
+  
   .trainingScheduleTableWrap {
+    
     display: none;
+  
   }
 
+  
   .trainingScheduleMobileList {
+    
     display: flex;
+    
     flex-direction: column;
+    
     gap: 14px;
+  
   }
 
+  
   .trainingScheduleMobileCard {
+    
     border: 1px solid #edf2f6;
+    
     border-radius: 18px;
+    
     background: #ffffff;
+    
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+    
     padding: 16px;
+    
     display: flex;
+    
     flex-direction: column;
+    
     gap: 14px;
+  
   }
 
+  
   .trainingScheduleMobileCard.isMenuOpen {
+    
     z-index: 8;
+  
   }
 
+  
   .trainingScheduleMobileField {
+    
     display: flex;
+    
     flex-direction: column;
+    
     gap: 8px;
+  
   }
 
+  
   .trainingScheduleMobileField > span {
+    
     color: #64748b;
+    
     font-size: 11px;
+    
     font-weight: 800;
+    
     letter-spacing: 0.08em;
+    
     text-transform: uppercase;
+  
   }
 
+  
   .trainingScheduleMobileActions {
+    
     justify-content: flex-end;
+  
   }
 
+  
   .trainingScheduleField {
+    
     min-width: 0;
+  
   }
 
+  
   .trainingScheduleTextarea {
+    
     min-height: 92px;
+  
   }
 
+  
   .trainingScheduleDropdownMenu {
+    
     position: static;
+    
     margin-top: 10px;
+    
     box-shadow: 0 10px 22px rgba(47, 95, 29, 0.1);
+  
   }
 
+  
   .trainingScheduleDropdown.isMenuTop .trainingScheduleDropdownMenu {
+    
     bottom: auto;
+  
   }
 
+  
   .trainingScheduleStudentModal {
+    
     width: min(440px, 94vw);
+    
     border-radius: 18px;
+  
   }
 
+  
   .trainingScheduleStudentModalHead,
+  
   .trainingScheduleStudentModalFoot {
+    
     align-items: stretch;
+    
     flex-direction: column;
+  
   }
 
+  
   .trainingScheduleStudentModalFoot > div,
+  
   .trainingScheduleModalGhostBtn,
+  
   .trainingScheduleModalSaveBtn {
+    
     width: 100%;
+  
   }
+
 }
+
 
 @media (prefers-reduced-motion: reduce) {
+  
   .trainingScheduleSection,
+  
   .trainingSchedulePanel,
+  
   .trainingScheduleStudentModalOverlay,
+  
   .trainingScheduleStudentModal {
+    
     opacity: 1;
+    
     transform: none;
+    
     animation: none;
+  
   }
+
 }
+
 
 /* Clean admin schedule view: visual polish only. */
+
 .trainingSchedulePanel,
+
 .trainingScheduleStudentModal,
+
 .trainingScheduleMobileCard {
+  
   border-radius: 8px;
+  
   border-color: #dfe8dd;
+  
   background: #ffffff;
+  
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.045);
+
 }
+
 
 .trainingScheduleHeader h2,
+
 .trainingScheduleStudentModalHead h3 {
+  
   color: #102033;
+  
   font-weight: 750;
+
 }
+
 
 .trainingScheduleHeader p,
+
 .trainingScheduleMobileField > span,
+
 .trainingScheduleStudentModalHead span {
+  
   color: #5f6f63;
+
 }
+
 
 .trainingScheduleField,
+
 .trainingScheduleTextarea,
+
 .trainingScheduleSelectTrigger,
+
 .trainingScheduleStudentButton,
+
 .trainingScheduleDropdownTrigger,
+
 .trainingScheduleAddBtn,
+
 .trainingScheduleModalGhostBtn,
+
 .trainingScheduleModalSaveBtn {
+  
   border-radius: 8px;
+
 }
 
+
 .trainingScheduleTableWrap {
+  
   border-radius: 8px;
+  
   border-color: #e6ece4;
+
 }
+
 
 .trainingScheduleTableWrap th,
+
 .trainingScheduleTableWrap td {
+  
   padding: 14px;
+  
   line-height: 1.45;
+
 }
+
 
 .trainingScheduleTableWrap th {
+  
   background: #f7faf6;
+  
   color: #334155;
+
 }
+
 
 /* Reference schedule layout */
+
 .trainingScheduleSection {
+  
   margin-top: 8px;
+
 }
+
 
 .trainingSchedulePanel {
+  
   border: 1px solid #d8e8d0;
+  
   border-radius: 22px;
+  
   background: #ffffff;
+  
   box-shadow: 0 18px 38px rgba(52, 124, 32, 0.08);
+  
   padding: 24px 26px;
+
 }
+
 
 .trainingScheduleHeader {
+  
   margin-bottom: 28px;
+
 }
+
 
 .trainingScheduleEyebrow {
+  
   min-height: 34px;
+  
   border-radius: 999px;
+  
   background: #e8f4e2;
+  
   color: #49753a;
+
 }
+
 
 .trainingScheduleIntro h2 {
+  
   color: #183f28;
+  
   font-size: 26px;
+  
   font-weight: 800;
+
 }
+
 
 .trainingScheduleAddButton {
+  
   min-height: 48px;
+  
   border-radius: 999px;
+  
   background: #438b2a;
+  
   box-shadow: 0 12px 26px rgba(52, 124, 32, 0.18);
+
 }
 
+
 .trainingScheduleSummary {
+  
   border-radius: 20px;
+  
   background: #f2faed;
+
 }
+
 
 .trainingScheduleTableWrap {
+  
   border: 0;
+  
   border-radius: 0;
+
 }
+
 
 .trainingScheduleTable th,
+
 .trainingScheduleTable td {
+  
   padding: 18px 16px;
+  
   border-bottom: 1px solid #e4ebdf;
+
 }
+
 
 .trainingScheduleTable th {
+  
   background: #f2f8ee;
+  
   color: #526e49;
+  
   font-weight: 800;
+  
   letter-spacing: 0.04em;
+
 }
 
+
 .trainingScheduleInput,
+
 .trainingScheduleTextarea,
+
 .trainingScheduleSelectTrigger,
+
 .trainingScheduleStudentButton {
+  
   min-height: 48px;
+  
   border: 1px solid #cfe4c6;
+  
   border-radius: 12px;
+  
   background: #fbfff8;
+
 }
+
 
 /* Moderate font weight tuning to match the reference. */
+
 .trainingScheduleIntro h2,
+
 .trainingScheduleSummary strong {
+  
   font-weight: 650;
+
 }
 
+
 .trainingScheduleTable th,
+
 .trainingScheduleAddButton,
+
 .trainingScheduleEyebrow,
+
 .trainingScheduleSummaryLabel {
+  
   font-weight: 600;
+
 }
+
 
 .trainingScheduleTable td,
+
 .trainingScheduleIntro p,
+
 .trainingScheduleInput,
+
 .trainingScheduleTextarea,
+
 .trainingScheduleSelectTrigger,
+
 .trainingScheduleStudentButton {
+  
   font-weight: 400;
+
 }
+
 
 /* Compact admin scale */
+
 .trainingSchedulePanel {
+  
   padding: 20px 22px;
+
 }
 
+
 .trainingScheduleHeader {
+  
   margin-bottom: 22px;
+
 }
+
 
 .trainingScheduleEyebrow {
+  
   min-height: 30px;
+  
   font-size: 11px;
+
 }
 
+
 .trainingScheduleIntro h2 {
+  
   font-size: 23px;
+
 }
+
 
 .trainingScheduleIntro p {
+  
   font-size: 13px;
+
 }
 
+
 .trainingScheduleAddButton {
+  
   min-height: 42px;
+  
   font-size: 13px;
+
 }
+
 
 .trainingScheduleSummary {
+  
   padding: 14px 16px;
+
 }
+
 
 .trainingScheduleSummary strong {
+  
   font-size: 32px;
+
 }
+
 
 .trainingScheduleTable th,
+
 .trainingScheduleTable td {
+  
   padding: 14px 12px;
+  
   font-size: 13px;
+
 }
 
+
 .trainingScheduleInput,
+
 .trainingScheduleTextarea,
+
 .trainingScheduleSelectTrigger,
+
 .trainingScheduleStudentButton {
+  
   min-height: 42px;
+  
   font-size: 13px;
+
 }
+
 
 /* Balanced admin scale */
+
 .trainingSchedulePanel {
+  
   padding: 22px 24px;
+
 }
+
 
 .trainingScheduleIntro h2 {
+  
   font-size: 24px;
+
 }
+
 
 .trainingScheduleAddButton {
+  
   min-height: 44px;
+
 }
+
 
 .trainingScheduleTable th,
+
 .trainingScheduleTable td {
+  
   padding: 15px 13px;
+
 }
+
 
 .trainingScheduleInput,
+
 .trainingScheduleTextarea,
+
 .trainingScheduleSelectTrigger,
+
 .trainingScheduleStudentButton {
+  
   min-height: 44px;
+
 }
+
 
 /* Fix student target modal: keep the page static so fixed overlay covers the viewport. */
+
 .trainingScheduleSection,
+
 .trainingSchedulePanel {
+  
   opacity: 1 !important;
+  
   transform: none !important;
+  
   animation: none !important;
+
 }
+
 
 .trainingScheduleStudentModalOverlay {
+  
   position: fixed;
+  
   inset: 0;
+  
   z-index: 160;
+  
   background: rgba(15, 23, 42, 0.28);
+  
   backdrop-filter: blur(1px);
+  
   display: grid;
+  
   place-items: center;
+  
   padding: 24px;
+
 }
+
 
 .trainingScheduleStudentModal {
+  
   width: min(520px, 92vw);
+  
   max-height: min(520px, 86vh);
+  
   border: 1px solid #dde8d8;
+  
   border-radius: 12px;
+  
   box-shadow: 0 24px 54px rgba(15, 23, 42, 0.22);
+
 }
+
 
 .trainingScheduleStudentModalHead {
+  
   padding: 22px 26px 20px;
+  
   border-bottom: 1px solid #edf2eb;
+
 }
+
 
 .trainingScheduleStudentModalHead span {
+  
   color: #5f7460;
+  
   font-size: 12px;
+  
   font-weight: 650;
+  
   letter-spacing: 0.05em;
+
 }
+
 
 .trainingScheduleStudentModalHead h3 {
+  
   margin-top: 8px;
+  
   color: #0f172a;
+  
   font-size: 28px;
+  
   font-weight: 800;
+
 }
+
 
 .trainingScheduleStudentModalClose,
+
 .trainingScheduleModalGhostBtn {
+  
   min-height: 40px;
+  
   border-radius: 12px;
+  
   background: #fbfff8;
+  
   font-size: 13px;
+  
   font-weight: 600;
+  
   box-shadow: none;
+
 }
+
 
 .trainingScheduleStudentModalBody {
+  
   padding: 18px 26px;
+
 }
+
 
 .trainingScheduleModalChoice {
+  
   min-height: 46px;
+  
   border-radius: 12px;
+  
   padding: 0 16px;
+  
   font-size: 14px;
+  
   font-weight: 600;
+
 }
+
 
 .trainingScheduleModalAllChoice {
+  
   min-height: 56px;
+
 }
+
 
 .trainingScheduleStudentModalDivider {
+  
   margin: 14px 0;
+
 }
+
 
 .trainingScheduleStudentModalFoot {
+  
   padding: 18px 26px 22px;
+  
   border-top: 1px solid #edf2eb;
+  
   background: #fbfff8;
+
 }
+
 
 .trainingScheduleStudentModalSummary {
+  
   color: #405c42;
+  
   font-size: 13px;
+  
   font-weight: 600;
+
 }
+
 
 .trainingScheduleModalSaveBtn {
+  
   min-height: 40px;
+  
   border-radius: 10px;
+  
   padding: 0 22px;
+  
   background: #438b2a;
+  
   font-size: 13px;
+  
   font-weight: 650;
+  
   box-shadow: 0 10px 20px rgba(67, 139, 42, 0.16);
+
 }
+
 
 @media (max-width: 700px) {
+  
   .trainingScheduleStudentModal {
+    
     width: min(420px, 94vw);
+  
   }
 
+  
   .trainingScheduleStudentModalHead,
+  
   .trainingScheduleStudentModalBody,
+  
   .trainingScheduleStudentModalFoot {
+    
     padding-left: 18px;
+    
     padding-right: 18px;
+  
   }
 
+  
   .trainingScheduleStudentModalHead h3 {
+    
     font-size: 24px;
+  
   }
+
 }
+
 
 /* Final tidy pass: minimal alignment only, no layout reshuffle. */
+
 .trainingScheduleHeader {
+  
   align-items: flex-start;
+
 }
+
 
 .trainingScheduleHeaderActions {
+  
   min-width: 220px;
+
 }
+
 
 .trainingScheduleTable th {
+  
   height: 58px;
+
 }
+
 
 .trainingScheduleTable td {
+  
   padding-top: 20px;
+  
   padding-bottom: 20px;
+
 }
+
 
 .trainingScheduleActions {
+  
   align-items: center;
+  
   justify-content: center;
+  
   gap: 10px;
+
 }
+
 
 .trainingScheduleActionButton {
+  
   min-width: 82px;
+  
   min-height: 42px;
+  
   padding: 0 16px;
+
 }
+
 
 .trainingScheduleTextarea {
+  
   min-height: 64px;
+  
   resize: vertical;
+
 }
 
+
 @media (max-width: 1300px) {
+  
   .trainingScheduleActions {
+    
     flex-direction: column;
+  
   }
+
 }

@@ -16,12 +16,19 @@ Route::get('/galeri', [MenuUtamaController::class, 'galeri']);
 
 
 Route::post('/logout', function (Request $request) {
+    $loginPath = match (Auth::user()?->role) {
+        'admin' => '/login/admin',
+        'pelatih' => '/login/pelatih',
+        'orang_tua' => '/login/orangtua',
+        default => '/login',
+    };
+
     Auth::logout();
 
     $request->session()->invalidate();
     $request->session()->regenerateToken();
 
-    return redirect('/');
+    return redirect($loginPath);
 })->middleware('web');
 
 Route::get('/register', [WebPageController::class, 'register']);
