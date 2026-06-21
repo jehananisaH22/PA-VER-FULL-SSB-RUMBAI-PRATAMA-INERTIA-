@@ -155,8 +155,9 @@ class CoachToParentFlowTest extends TestCase
         $this->assertSame('Perlu latihan finishing.', $payload['coachNotes'][0]['note']);
         $this->assertSame('Menunggu Validasi', $payload['paymentHistory'][0]['status']);
         $this->assertSame(100000.0, $payload['monthlyPaymentSummary']['targetAmount']);
-        $this->assertSame(42000.0, $payload['monthlyPaymentSummary']['paidAmount']);
-        $this->assertSame(58000.0, $payload['monthlyPaymentSummary']['remainingAmount']);
+        $this->assertSame(0.0, $payload['monthlyPaymentSummary']['paidAmount']);
+        $this->assertSame(42000.0, $payload['monthlyPaymentSummary']['pendingAmount']);
+        $this->assertSame(100000.0, $payload['monthlyPaymentSummary']['remainingAmount']);
         $this->assertCount(4, $payload['notifications']);
     }
 
