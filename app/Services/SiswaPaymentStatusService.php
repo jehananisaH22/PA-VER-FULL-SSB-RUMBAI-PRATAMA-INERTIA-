@@ -17,7 +17,7 @@ class SiswaPaymentStatusService
         $acceptedPaid = $this->paidAmount($siswa->id_siswa, $period, ['diterima']);
         $pendingPaid = $this->paidAmount($siswa->id_siswa, $period, ['menunggu validasi']);
         $remaining = max(0, $target - $acceptedPaid);
-        $periodDate = Carbon::createFromFormat('Y-m', $period)->startOfMonth();
+        $periodDate = Carbon::createFromFormat('Y-m', $period)->startOfMonth()->locale('id');
 
         return [
             'period' => $period,
@@ -35,17 +35,13 @@ class SiswaPaymentStatusService
         $previousPeriod = now()->subMonthNoOverflow()->format('Y-m');
         $periodEnd = Carbon::createFromFormat('Y-m', $previousPeriod)->endOfMonth();
 
-        if ($this->studentJoinedAfter($siswa, $periodEnd)) {
-            return $siswa;
-        }
-
-        if (! $this->hasDailyPaymentInPeriod($siswa->id_siswa, $previousPeriod)) {
+        if ($this->studentJoinedAfter($siswa, $periodEnd) || ! $this->hasApprovedRegistration($siswa)) {
             return $siswa;
         }
 
         $summary = $this->monthlySummary($siswa, $previousPeriod);
 
-        if ($summary['remainingAmount'] > 0 && strtolower((string) $siswa->status) === 'active') {
+        if ($summary['remainingAmount'] > 0 && in_array(strtolower((string) $siswa->status), ['active', 'aktif'], true)) {
             $siswa->forceFill(['status' => 'Inactive'])->save();
             $siswa->refresh();
         }
@@ -60,6 +56,28 @@ class SiswaPaymentStatusService
         }
 
         return $siswa;
+    }
+
+    public function overdueSummary(Siswa $siswa): ?array
+    {
+        $period = now()->subMonthNoOverflow()->format('Y-m');
+        $periodEnd = Carbon::createFromFormat('Y-m', $period)->endOfMonth();
+
+        if ($this->studentJoinedAfter($siswa, $periodEnd) || ! $this->hasApprovedRegistration($siswa)) {
+            return null;
+        }
+
+        $summary = $this->monthlySummary($siswa, $period);
+
+        if ($summary['remainingAmount'] <= 0) {
+            return null;
+        }
+
+        return $summary + [
+            'isLocked' => true,
+            'studentId' => (int) $siswa->id_siswa,
+            'studentName' => $siswa->nama_siswa,
+        ];
     }
 
     public function syncAfterPaymentValidation(?Siswa $siswa): ?Siswa
@@ -80,16 +98,10 @@ class SiswaPaymentStatusService
             ->where('pembayaran.jenis', 'Harian')
             ->where('pembayaran.periode', 'like', $period . '%')
             ->whereIn(DB::raw('LOWER(TRIM(bukti_pembayaran.status))'), $normalizedStatuses)
-            ->sum('pembayaran.jumlah');
-    }
-
-    private function hasDailyPaymentInPeriod(int $studentId, string $period): bool
-    {
-        return DB::table('pembayaran')
-            ->where('id_siswa', $studentId)
-            ->where('jenis', 'Harian')
-            ->where('periode', 'like', $period . '%')
-            ->exists();
+            ->select('pembayaran.id_pembayaran', 'pembayaran.jumlah')
+            ->distinct()
+            ->get()
+            ->sum(fn ($payment) => (float) $payment->jumlah);
     }
 
     private function studentJoinedAfter(Siswa $siswa, Carbon $periodEnd): bool

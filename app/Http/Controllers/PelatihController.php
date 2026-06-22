@@ -15,6 +15,7 @@ use App\Models\Pembayaran;
 use App\Models\BuktiPembayaran;
 use App\Models\Notifikasi;
 use App\Support\SsbInertiaData;
+use App\Services\SiswaPaymentStatusService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
@@ -126,6 +127,40 @@ class PelatihController extends Controller
         ->unique()
         ->values()
         ->all();
+  }
+
+  private function studentIdsForPaymentPelatih(Pelatih $pelatih): array
+  {
+    $explicitIds = DB::table('jadwal_siswa')
+        ->join('jadwal_latihan', 'jadwal_siswa.id_jadwal', '=', 'jadwal_latihan.id_jadwal')
+        ->where(function ($query) use ($pelatih) {
+            $query->where('jadwal_latihan.id_pelatih', $pelatih->id_pelatih)
+                ->orWhereNull('jadwal_latihan.id_pelatih');
+        })
+        ->pluck('jadwal_siswa.id_siswa');
+
+    $routineIds = DB::table('jadwal_latihan')
+        ->where(function ($query) use ($pelatih) {
+            $query->where('id_pelatih', $pelatih->id_pelatih)
+                ->orWhereNull('id_pelatih');
+        })
+        ->get()
+        ->flatMap(function ($schedule) {
+            if (! $this->isRoutineSchedule($schedule)) return [];
+
+            $category = $schedule->kategori_umur !== null
+                ? SsbInertiaData::categoryValue((string) $schedule->kategori_umur)
+                : null;
+
+            return DB::table('siswa')
+                ->select('id_siswa', 'tanggal_lahir', 'umur')
+                ->get()
+                ->filter(fn ($student) => ! $category || $category === 'all'
+                    || SsbInertiaData::categoryValue(SsbInertiaData::categoryFromStudent($student)) === $category)
+                ->pluck('id_siswa');
+        });
+
+    return $explicitIds->merge($routineIds)->map(fn ($id) => (int) $id)->unique()->values()->all();
   }
 
   private function isRoutineSchedule(object $jadwal): bool
@@ -844,10 +879,9 @@ public function Hapus_Catatan_Pelatih($id)
 public function FormUploadBuktiPembayaran(Request $request)
 {
     $pelatih = $this->currentPelatih();
-    $allowedStudentIds = $pelatih ? $this->studentIdsForPelatih($pelatih) : null;
+    $allowedStudentIds = $pelatih ? $this->studentIdsForPaymentPelatih($pelatih) : null;
 
     $studentOptionRows = Siswa::select('id_siswa', 'nama_siswa', 'tanggal_lahir', 'umur', 'status')
-        ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
         ->when($allowedStudentIds !== null, fn ($query) => $query->whereIn('id_siswa', $allowedStudentIds))
         ->orderBy('nama_siswa')
         ->get();
@@ -916,31 +950,34 @@ public function Store_Bukti_Pembayaran_Pelatih(Request $request)
     DB::beginTransaction();
 
     try {
-        $siswa = Siswa::where('id_siswa', $validated['id_siswa'])
-            ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
-            ->first();
+        $siswa = Siswa::where('id_siswa', $validated['id_siswa'])->first();
 
         if (
             ! $siswa
-            || ! in_array((int) $siswa->id_siswa, $this->studentIdsForPelatih($pelatih), true)
+            || ! in_array((int) $siswa->id_siswa, $this->studentIdsForPaymentPelatih($pelatih), true)
         ) {
             return response()->json([
                 'success' => false,
-                'message' => 'Siswa belum aktif atau tidak termasuk jadwal pelatih.',
+                'message' => 'Siswa tidak termasuk jadwal pelatih.',
             ], 422);
         }
         $tanggal = Carbon::parse($validated['tanggal_bukti_bayar']);
+        $overduePayment = $validated['jenis'] === 'Harian'
+            ? app(SiswaPaymentStatusService::class)->overdueSummary($siswa->loadMissing('pendaftaran'))
+            : null;
         $periode = $validated['jenis'] === 'Harian'
-            ? $tanggal->format('Y-m-d')
+            ? ($overduePayment['period'] ?? $tanggal->format('Y-m-d'))
             : $tanggal->format('Y-m');
         $jumlah = $validated['jenis'] === 'Pendaftaran'
             ? 280000
             : (float) $validated['jumlah'];
 
-        $pembayaran = Pembayaran::where('id_siswa', $siswa->id_siswa)
-            ->where('jenis', $validated['jenis'])
-            ->where('periode', $periode)
-            ->first();
+        $pembayaran = $validated['jenis'] === 'Pendaftaran'
+            ? Pembayaran::where('id_siswa', $siswa->id_siswa)
+                ->where('jenis', $validated['jenis'])
+                ->where('periode', $periode)
+                ->first()
+            : null;
 
         if (!$pembayaran) {
             $nextPaymentId = ((int) DB::table('pembayaran')
@@ -1037,13 +1074,11 @@ public function History_Bukti_Pembayaran_Pelatih(Request $request)
     $query = BuktiPembayaran::with([
         'siswa:id_siswa,nama_siswa,tanggal_lahir,umur',
         'pembayaran:id_pembayaran,id_siswa,jenis,status',
-    ])->whereHas('siswa', function ($query) {
-        $query->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues());
-    });
+    ]);
     $pelatih = $this->currentPelatih();
 
     if ($pelatih) {
-        $query->whereIn('id_siswa', $this->studentIdsForPelatih($pelatih));
+        $query->whereIn('id_siswa', $this->studentIdsForPaymentPelatih($pelatih));
     }
 
     if ($request->filled('search')) {
@@ -1088,8 +1123,7 @@ public function History_Bukti_Pembayaran_Pelatih(Request $request)
         });
 
     $historyStudentRows = Siswa::select('id_siswa', 'tanggal_lahir', 'umur')
-        ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
-        ->when($pelatih, fn ($query) => $query->whereIn('id_siswa', $this->studentIdsForPelatih($pelatih)))
+        ->when($pelatih, fn ($query) => $query->whereIn('id_siswa', $this->studentIdsForPaymentPelatih($pelatih)))
         ->get();
     $kategoriUmur = $this->categoryOptionsFromStudents($historyStudentRows);
 

@@ -1102,6 +1102,10 @@ class SsbInertiaData
             }
         }
 
+        $overduePayment = isset($syncedStudent) && $syncedStudent
+            ? app(SiswaPaymentStatusService::class)->overdueSummary($syncedStudent)
+            : null;
+
         $studentIds = $firstStudent ? [$firstStudent->id_siswa] : [];
         $studentIsActive = $firstStudent
             ? strtolower((string) $firstStudent->status) === 'active'
@@ -1237,6 +1241,7 @@ class SsbInertiaData
             'notes' => self::coachNotes($studentIds),
             'paymentHistory' => self::paymentHistory($studentIds),
             'monthlyPaymentSummary' => self::monthlyPaymentSummary($studentIds),
+            'overduePayment' => $overduePayment,
             'notifications' => self::parentNotifications($studentIds, $user?->id),
             'reuploadRequest' => $reuploadRequest,
         ];

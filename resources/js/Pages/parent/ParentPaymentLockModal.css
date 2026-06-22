@@ -1,0 +1,87 @@
+.parentPaymentLock {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow-y: auto;
+  background: rgba(8, 18, 35, .78);
+  backdrop-filter: blur(8px);
+}
+
+.parentPaymentLockCard {
+  width: min(100%, 520px);
+  padding: 34px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .32);
+  color: #172033;
+  text-align: center;
+}
+
+.parentPaymentLockIcon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: #fff0e8;
+  color: #d84c16;
+  font-size: 21px;
+  font-weight: 900;
+}
+
+.parentPaymentLockEyebrow {
+  margin: 0 0 8px;
+  color: #d84c16;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.parentPaymentLockCard h1 { margin: 0 0 12px; font-size: clamp(24px, 5vw, 32px); }
+.parentPaymentLockCard > p { line-height: 1.6; }
+
+.parentPaymentLockDetails {
+  margin: 24px 0;
+  padding: 10px 20px;
+  border: 1px solid #e5e9f0;
+  border-radius: 16px;
+  background: #f8fafc;
+  text-align: left;
+}
+
+.parentPaymentLockDetails div { display: flex; justify-content: space-between; gap: 20px; padding: 11px 0; }
+.parentPaymentLockDetails div + div { border-top: 1px solid #e5e9f0; }
+.parentPaymentLockDetails dt { color: #647085; }
+.parentPaymentLockDetails dd { margin: 0; font-weight: 800; text-align: right; }
+.parentPaymentLockDetails .isRemaining { color: #c63f12; font-size: 17px; }
+.parentPaymentLockHelp { margin-bottom: 0; font-size: 14px; color: #596579; }
+.parentPaymentLockPending { margin-top: 18px; padding: 12px; border-radius: 12px; background: #fff7d6; color: #765a00; font-weight: 700; }
+
+.parentPaymentLockLogout {
+  width: 100%;
+  margin-top: 22px;
+  padding: 13px 20px;
+  border: 1px solid #d84c16;
+  border-radius: 12px;
+  background: #d84c16;
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .2s ease, transform .2s ease, opacity .2s ease;
+}
+
+.parentPaymentLockLogout:hover:not(:disabled) { background: #b93d10; transform: translateY(-1px); }
+.parentPaymentLockLogout:focus-visible { outline: 3px solid rgba(216, 76, 22, .25); outline-offset: 3px; }
+.parentPaymentLockLogout:disabled { cursor: wait; opacity: .65; }
+
+@media (max-width: 560px) {
+  .parentPaymentLock { padding: 14px; }
+  .parentPaymentLockCard { padding: 26px 20px; border-radius: 20px; }
+  .parentPaymentLockDetails { padding-inline: 14px; }
+}

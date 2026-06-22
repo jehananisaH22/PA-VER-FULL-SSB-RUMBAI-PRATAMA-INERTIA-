@@ -76,6 +76,9 @@ public function coachSection(?string $section = null)
     $coachStudentIds = $coachProfile
         ? $this->studentIdsForCoach((int) $coachProfile->id_pelatih)
         : [];
+    $coachPaymentStudentIds = $coachProfile
+        ? $this->studentIdsForCoach((int) $coachProfile->id_pelatih, false)
+        : [];
 
     $attendanceRecaps = SsbInertiaData::attendanceRecaps($coachStudentIds, true);
     $performanceHistory = SsbInertiaData::performanceHistory($coachStudentIds, true);
@@ -85,14 +88,16 @@ public function coachSection(?string $section = null)
         'userName' => $coachName,
         'currentCoachName' => $coachName,
         'notifications' => SsbInertiaData::coachNotifications($coach?->id),
-        'studentDirectory' => SsbInertiaData::studentDirectory(true, $coachStudentIds),
+        'studentDirectory' => $section === 'pembayaran'
+            ? SsbInertiaData::studentDirectory(false, $coachPaymentStudentIds)
+            : SsbInertiaData::studentDirectory(true, $coachStudentIds),
         'trainingSchedules' => SsbInertiaData::schedules(null, true, $coachProfile?->id_pelatih),
         'attendanceRecaps' => $attendanceRecaps,
         'history' => $performanceHistory,
         'performanceHistory' => $performanceHistory,
         'notes' => $coachNotes,
         'coachNotes' => $coachNotes,
-        'paymentSubmissions' => SsbInertiaData::paymentRows(true, $coachStudentIds),
+        'paymentSubmissions' => SsbInertiaData::paymentRows(false, $coachPaymentStudentIds),
     ]);
 }
 
@@ -107,7 +112,7 @@ private function currentCoachProfile(?User $user = null): ?Pelatih
     return Pelatih::resolveForUser($user);
 }
 
-private function studentIdsForCoach(int $coachId): array
+private function studentIdsForCoach(int $coachId, bool $activeOnly = true): array
 {
     $explicitStudentIds = DB::table('jadwal_siswa')
         ->join('jadwal_latihan', 'jadwal_siswa.id_jadwal', '=', 'jadwal_latihan.id_jadwal')
@@ -116,7 +121,7 @@ private function studentIdsForCoach(int $coachId): array
             $query->where('jadwal_latihan.id_pelatih', $coachId)
                 ->orWhereNull('jadwal_latihan.id_pelatih');
         })
-        ->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active'])
+        ->when($activeOnly, fn ($query) => $query->whereRaw('LOWER(COALESCE(siswa.status, "")) = ?', ['active']))
         ->pluck('jadwal_siswa.id_siswa')
         ->map(fn ($id) => (int) $id)
         ->unique()
@@ -131,7 +136,7 @@ private function studentIdsForCoach(int $coachId): array
         ->get();
 
     $activeStudents = DB::table('siswa')
-        ->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active'])
+        ->when($activeOnly, fn ($query) => $query->whereRaw('LOWER(COALESCE(status, "")) = ?', ['active']))
         ->select('id_siswa', 'tanggal_lahir', 'umur')
         ->get();
 
