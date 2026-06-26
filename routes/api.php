@@ -119,7 +119,6 @@ Route::middleware('web')->group(function () {
             Route::put('/performa-siswa/update/{id}', [PelatihController::class, 'Update_Performa_Siswa']);
 
             Route::get('/catatan-pelatih', [PelatihController::class, 'Catatan_Pelatih']);
-            Route::get('/catatan-pelatih/{id}', [PelatihController::class, 'Catatan_perPelatih']);
             Route::post('/catatan-pelatih/tambah', [PelatihController::class, 'Tambah_Catatan_Pelatih']);
             Route::put('/catatan-pelatih/update/{id}', [PelatihController::class, 'Update_Catatan_Pelatih']);
             Route::delete('/catatan-pelatih/hapus/{id}', [PelatihController::class, 'Hapus_Catatan_Pelatih']);
