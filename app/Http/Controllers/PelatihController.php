@@ -302,19 +302,14 @@ public function Input_Presensi(Request $request)
         ? Carbon::parse($request->tanggal)
         : now();
     $scheduleDate = Carbon::parse($jadwal->tanggal);
-    $isRoutineSchedule = $this->isRoutineSchedule($jadwal);
     $validStudentIds = $this->activeStudentIdsForSchedule($jadwal);
 
-    $attendanceDateMatchesSchedule = $isRoutineSchedule
-        ? $attendanceDate->dayOfWeek === $scheduleDate->dayOfWeek
-        : $attendanceDate->isSameDay($scheduleDate);
-
-    if (! $attendanceDateMatchesSchedule) {
+    if (! $attendanceDate->isSameDay($scheduleDate)) {
         return response()->json([
             'status' => false,
-            'message' => $isRoutineSchedule
-                ? 'Tanggal absensi tidak sesuai dengan hari jadwal latihan yang dipilih.'
-                : 'Tanggal absensi harus sama dengan tanggal jadwal latihan tambahan yang dipilih.',
+            'message' => 'Tanggal absensi harus sama dengan tanggal jadwal latihan yang dipilih.',
+            'schedule_date' => $scheduleDate->toDateString(),
+            'attendance_date' => $attendanceDate->toDateString(),
             'schedule_day' => $scheduleDate->locale('id')->translatedFormat('l'),
             'attendance_day' => $attendanceDate->locale('id')->translatedFormat('l'),
         ], 422);
@@ -518,18 +513,13 @@ public function Input_Performa_Siswa(Request $request, $id)
         ? Carbon::parse($request->tanggal_penilaian)
         : now();
     $scheduleDate = Carbon::parse($jadwal->tanggal);
-    $isRoutineSchedule = $this->isRoutineSchedule($jadwal);
 
-    $performanceDateMatchesSchedule = $isRoutineSchedule
-        ? $tanggal->dayOfWeek === $scheduleDate->dayOfWeek
-        : $tanggal->isSameDay($scheduleDate);
-
-    if (! $performanceDateMatchesSchedule) {
+    if (! $tanggal->isSameDay($scheduleDate)) {
         return response()->json([
             'status' => false,
-            'message' => $isRoutineSchedule
-                ? 'Tanggal input performa tidak sesuai dengan hari jadwal latihan yang dipilih.'
-                : 'Tanggal input performa harus sama dengan tanggal jadwal latihan tambahan yang dipilih.',
+            'message' => 'Tanggal input performa harus sama dengan tanggal jadwal latihan yang dipilih.',
+            'schedule_date' => $scheduleDate->toDateString(),
+            'input_date' => $tanggal->toDateString(),
             'schedule_day' => $scheduleDate->locale('id')->translatedFormat('l'),
             'input_day' => $tanggal->locale('id')->translatedFormat('l'),
         ], 422);

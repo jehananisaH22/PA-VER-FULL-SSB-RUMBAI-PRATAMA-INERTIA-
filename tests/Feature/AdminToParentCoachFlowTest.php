@@ -6,6 +6,7 @@ use App\Models\Admin;
 use App\Models\Jadwal_Latihan;
 use App\Models\OrangTua;
 use App\Models\Pelatih;
+use App\Models\Pencapaian;
 use App\Models\Siswa;
 use App\Models\User;
 use App\Support\SsbInertiaData;
@@ -124,6 +125,43 @@ class AdminToParentCoachFlowTest extends TestCase
         $this->assertSame($parentSchedule['time'], $coachSchedule['time']);
         $this->assertSame($parentSchedule['category'], $coachSchedule['category']);
         $this->assertSame($parentSchedule['studentNames'], $coachSchedule['studentNames']);
+    }
+
+    public function test_admin_can_update_and_delete_student_achievement(): void
+    {
+        [
+            'adminUser' => $adminUser,
+            'siswa' => $siswa,
+        ] = $this->createAdminParentCoachData();
+
+        $achievement = Pencapaian::create([
+            'id_siswa' => $siswa->id_siswa,
+            'id_badge' => null,
+            'nama_prestasi' => 'Nama Prestasi Salah',
+            'tanggal_diberikan' => '2026-06-05',
+        ]);
+
+        $this->actingAs($adminUser)
+            ->putJson("/api/admin/prestasi/{$achievement->id_pencapaian}", [
+                'nama_prestasi' => 'Nama Prestasi Benar',
+            ])
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.nama_prestasi', 'Nama Prestasi Benar');
+
+        $this->assertDatabaseHas('pencapaian', [
+            'id_pencapaian' => $achievement->id_pencapaian,
+            'nama_prestasi' => 'Nama Prestasi Benar',
+        ]);
+
+        $this->actingAs($adminUser)
+            ->deleteJson("/api/admin/prestasi/{$achievement->id_pencapaian}")
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->assertDatabaseMissing('pencapaian', [
+            'id_pencapaian' => $achievement->id_pencapaian,
+        ]);
     }
 
     public function test_updated_admin_schedule_syncs_to_parent_and_coach_payloads(): void

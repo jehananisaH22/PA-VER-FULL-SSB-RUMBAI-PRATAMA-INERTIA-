@@ -895,7 +895,7 @@ public function Data_Siswa(Request $request)
     ]);
 }
 
-public function editProfilSiswaPage($id_siswa)
+public function Profil_Siswa_Admin($id_siswa)
 {
     $siswa = Siswa::query()
         ->leftJoin('orang_tua', 'siswa.id_ortu', '=', 'orang_tua.id_ortu')
@@ -2269,6 +2269,58 @@ public function HistoryPrestasiAdmin(Request $request)
             'kategori_umur' => $kategoriUmur,
         ],
         'data' => $prestasi,
+    ]);
+}
+
+public function UpdatePrestasiAdmin(Request $request, $id)
+{
+    $validated = $request->validate([
+        'nama_prestasi' => 'required|string|max:255',
+        'tanggal_diberikan' => 'nullable|date',
+    ]);
+
+    $prestasi = Pencapaian::with('siswa:id_siswa,nama_siswa')
+        ->findOrFail($id);
+
+    $prestasi->update([
+        'nama_prestasi' => $validated['nama_prestasi'],
+        'tanggal_diberikan' => $validated['tanggal_diberikan'] ?? $prestasi->tanggal_diberikan,
+    ]);
+
+    $prestasi->refresh()->load('siswa:id_siswa,nama_siswa,tanggal_lahir,umur');
+
+    $this->recordAdminActivity(
+        'Mengubah prestasi siswa',
+        $prestasi->nama_prestasi . ' untuk ' . ($prestasi->siswa->nama_siswa ?? 'Siswa')
+    );
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Prestasi berhasil diperbarui',
+        'data' => [
+            'id_pencapaian' => $prestasi->id_pencapaian,
+            'id_siswa' => $prestasi->id_siswa,
+            'nama_siswa' => $prestasi->siswa->nama_siswa ?? null,
+            'kategori_umur' => $this->categoryLabelFromStudent($prestasi->siswa),
+            'nama_prestasi' => $prestasi->nama_prestasi,
+            'tanggal_diberikan' => $prestasi->tanggal_diberikan,
+        ],
+    ]);
+}
+
+public function HapusPrestasiAdmin($id)
+{
+    $prestasi = Pencapaian::with('siswa:id_siswa,nama_siswa')
+        ->findOrFail($id);
+
+    $description = $prestasi->nama_prestasi . ' untuk ' . ($prestasi->siswa->nama_siswa ?? 'Siswa');
+    $prestasi->delete();
+
+    $this->recordAdminActivity('Menghapus prestasi siswa', $description);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Prestasi berhasil dihapus',
     ]);
 }
 

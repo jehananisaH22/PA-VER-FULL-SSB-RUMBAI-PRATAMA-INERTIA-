@@ -98,6 +98,8 @@ Route::middleware('web')->group(function () {
             Route::get('/prestasi/form', [AdminController::class, 'FormPrestasiAdmin']); // tidak dipakai di frontend React; diganti dengan route web
             Route::post('/prestasi/tambah-prestasi', [AdminController::class, 'StorePrestasiAdmin']);
             Route::get('/prestasi/histori', [AdminController::class, 'HistoryPrestasiAdmin']); // tidak dipakai di frontend React; diganti dengan route web
+            Route::put('/prestasi/{id}', [AdminController::class, 'UpdatePrestasiAdmin']);
+            Route::delete('/prestasi/{id}', [AdminController::class, 'HapusPrestasiAdmin']);
         });
 
         Route::prefix('notifikasi')->group(function () {

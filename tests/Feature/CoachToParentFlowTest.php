@@ -54,7 +54,7 @@ class CoachToParentFlowTest extends TestCase
 
         $jadwal = Jadwal_Latihan::create([
             'id_pelatih' => $pelatih->id_pelatih,
-            'tanggal' => '2026-06-01', 
+            'tanggal' => '2026-06-01',
             'jam_mulai' => '08:00:00',
             'jam_selesai' => '10:00:00',
             'lokasi' => 'Lapangan Test',
@@ -196,7 +196,7 @@ class CoachToParentFlowTest extends TestCase
         $this->assertSame(0, $payload['attendanceRecaps'][0]['hadir']);
     }
 
-    public function test_coach_attendance_uses_daily_date_matching_admin_schedule_day(): void
+    public function test_coach_attendance_uses_exact_admin_schedule_date(): void
     {
         [
             'coachUser' => $coachUser,
@@ -209,7 +209,7 @@ class CoachToParentFlowTest extends TestCase
         $this->actingAs($coachUser)
             ->postJson('/api/pelatih/presensi/input', [
                 'id_jadwal' => $jadwal->id_jadwal,
-                'tanggal' => '2026-06-10', 
+                'tanggal' => '2026-06-03',
                 'data' => [
                     ['id_siswa' => $siswa->id_siswa, 'status' => 'hadir'],
                 ],
@@ -223,10 +223,10 @@ class CoachToParentFlowTest extends TestCase
             ->where('id_siswa', $siswa->id_siswa)
             ->first();
 
-        $this->assertSame('2026-06-10', substr((string) $storedAttendance->created_at, 0, 10));
+        $this->assertSame('2026-06-03', substr((string) $storedAttendance->created_at, 0, 10));
     }
 
-    public function test_coach_attendance_rejects_daily_date_outside_schedule_day(): void
+    public function test_coach_attendance_rejects_date_outside_admin_schedule_date(): void
     {
         [
             'coachUser' => $coachUser,
@@ -237,13 +237,55 @@ class CoachToParentFlowTest extends TestCase
         $this->actingAs($coachUser)
             ->postJson('/api/pelatih/presensi/input', [
                 'id_jadwal' => $jadwal->id_jadwal,
-                'tanggal' => '2026-06-03', 
+                'tanggal' => '2026-06-03',
                 'data' => [
                     ['id_siswa' => $siswa->id_siswa, 'status' => 'hadir'],
                 ],
             ])
             ->assertStatus(422)
             ->assertJsonPath('status', false);
+    }
+
+    public function test_coach_inputs_reject_same_weekday_when_date_is_not_admin_schedule_date(): void
+    {
+        [
+            'coachUser' => $coachUser,
+            'siswa' => $siswa,
+            'jadwal' => $jadwal,
+        ] = $this->createCoachParentFlowData();
+
+        $jadwal->update(['tanggal' => '2026-06-03']);
+
+        $this->actingAs($coachUser)
+            ->postJson('/api/pelatih/presensi/input', [
+                'id_jadwal' => $jadwal->id_jadwal,
+                'tanggal' => '2026-06-10',
+                'data' => [
+                    ['id_siswa' => $siswa->id_siswa, 'status' => 'hadir'],
+                ],
+            ])
+            ->assertStatus(422)
+            ->assertJsonPath('status', false)
+            ->assertJsonPath('schedule_date', '2026-06-03')
+            ->assertJsonPath('attendance_date', '2026-06-10');
+
+        $this->actingAs($coachUser)
+            ->postJson("/api/pelatih/performa-siswa/input/{$jadwal->id_jadwal}", [
+                'tanggal_penilaian' => '2026-06-10',
+                'data' => [[
+                    'id_siswa' => $siswa->id_siswa,
+                    'dribbling' => 80,
+                    'passing' => 80,
+                    'shooting' => 80,
+                ]],
+            ])
+            ->assertStatus(422)
+            ->assertJsonPath('status', false)
+            ->assertJsonPath('schedule_date', '2026-06-03')
+            ->assertJsonPath('input_date', '2026-06-10');
+
+        $this->assertDatabaseMissing('presensi', ['id_jadwal' => $jadwal->id_jadwal]);
+        $this->assertDatabaseMissing('performa_siswa', ['id_jadwal' => $jadwal->id_jadwal]);
     }
 
     public function test_additional_schedule_requires_exact_date_for_attendance_and_performance(): void
@@ -469,7 +511,7 @@ class CoachToParentFlowTest extends TestCase
         ]);
         $otherSchedule = Jadwal_Latihan::create([
             'id_pelatih' => null,
-            'tanggal' => '2026-06-02', 
+            'tanggal' => '2026-06-02',
             'jam_mulai' => '08:00:00',
             'jam_selesai' => '10:00:00',
             'lokasi' => 'Lapangan Lain',

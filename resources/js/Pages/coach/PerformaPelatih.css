@@ -237,12 +237,21 @@
 
 
 .coachPerformanceSelectMenu {
+  max-height: min(240px, 45vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #86b875 #eef6e9;
   
   padding: 7px;
   
   border-radius: 12px;
 
 }
+
+.coachPerformanceSelectMenu::-webkit-scrollbar { width: 7px; }
+.coachPerformanceSelectMenu::-webkit-scrollbar-track { background: #eef6e9; border-radius: 999px; }
+.coachPerformanceSelectMenu::-webkit-scrollbar-thumb { background: #86b875; border-radius: 999px; }
 
 
 .coachPerformanceSelectOption {

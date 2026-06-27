@@ -211,6 +211,11 @@
 
 
 .coachNotesSelectMenu {
+  max-height: min(240px, 45vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #86b875 #eef6e9;
   
   position: absolute;
   
@@ -233,6 +238,10 @@
   box-shadow: 0 16px 30px rgba(42, 84, 31, 0.13);
 
 }
+
+.coachNotesSelectMenu::-webkit-scrollbar { width: 7px; }
+.coachNotesSelectMenu::-webkit-scrollbar-track { background: #eef6e9; border-radius: 999px; }
+.coachNotesSelectMenu::-webkit-scrollbar-thumb { background: #86b875; border-radius: 999px; }
 
 
 .coachNotesSelectOption {

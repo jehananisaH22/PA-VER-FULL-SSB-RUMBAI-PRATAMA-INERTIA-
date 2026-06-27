@@ -42,9 +42,12 @@ export default function GreenSelect({
         left: `${rect.left}px`, 
         top: nextDirection === "up" ? `${rect.top - 8}px` : `${rect.bottom + 8}px`, 
         width: `${Math.max(rect.width, 132)}px`, 
-        maxHeight: `${Math.max(
-          120,
-          nextDirection === "up" ? rect.top - 16 : window.innerHeight - rect.bottom - 16
+        maxHeight: `${Math.min(
+          240,
+          Math.max(
+            120,
+            nextDirection === "up" ? rect.top - 16 : window.innerHeight - rect.bottom - 16
+          )
         )}px`, 
         transform: nextDirection === "up" ? "translateY(-100%)" : "none"
       });

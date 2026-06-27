@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Siswa;
+use App\Models\Notifikasi;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -44,6 +46,10 @@ class SiswaPaymentStatusService
         if ($summary['remainingAmount'] > 0 && in_array(strtolower((string) $siswa->status), ['active', 'aktif'], true)) {
             $siswa->forceFill(['status' => 'Inactive'])->save();
             $siswa->refresh();
+        }
+
+        if ($summary['remainingAmount'] > 0) {
+            $this->notifyAdminsOfOverduePayment($siswa, $summary);
         }
 
         if (
@@ -127,6 +133,66 @@ class SiswaPaymentStatusService
                 ->where('pembayaran.jenis', 'Pendaftaran')
                 ->where('pembayaran.status', 'Lunas')
                 ->whereRaw('LOWER(TRIM(bukti_pembayaran.status)) = ?', ['diterima'])
+            ->exists();
+    }
+
+    private function notifyAdminsOfOverduePayment(Siswa $siswa, array $summary): void
+    {
+        $notificationId = DB::table('notifikasi_terkirim')
+            ->join('notifikasi', 'notifikasi_terkirim.id_notifikasi', '=', 'notifikasi.id_notifikasi')
+            ->where('notifikasi_terkirim.id_siswa', $siswa->id_siswa)
+            ->where('notifikasi.target_role', 'admin')
+            ->where('notifikasi.judul', 'Tunggakan Pembayaran')
+            ->where('notifikasi.isi', 'like', '%' . $summary['periodLabel'] . '%')
+            ->value('notifikasi.id_notifikasi');
+
+        $admins = User::query()
+            ->where('users.role', 'admin')
+            ->leftJoin('admin', 'users.id', '=', 'admin.user_id')
+            ->select('users.id as user_id', 'admin.id_admin')
+            ->get();
+
+        if ($admins->isEmpty()) {
+            return;
+        }
+
+        $message = sprintf(
+            '%s memiliki kekurangan pembayaran periode %s sebesar Rp%s. Pantau pelunasan pada menu Pembayaran.',
+            $siswa->nama_siswa,
+            $summary['periodLabel'],
+            number_format($summary['remainingAmount'], 0, ',', '.')
+        );
+
+        if ($notificationId) {
+            DB::table('notifikasi')->where('id_notifikasi', $notificationId)->update(['isi' => $message]);
+        } else {
+            $notificationId = Notifikasi::create([
+                'judul' => 'Tunggakan Pembayaran',
+                'isi' => $message,
+                'target_role' => 'admin',
+                'tanggal_kirim' => now(),
+            ])->id_notifikasi;
+        }
+
+        $admins->each(function ($admin) use ($notificationId, $siswa) {
+            $deliveryExists = DB::table('notifikasi_terkirim')
+                ->where('id_notifikasi', $notificationId)
+                ->where('user_id', $admin->user_id)
                 ->exists();
+
+            if (! $deliveryExists) {
+                DB::table('notifikasi_terkirim')->insert([
+                'id_notifikasi' => $notificationId,
+                'user_id' => $admin->user_id,
+                'id_siswa' => $siswa->id_siswa,
+                'id_admin' => $admin->id_admin,
+                'id_pelatih' => null,
+                'status_baca' => 'Belum Dibaca',
+                'tanggal_baca' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+                ]);
+            }
+        });
     }
 }

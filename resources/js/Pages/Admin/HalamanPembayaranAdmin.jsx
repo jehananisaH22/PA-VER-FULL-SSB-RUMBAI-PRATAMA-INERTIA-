@@ -438,7 +438,7 @@ function buildPaymentRows(registrationPaymentSubmissions, coachPaymentSubmission
   const coachRows = coachPaymentSubmissions.map((item) => ({ 
     id: item.id, 
     source: item.source || "coach", 
-    sourceLabel: "Pelatih", 
+    sourceLabel: item.source === "overdue" ? "Tunggakan" : "Pelatih",
     studentName: item.studentName || "-", 
     category: item.category || "", 
     categoryLabel: item.categoryLabel || "-", 
@@ -904,7 +904,7 @@ export default function HalamanPembayaranAdmin({
                      <th>Jenis Pembayaran</th>
                      <th>Waktu</th>
                      <th>Nominal</th>
-                     <th>Sisa Bulan Ini</th>
+                     <th>Sisa Pembayaran</th>
                      <th>Bukti</th>
                      <th>Status</th>
                   </tr>
@@ -931,7 +931,7 @@ export default function HalamanPembayaranAdmin({
                           </button>
                         </td>
                          <td>
-                          {activeTab === "validation" ? (
+                          {activeTab === "validation" && row.source !== "overdue" ? (
                     <AdminPaymentStatusDropdown
                       value={row.status}
                       options={validationStatusOptions}

@@ -46,6 +46,11 @@ function calculateAgeFromBirthDate(value) {
   return age >= 0 ? String(age) : "";
 } 
 
+function errorMessage(error) {
+  if (Array.isArray(error)) return error[0] || "";
+  return error || "";
+}
+
 export default function HalamanFormPendaftaran({ 
   onOpenHome, 
   onBackToDaftar, 
@@ -246,7 +251,7 @@ export default function HalamanFormPendaftaran({
                   required />
                 
                 {(errors.tanggal_lahir || errors.umur) && (
-                <small>{errors.tanggal_lahir?.[0] || errors.umur?.[0]}</small>)
+                <small>{errorMessage(errors.tanggal_lahir) || errorMessage(errors.umur)}</small>)
                 }
               </label>
                <label>

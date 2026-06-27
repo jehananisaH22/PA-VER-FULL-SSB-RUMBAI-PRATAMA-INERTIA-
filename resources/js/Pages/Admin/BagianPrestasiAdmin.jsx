@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from "react"; 
-import Pagination from "../../components/Pagination"; 
-import { router } from "@inertiajs/react"; 
-import "./BagianPrestasiAdmin.css"; 
+import { useEffect, useMemo, useRef, useState } from "react";
+import Pagination from "../../components/Pagination";
+import { router } from "@inertiajs/react";
+import "./BagianPrestasiAdmin.css";
 
 const categoryOptions = [
 { value: "", label: "Pilih Kategori Umur" },
 ...Array.from({ length: 11 }, (_, index) => {
-  const age = index + 6; 
+  const age = index + 6;
   return { value: `U-${age}`, label: `U-${age}` };
-})]; 
+})];
 
 
 function SearchIcon() {
@@ -17,7 +17,7 @@ function SearchIcon() {
        <path d="M10.5 4a6.5 6.5 0 1 0 4.03 11.6l4.43 4.42 1.41-1.41-4.42-4.43A6.5 6.5 0 0 0 10.5 4Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z" />
     </svg>);
 
-} 
+}
 
 function ChevronDownIcon() {
   return (
@@ -29,26 +29,26 @@ function ChevronDownIcon() {
         strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round" />
-      
+
     </svg>);
 
-} 
+}
 
 function AdminAchievementsSelect({ value, onChange, options, ariaLabel }) {
-  const [isOpen, setIsOpen] = useState(false); 
-  const rootRef = useRef(null); 
-  const selectedOption = options.find((option) => option.value === value) || options[0]; 
+  const [isOpen, setIsOpen] = useState(false);
+  const rootRef = useRef(null);
+  const selectedOption = options.find((option) => option.value === value) || options[0];
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (!rootRef.current?.contains(event.target)) {
         setIsOpen(false);
       }
-    }; 
+    };
 
-    document.addEventListener("mousedown", handleOutsideClick); 
+    document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []); 
+  }, []);
 
   return (
     <div className={`adminAchievementsSelect ${isOpen ? "isOpen" : ""}`} ref={rootRef}>
@@ -64,7 +64,7 @@ function AdminAchievementsSelect({ value, onChange, options, ariaLabel }) {
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label={ariaLabel}>
-        
+
          <span>{selectedOption.label}</span>
          <span className="adminAchievementsSelectIcon">
            <ChevronDownIcon />
@@ -81,10 +81,10 @@ function AdminAchievementsSelect({ value, onChange, options, ariaLabel }) {
           aria-selected={option.value === value}
           className={`adminAchievementsSelectOption ${option.value === value ? "isSelected" : ""}`}
           onClick={() => {
-            onChange(option.value); 
+            onChange(option.value);
             setIsOpen(false);
           }}>
-          
+
               {option.label}
             </button>)
         )}
@@ -92,39 +92,43 @@ function AdminAchievementsSelect({ value, onChange, options, ariaLabel }) {
       null}
     </div>);
 
-} 
+}
 
-export default function BagianPrestasiAdmin({ 
-  students = [], 
-  achievements = [], 
-  onAddAchievement, 
+export default function BagianPrestasiAdmin({
+  students = [],
+  achievements = [],
+  onAddAchievement,
   onRecordAdminActivity
 }) {
-  const [activeTab, setActiveTab] = useState("input"); 
-  const [selectedCategory, setSelectedCategory] = useState(""); 
-  const [studentQuery, setStudentQuery] = useState(""); 
-  const [selectedStudentIds, setSelectedStudentIds] = useState([]); 
-  const [achievementTitle, setAchievementTitle] = useState(""); 
-  const [statusMessage, setStatusMessage] = useState(""); 
-  const [toast, setToast] = useState(null); 
-  const [localAchievements, setLocalAchievements] = useState(achievements); 
-  const [isSaving, setIsSaving] = useState(false); 
+  const [activeTab, setActiveTab] = useState("input");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [studentQuery, setStudentQuery] = useState("");
+  const [selectedStudentIds, setSelectedStudentIds] = useState([]);
+  const [achievementTitle, setAchievementTitle] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [toast, setToast] = useState(null);
+  const [localAchievements, setLocalAchievements] = useState(achievements);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editingAchievementId, setEditingAchievementId] = useState(null);
+  const [editingAchievementTitle, setEditingAchievementTitle] = useState("");
+  const [deletingAchievementId, setDeletingAchievementId] = useState(null);
+  const [isUpdatingAchievement, setIsUpdatingAchievement] = useState(false);
 
   useEffect(() => {
     setLocalAchievements(achievements);
-  }, [achievements]); 
+  }, [achievements]);
 
   useEffect(() => {
-    if (!statusMessage) return undefined; 
-    const timeoutId = setTimeout(() => setStatusMessage(""), 5000); 
+    if (!statusMessage) return undefined;
+    const timeoutId = setTimeout(() => setStatusMessage(""), 5000);
     return () => clearTimeout(timeoutId);
-  }, [statusMessage]); 
+  }, [statusMessage]);
 
   useEffect(() => {
-    if (!toast) return undefined; 
-    const timeoutId = setTimeout(() => setToast(null), 5000); 
+    if (!toast) return undefined;
+    const timeoutId = setTimeout(() => setToast(null), 5000);
     return () => clearTimeout(timeoutId);
-  }, [toast]); 
+  }, [toast]);
 
   const selectedStudents = useMemo(
     () =>
@@ -132,112 +136,206 @@ export default function BagianPrestasiAdmin({
     selectedStudentIds.some((studentId) => Number(studentId) === Number(item.id))
     ),
     [selectedStudentIds, students]
-  ); 
+  );
 
   const filteredStudents = useMemo(() => {
-    if (!selectedCategory) return []; 
+    if (!selectedCategory) return [];
 
-    const normalizedQuery = studentQuery.trim().toLowerCase(); 
+    const normalizedQuery = studentQuery.trim().toLowerCase();
     return students.filter((student) => {
-      const categoryMatch = student.category === selectedCategory; 
-      const queryMatch = !normalizedQuery || student.name.toLowerCase().includes(normalizedQuery); 
+      const categoryMatch = student.category === selectedCategory;
+      const queryMatch = !normalizedQuery || student.name.toLowerCase().includes(normalizedQuery);
       return categoryMatch && queryMatch;
     });
-  }, [selectedCategory, studentQuery, students]); 
+  }, [selectedCategory, studentQuery, students]);
 
-  const achievementRows = onAddAchievement ? achievements : localAchievements; 
+  const achievementRows = localAchievements;
 
   const sortedAchievements = useMemo(
     () => [...achievementRows].sort((leftItem, rightItem) => rightItem.createdAt - leftItem.createdAt),
     [achievementRows]
-  ); 
+  );
 
-  const [achievementsPage, setAchievementsPage] = useState(1); 
-  const [achievementsPageSize, setAchievementsPageSize] = useState(10); 
-  const totalAchievements = sortedAchievements.length; 
+  const [achievementsPage, setAchievementsPage] = useState(1);
+  const [achievementsPageSize, setAchievementsPageSize] = useState(10);
+  const totalAchievements = sortedAchievements.length;
   const pagedAchievements = useMemo(() => {
-    const start = (achievementsPage - 1) * achievementsPageSize; 
+    const start = (achievementsPage - 1) * achievementsPageSize;
     return sortedAchievements.slice(start, start + achievementsPageSize);
-  }, [sortedAchievements, achievementsPage, achievementsPageSize]); 
+  }, [sortedAchievements, achievementsPage, achievementsPageSize]);
 
   const handleSave = async () => {
-    if (isSaving) return; 
+    if (isSaving) return;
 
-    const title = achievementTitle.trim(); 
+    const title = achievementTitle.trim();
 
     if (selectedStudentIds.length === 0 || !title) {
-      setStatusMessage("Pilih siswa dan isi nama prestasi terlebih dahulu."); 
+      setStatusMessage("Pilih siswa dan isi nama prestasi terlebih dahulu.");
       return;
-    } 
+    }
 
-    setIsSaving(true); 
-    setStatusMessage(""); 
+    setIsSaving(true);
+    setStatusMessage("");
 
     try {
       if (onAddAchievement) {
         await Promise.all(
           selectedStudentIds.map((studentId) =>
-          onAddAchievement({ 
-            studentId, 
+          onAddAchievement({
+            studentId,
             title
           })
           )
         );
       } else {
-        const response = await window.axios.post("/api/admin/prestasi/tambah-prestasi", { 
-          id_siswa: selectedStudentIds, 
+        const response = await window.axios.post("/api/admin/prestasi/tambah-prestasi", {
+          id_siswa: selectedStudentIds,
           nama_prestasi: title
-        }); 
+        });
 
         if (response.data?.success === false) {
           throw new Error(response.data?.message || "Prestasi gagal disimpan.");
-        } 
+        }
 
-        const savedAchievements = Array.isArray(response.data?.data) ? response.data.data : []; 
-        const createdAt = Date.now(); 
-        const dateLabel = new Date().toLocaleDateString("id-ID", { 
-          day: "2-digit", 
-          month: "long", 
+        const savedAchievements = Array.isArray(response.data?.data) ? response.data.data : [];
+        const createdAt = Date.now();
+        const dateLabel = new Date().toLocaleDateString("id-ID", {
+          day: "2-digit",
+          month: "long",
           year: "numeric"
-        }); 
-        const newRows = selectedStudents.map((student, index) => ({ 
-          id: savedAchievements[index]?.id_pencapaian || `${createdAt}-${student.id}`, 
-          studentId: student.id, 
-          studentName: student.name || "-", 
-          category: student.category || "-", 
-          title, 
-          dateLabel, 
+        });
+        const newRows = selectedStudents.map((student, index) => ({
+          id: savedAchievements[index]?.id_pencapaian || `${createdAt}-${student.id}`,
+          studentId: student.id,
+          studentName: student.name || "-",
+          category: student.category || "-",
+          title,
+          dateLabel,
           createdAt: createdAt - index
-        })); 
+        }));
 
-        setLocalAchievements((prev) => [...newRows, ...prev]); 
+        setLocalAchievements((prev) => [...newRows, ...prev]);
         router.reload({ preserveScroll: true, preserveState: true, only: ["achievements"] });
-      } 
+      }
 
-      setAchievementTitle(""); 
-      setStudentQuery(""); 
-      setSelectedStudentIds([]); 
-      setSelectedCategory(""); 
-      setStatusMessage("Prestasi berhasil disimpan."); 
-      setToast({ type: "success", message: "Prestasi berhasil disimpan." }); 
-      onRecordAdminActivity?.({ 
-        title: "Menambah prestasi", 
+      setAchievementTitle("");
+      setStudentQuery("");
+      setSelectedStudentIds([]);
+      setSelectedCategory("");
+      setStatusMessage("Prestasi berhasil disimpan.");
+      setToast({ type: "success", message: "Prestasi berhasil disimpan." });
+      onRecordAdminActivity?.({
+        title: "Menambah prestasi",
         description: `${selectedStudents.map((student) => student.name).join(", ") || "Siswa"} - ${title}`
-      }); 
+      });
       setActiveTab("history");
     } catch (error) {
       const message =
       Object.values(error?.response?.data?.errors || {})?.[0]?.[0] ||
       error?.response?.data?.message ||
       error?.message ||
-      "Prestasi gagal disimpan. Coba lagi."; 
+      "Prestasi gagal disimpan. Coba lagi.";
 
-      setStatusMessage(message); 
+      setStatusMessage(message);
       setToast({ type: "error", message });
     } finally {
       setIsSaving(false);
     }
-  }; 
+  };
+
+  const updateAchievementRows = (updater) => {
+    setLocalAchievements((prev) => updater(prev));
+  };
+
+  const beginEditAchievement = (item) => {
+    setEditingAchievementId(item.id);
+    setEditingAchievementTitle(item.title || "");
+    setStatusMessage("");
+  };
+
+  const cancelEditAchievement = () => {
+    setEditingAchievementId(null);
+    setEditingAchievementTitle("");
+  };
+
+  const handleUpdateAchievement = async (item) => {
+    const title = editingAchievementTitle.trim();
+
+    if (!title) {
+      setStatusMessage("Nama prestasi tidak boleh kosong.");
+      return;
+    }
+
+    setIsUpdatingAchievement(true);
+    setStatusMessage("");
+
+    try {
+      const response = await window.axios.put(`/api/admin/prestasi/${item.id}`, {
+        nama_prestasi: title
+      });
+
+      if (response.data?.success === false) {
+        throw new Error(response.data?.message || "Prestasi gagal diperbarui.");
+      }
+
+      updateAchievementRows((prev) =>
+        prev.map((achievement) =>
+          Number(achievement.id) === Number(item.id) ? { ...achievement, title } : achievement
+        )
+      );
+      cancelEditAchievement();
+      setStatusMessage("Prestasi berhasil diperbarui.");
+      setToast({ type: "success", message: "Prestasi berhasil diperbarui." });
+      router.reload({ preserveScroll: true, preserveState: true, only: ["achievements"] });
+    } catch (error) {
+      const message =
+        Object.values(error?.response?.data?.errors || {})?.[0]?.[0] ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Prestasi gagal diperbarui. Coba lagi.";
+
+      setStatusMessage(message);
+      setToast({ type: "error", message });
+    } finally {
+      setIsUpdatingAchievement(false);
+    }
+  };
+
+  const handleDeleteAchievement = async (item) => {
+    const confirmed = window.confirm(`Hapus prestasi "${item.title}" dari ${item.studentName}?`);
+    if (!confirmed) return;
+
+    setDeletingAchievementId(item.id);
+    setStatusMessage("");
+
+    try {
+      const response = await window.axios.delete(`/api/admin/prestasi/${item.id}`);
+
+      if (response.data?.success === false) {
+        throw new Error(response.data?.message || "Prestasi gagal dihapus.");
+      }
+
+      updateAchievementRows((prev) =>
+        prev.filter((achievement) => Number(achievement.id) !== Number(item.id))
+      );
+      if (Number(editingAchievementId) === Number(item.id)) {
+        cancelEditAchievement();
+      }
+      setStatusMessage("Prestasi berhasil dihapus.");
+      setToast({ type: "success", message: "Prestasi berhasil dihapus." });
+      router.reload({ preserveScroll: true, preserveState: true, only: ["achievements"] });
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Prestasi gagal dihapus. Coba lagi.";
+
+      setStatusMessage(message);
+      setToast({ type: "error", message });
+    } finally {
+      setDeletingAchievementId(null);
+    }
+  };
 
   return (
     <section className="adminAchievementsSection">
@@ -245,7 +343,7 @@ export default function BagianPrestasiAdmin({
       <div
         className={`adminAchievementsToast ${toast.type === "error" ? "isError" : "isSuccess"}`}
         role="status">
-        
+
            <strong>{toast.type === "error" ? "Gagal" : "Berhasil"}</strong>
            <span>{toast.message}</span>
         </div>) :
@@ -257,14 +355,14 @@ export default function BagianPrestasiAdmin({
             type="button"
             className={activeTab === "input" ? "isActive" : ""}
             onClick={() => setActiveTab("input")}>
-            
+
             Input Prestasi
           </button>
            <button
             type="button"
             className={activeTab === "history" ? "isActive" : ""}
             onClick={() => setActiveTab("history")}>
-            
+
             History Prestasi
           </button>
         </div>
@@ -283,20 +381,20 @@ export default function BagianPrestasiAdmin({
                    <AdminAchievementsSelect
                   value={selectedCategory}
                   onChange={(nextCategory) => {
-                    setSelectedCategory(nextCategory); 
+                    setSelectedCategory(nextCategory);
                     setSelectedStudentIds((current) => {
-                      if (!nextCategory) return current; 
+                      if (!nextCategory) return current;
                       const allowedIds = new Set(
                         students.
                         filter((student) => student.category === nextCategory).
                         map((student) => Number(student.id))
-                      ); 
+                      );
                       return current.filter((studentId) => allowedIds.has(Number(studentId)));
                     });
                   }}
                   options={categoryOptions}
                   ariaLabel="Pilih kategori umur prestasi" />
-                
+
                 </div>
 
                  <label className="adminAchievementsField">
@@ -308,7 +406,7 @@ export default function BagianPrestasiAdmin({
                     onChange={(event) => setStudentQuery(event.target.value)}
                     placeholder="Cari nama siswa"
                     disabled={!selectedCategory} />
-                  
+
                      <SearchIcon />
                   </div>
                 </label>
@@ -320,7 +418,7 @@ export default function BagianPrestasiAdmin({
                   value={achievementTitle}
                   onChange={(event) => setAchievementTitle(event.target.value)}
                   placeholder="Input nama prestasi" />
-                
+
                 </label>
 
                  <div className="adminAchievementsActions">
@@ -329,7 +427,7 @@ export default function BagianPrestasiAdmin({
                   className="adminAchievementsSaveButton"
                   onClick={handleSave}
                   disabled={isSaving || selectedStudentIds.length === 0 || !achievementTitle.trim()}>
-                  
+
                     {isSaving ? "Menyimpan..." : "Simpan"}
                   </button>
                 </div>
@@ -354,7 +452,7 @@ export default function BagianPrestasiAdmin({
                   current.filter((studentId) => Number(studentId) !== Number(student.id))
                   )
                   }>
-                  
+
                          <span>{student.name}</span>
                          <i aria-hidden="true">x</i>
                       </button>)
@@ -377,17 +475,17 @@ export default function BagianPrestasiAdmin({
                     setSelectedStudentIds((current) => {
                       const isSelected = current.some(
                         (studentId) => Number(studentId) === Number(student.id)
-                      ); 
+                      );
                       if (isSelected) {
                         return current.filter(
                           (studentId) => Number(studentId) !== Number(student.id)
                         );
-                      } 
+                      }
                       return [...current, student.id];
-                    }); 
+                    });
                     setStudentQuery("");
                   }}>
-                  
+
                          <strong>{student.name}</strong>
                          <span>{student.category}</span>
                       </button>)
@@ -418,26 +516,75 @@ export default function BagianPrestasiAdmin({
                      <th>Nama</th>
                      <th>Kategori Umur</th>
                      <th>Nama Prestasi</th>
+                     <th>Aksi</th>
                   </tr>
                 </thead>
                  <tbody>
                   {pagedAchievements.length > 0 ?
                 pagedAchievements.map((item, index) => (
                 <tr key={item.id}>
-                         <td>{index + 1}</td>
+                         <td>{(achievementsPage - 1) * achievementsPageSize + index + 1}</td>
                          <td>{item.studentName}</td>
                          <td>{item.category}</td>
                          <td>
-                           <div className="adminAchievementsHistoryTitle">
-                             <strong>{item.title}</strong>
+                          {Number(editingAchievementId) === Number(item.id) ? (
+                          <div className="adminAchievementsEditWrap">
+                             <input
+                              type="text"
+                              value={editingAchievementTitle}
+                              onChange={(event) => setEditingAchievementTitle(event.target.value)}
+                              aria-label={`Edit prestasi ${item.studentName}`} />
                              <span>{item.dateLabel}</span>
+                            </div>) : (
+                            <div className="adminAchievementsHistoryTitle">
+                               <strong>{item.title}</strong>
+                               <span>{item.dateLabel}</span>
+                            </div>)
+                          }
+                        </td>
+                         <td>
+                           <div className="adminAchievementsRowActions">
+                            {Number(editingAchievementId) === Number(item.id) ? (
+                            <>
+                              <button
+                                type="button"
+                                className="adminAchievementsActionButton isPrimary"
+                                onClick={() => handleUpdateAchievement(item)}
+                                disabled={isUpdatingAchievement || !editingAchievementTitle.trim()}>
+                                {isUpdatingAchievement ? "..." : "Simpan"}
+                              </button>
+                              <button
+                                type="button"
+                                className="adminAchievementsActionButton"
+                                onClick={cancelEditAchievement}
+                                disabled={isUpdatingAchievement}>
+                                Batal
+                              </button>
+                            </>) : (
+                            <>
+                              <button
+                                type="button"
+                                className="adminAchievementsActionButton"
+                                onClick={() => beginEditAchievement(item)}
+                                disabled={deletingAchievementId === item.id}>
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                className="adminAchievementsActionButton isDanger"
+                                onClick={() => handleDeleteAchievement(item)}
+                                disabled={deletingAchievementId === item.id}>
+                                {deletingAchievementId === item.id ? "..." : "Hapus"}
+                              </button>
+                            </>)
+                            }
                           </div>
                         </td>
                       </tr>)
                 ) : (
 
                 <tr>
-                       <td colSpan={4} className="adminAchievementsEmptyCell">
+                       <td colSpan={5} className="adminAchievementsEmptyCell">
                         Belum ada prestasi yang tersimpan.
                       </td>
                     </tr>)
@@ -457,10 +604,10 @@ export default function BagianPrestasiAdmin({
           pageSize={achievementsPageSize}
           onPageChange={(p) => setAchievementsPage(p)}
           onPageSizeChange={(s) => {
-            setAchievementsPageSize(s); 
+            setAchievementsPageSize(s);
             setAchievementsPage(1);
           }} />
-        
+
         </div>) :
       null}
     </section>);

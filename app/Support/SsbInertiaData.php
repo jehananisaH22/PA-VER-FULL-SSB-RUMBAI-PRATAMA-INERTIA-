@@ -756,6 +756,49 @@ class SsbInertiaData
             ->all();
     }
 
+    public static function overduePaymentRows(): array
+    {
+        $service = app(SiswaPaymentStatusService::class);
+
+        return \App\Models\Siswa::query()
+            ->with('pendaftaran')
+            ->whereHas('pendaftaran', fn ($query) => $query->where('status_approval', 'Disetujui'))
+            ->get()
+            ->map(function ($student) use ($service) {
+                $student = $service->syncMonthlyStatus($student);
+                $summary = $service->overdueSummary($student->loadMissing('pendaftaran'));
+
+                if (! $summary) {
+                    return null;
+                }
+
+                return [
+                    'id' => "overdue-{$student->id_siswa}-{$summary['period']}",
+                    'source' => 'overdue',
+                    'studentId' => (int) $student->id_siswa,
+                    'studentName' => $student->nama_siswa,
+                    'childName' => $student->nama_siswa,
+                    'category' => self::categoryValue(self::categoryFromStudent($student)),
+                    'paymentType' => 'harian',
+                    'paymentTypeLabel' => 'Tunggakan Bulanan',
+                    'amount' => (float) $summary['paidAmount'],
+                    'monthlyTarget' => (float) $summary['targetAmount'],
+                    'monthlyPaidAmount' => (float) $summary['paidAmount'],
+                    'monthlyPendingAmount' => (float) $summary['pendingAmount'],
+                    'monthlyRemainingAmount' => (float) $summary['remainingAmount'],
+                    'paidDate' => $summary['period'] . '-01',
+                    'period' => $summary['period'],
+                    'status' => $summary['pendingAmount'] > 0 ? 'Menunggu Verifikasi' : 'Belum Dibayar',
+                    'proofFile' => null,
+                    'proofFileName' => null,
+                    'createdAt' => Carbon::createFromFormat('Y-m', $summary['period'])->endOfMonth()->timestamp * 1000,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
     public static function adminNotifications(?int $adminUserId = null): array
     {
         $adminProfileId = $adminUserId

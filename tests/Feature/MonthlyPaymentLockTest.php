@@ -66,12 +66,33 @@ class MonthlyPaymentLockTest extends TestCase
             'bukti_bayar' => 'test/registration.pdf',
         ]);
 
+        $adminUser = User::factory()->create(['role' => 'admin']);
+        Admin::create([
+            'user_id' => $adminUser->id,
+            'nama_admin' => 'Admin Pembayaran',
+            'email' => $adminUser->email,
+            'password' => $adminUser->password,
+        ]);
+
         $service = app(SiswaPaymentStatusService::class);
         $student->load('pendaftaran');
 
         $this->assertSame(100000.0, $service->overdueSummary($student)['remainingAmount']);
         $this->assertSame('Mei 2026', $service->overdueSummary($student)['periodLabel']);
         $this->assertSame('Inactive', $service->syncMonthlyStatus($student)->status);
+        $service->syncMonthlyStatus($student->fresh()->load('pendaftaran'));
+
+        $this->assertDatabaseCount('notifikasi', 1);
+        $this->assertDatabaseHas('notifikasi', [
+            'judul' => 'Tunggakan Pembayaran',
+            'target_role' => 'admin',
+        ]);
+        $this->assertDatabaseHas('notifikasi_terkirim', [
+            'user_id' => $adminUser->id,
+            'id_siswa' => $student->id_siswa,
+            'status_baca' => 'Belum Dibaca',
+        ]);
+        $this->assertSame('overdue', collect(\App\Support\SsbInertiaData::overduePaymentRows())->first()['source']);
 
         $partialPaymentId = DB::table('pembayaran')->insertGetId([
             'id_siswa' => $student->id_siswa,
@@ -124,14 +145,6 @@ class MonthlyPaymentLockTest extends TestCase
         $this->assertSame(60000.0, $pendingSummary['remainingAmount']);
         $this->assertSame(60000.0, $pendingSummary['pendingAmount']);
         $this->assertSame('Inactive', $student->fresh()->status);
-
-        $adminUser = User::factory()->create(['role' => 'admin']);
-        Admin::create([
-            'user_id' => $adminUser->id,
-            'nama_admin' => 'Admin Pembayaran',
-            'email' => $adminUser->email,
-            'password' => $adminUser->password,
-        ]);
 
         $this->actingAs($adminUser)
             ->postJson("/api/admin/bukti/diterima/{$finalProofId}")

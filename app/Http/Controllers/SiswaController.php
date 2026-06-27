@@ -40,8 +40,8 @@ private function validatedRegistrationAge(Request $request, array $validated): i
 
     if ($age < self::MIN_REGISTRATION_AGE || $age > self::MAX_REGISTRATION_AGE) {
         throw \Illuminate\Validation\ValidationException::withMessages([
-            'tanggal_lahir' => 'Umur siswa harus berada di antara 6 sampai 16 tahun.',
-            'umur' => 'Umur siswa harus berada di antara 6 sampai 16 tahun.',
+            'tanggal_lahir' => 'Umur siswa maksimal 16 tahun.',
+            'umur' => 'Umur siswa maksimal 16 tahun.',
         ]);
     }
 

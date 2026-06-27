@@ -48,7 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:admin')->group(function () {
         Route::get('/admin', fn () => redirect('/admin/dashboard'));
         Route::get('/admin-dashboard', fn () => redirect('/admin/dashboard'));
-        Route::get('/admin/siswa/{id_siswa}/profil', [AdminController::class, 'editProfilSiswaPage']);
+        Route::get('/admin/siswa/{id_siswa}/profil', [AdminController::class, 'Profil_Siswa_Admin']);
         Route::get('/admin/dashboard/{section?}', [DashboardController::class, 'adminSection']);
     });
 

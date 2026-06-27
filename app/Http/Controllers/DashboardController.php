@@ -209,6 +209,7 @@ public function adminSection(?string $section = null)
     abort_unless(array_key_exists($section, $adminMenus), 404);
 
     $paymentRows = SsbInertiaData::paymentRows();
+    $overduePaymentRows = SsbInertiaData::overduePaymentRows();
 
     return Inertia::render('Admin/DasborAdmin', [
         'activeMenu' => $adminMenus[$section],
@@ -221,6 +222,7 @@ public function adminSection(?string $section = null)
             ->all(),
         'coachPaymentSubmissions' => collect($paymentRows)
             ->where('source', 'coach')
+            ->concat($overduePaymentRows)
             ->values()
             ->all(),
         'parentProfiles' => DB::table('orang_tua')
@@ -400,6 +402,7 @@ public function adminDashboard()
 {
     if (! request()->expectsJson()) {
         $paymentRows = SsbInertiaData::paymentRows();
+        $overduePaymentRows = SsbInertiaData::overduePaymentRows();
 
         return Inertia::render('Admin/DasborAdmin', [
             'activeMenu' => 'Home',
@@ -412,6 +415,7 @@ public function adminDashboard()
                 ->all(),
             'coachPaymentSubmissions' => collect($paymentRows)
                 ->where('source', 'coach')
+                ->concat($overduePaymentRows)
                 ->values()
                 ->all(),
             'parentProfiles' => DB::table('orang_tua')

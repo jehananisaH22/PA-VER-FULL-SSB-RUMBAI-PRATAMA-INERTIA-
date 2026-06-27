@@ -1,212 +1,212 @@
 
 .adminAchievementsSection {
-  
+
   margin-top: 16px;
-  
+
   opacity: 0;
-  
+
   transform: translateY(18px) scale(0.985);
-  
+
   animation: adminAchievementsSectionReveal 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  
+
   padding-bottom: 54px;
 
 }
 
 
 .adminAchievementsPanel {
-  
+
   padding: 24px 28px;
-  
+
   border: 1px solid #dbe8d4;
-  
+
   margin-bottom: 24px;
-  
+
   border-radius: 24px;
-  
+
   background: #ffffff;
-  
+
   box-shadow: 0 16px 36px rgba(42, 84, 31, 0.08);
-  
+
   opacity: 0;
-  
+
   transform: translateY(22px);
-  
+
   animation: adminAchievementsPanelReveal 520ms cubic-bezier(0.22, 1, 0.36, 1) 70ms forwards;
 
 }
 
 
 @keyframes adminAchievementsSectionReveal {
-  
+
   to {
-    
+
     opacity: 1;
-    
+
     transform: translateY(0) scale(1);
-  
+
   }
 
 }
 
 
 @keyframes adminAchievementsPanelReveal {
-  
+
   to {
-    
+
     opacity: 1;
-    
+
     transform: translateY(0);
-  
+
   }
 
 }
 
 
 .adminAchievementsTabs {
-  
+
   display: flex;
-  
+
   align-items: center;
-  
+
   gap: 10px;
-  
+
   margin-bottom: 26px;
 
 }
 
 
 .adminAchievementsTabs button {
-  
+
   min-height: 36px;
-  
+
   border: 0;
-  
+
   border-radius: 999px;
-  
+
   padding: 0 16px;
-  
+
   background: #eaf4e2;
-  
+
   color: #3b6628;
-  
+
   font-size: 13px;
-  
+
   font-weight: 800;
-  
+
   cursor: pointer;
-  
+
   transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease,
-    
+
     color 180ms ease;
 
 }
 
 
 .adminAchievementsTabs button:hover {
-  
+
   transform: translateY(-1px);
 
 }
 
 
 .adminAchievementsTabs button.isActive {
-  
+
   background: linear-gradient(180deg, #5b9438 0%, #487b2b 100%);
-  
+
   color: #ffffff;
-  
+
   box-shadow: 0 12px 24px rgba(72, 123, 43, 0.2);
 
 }
 
 
 .adminAchievementsBody {
-  
+
   border: 1px solid #e4ece0;
-  
+
   border-radius: 24px;
-  
+
   background: #ffffff;
-  
+
   padding: 28px;
-  
+
   min-height: 430px;
 
 }
 
 
 .adminAchievementsHead h2 {
-  
+
   margin: 0;
-  
+
   color: #192f23;
-  
+
   font-size: 24px;
-  
+
   line-height: 1.2;
 
 }
 
 
 .adminAchievementsHead p {
-  
+
   margin: 10px 0 0;
-  
+
   color: #62796a;
-  
+
   font-size: 14px;
-  
+
   line-height: 1.7;
 
 }
 
 
 .adminAchievementsFormGrid {
-  
+
   margin-top: 24px;
-  
+
   display: grid;
-  
+
   grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
-  
+
   gap: 26px;
-  
+
   align-items: start;
 
 }
 
 
 .adminAchievementsForm {
-  
+
   display: flex;
-  
+
   flex-direction: column;
-  
+
   gap: 16px;
-  
+
   max-width: 640px;
 
 }
 
 
 .adminAchievementsField {
-  
+
   display: flex;
-  
+
   flex-direction: column;
-  
+
   gap: 10px;
 
 }
 
 
 .adminAchievementsField > span {
-  
+
   color: #355033;
-  
+
   font-size: 13px;
-  
+
   font-weight: 800;
 
 }
@@ -217,7 +217,7 @@
 .adminAchievementsField input,
 
 .adminAchievementsSearch {
-  
+
   width: 100%;
 
 }
@@ -228,23 +228,23 @@
 .adminAchievementsSearch input,
 
 .adminAchievementsSelectTrigger {
-  
+
   min-height: 48px;
-  
+
   border: 1px solid #d4e3cb;
-  
+
   border-radius: 16px;
-  
+
   background: #fbfef9;
-  
+
   color: #23382a;
-  
+
   font-size: 14px;
-  
+
   padding: 0 16px;
-  
+
   outline: none;
-  
+
   transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
 
 }
@@ -257,151 +257,151 @@
 .adminAchievementsSelect.isOpen .adminAchievementsSelectTrigger,
 
 .adminAchievementsSelectTrigger:focus-visible {
-  
+
   border-color: #85b86a;
-  
+
   background: #ffffff;
-  
+
   box-shadow: 0 0 0 4px rgba(133, 184, 106, 0.12);
 
 }
 
 
 .adminAchievementsSearch input:disabled {
-  
+
   background: #f3f7f0;
-  
+
   color: #8b9a8d;
-  
+
   cursor: not-allowed;
 
 }
 
 
 .adminAchievementsSelect {
-  
+
   position: relative;
 
 }
 
 
 .adminAchievementsSelectTrigger {
-  
+
   width: 100%;
-  
+
   display: inline-flex;
-  
+
   align-items: center;
-  
+
   justify-content: space-between;
-  
+
   gap: 12px;
-  
+
   text-align: left;
-  
+
   cursor: pointer;
 
 }
 
 
 .adminAchievementsSelectTrigger:hover {
-  
+
   border-color: #a8ca96;
-  
+
   background: #ffffff;
 
 }
 
 
 .adminAchievementsSelectIcon {
-  
+
   width: 18px;
-  
+
   height: 18px;
-  
+
   color: #355f25;
-  
+
   flex: 0 0 auto;
-  
+
   transition: transform 180ms ease, color 180ms ease;
 
 }
 
 
 .adminAchievementsSelectIcon svg {
-  
+
   width: 100%;
-  
+
   height: 100%;
 
 }
 
 
 .adminAchievementsSelect.isOpen .adminAchievementsSelectIcon {
-  
+
   color: #4f8a2f;
-  
+
   transform: rotate(180deg);
 
 }
 
 
 .adminAchievementsSelectMenu {
-  
+
   position: absolute;
-  
+
   top: calc(100% + 8px);
-  
+
   left: 0;
-  
+
   right: 0;
-  
+
   z-index: 25;
-  
+
   padding: 7px;
-  
+
   border: 1px solid #cfe5c3;
-  
+
   border-radius: 14px;
-  
+
   background: #ffffff;
-  
+
   box-shadow: 0 16px 30px rgba(42, 84, 31, 0.13);
 
 }
 
 
 .adminAchievementsSelectOption {
-  
+
   width: 100%;
-  
+
   min-height: 34px;
-  
+
   border: 0;
-  
+
   border-radius: 10px;
-  
+
   background: transparent;
-  
+
   color: #23382a;
-  
+
   font-size: 14px;
-  
+
   font-weight: 600;
-  
+
   text-align: left;
-  
+
   padding: 0 16px;
-  
+
   cursor: pointer;
-  
+
   transition: background-color 180ms ease, color 180ms ease;
 
 }
 
 
 .adminAchievementsSelectOption + .adminAchievementsSelectOption {
-  
+
   margin-top: 3px;
 
 }
@@ -410,455 +410,455 @@
 .adminAchievementsSelectOption:hover,
 
 .adminAchievementsSelectOption:focus-visible {
-  
+
   outline: none;
-  
+
   background: #f0f8eb;
-  
+
   color: #25571c;
 
 }
 
 
 .adminAchievementsSelectOption.isSelected {
-  
+
   background: #dff2d6;
-  
+
   color: #214d17;
 
 }
 
 
 .adminAchievementsSearch {
-  
+
   position: relative;
 
 }
 
 
 .adminAchievementsSearch input {
-  
+
   padding-right: 48px;
 
 }
 
 
 .adminAchievementsSearch svg {
-  
+
   position: absolute;
-  
+
   top: 50%;
-  
+
   right: 16px;
-  
+
   width: 18px;
-  
+
   height: 18px;
-  
+
   fill: #709363;
-  
+
   transform: translateY(-50%);
-  
+
   pointer-events: none;
 
 }
 
 
 .adminAchievementsActions {
-  
+
   padding-top: 8px;
 
 }
 
 
 .adminAchievementsSaveButton {
-  
+
   min-width: 124px;
-  
+
   min-height: 42px;
-  
+
   border: 0;
-  
+
   border-radius: 999px;
-  
+
   background: linear-gradient(180deg, #5b9438 0%, #487b2b 100%);
-  
+
   color: #ffffff;
-  
+
   font-size: 14px;
-  
+
   font-weight: 800;
-  
+
   cursor: pointer;
-  
+
   box-shadow: 0 12px 24px rgba(72, 123, 43, 0.2);
-  
+
   transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
 
 }
 
 
 .adminAchievementsSaveButton:hover:not(:disabled) {
-  
+
   transform: translateY(-1px);
-  
+
   box-shadow: 0 14px 28px rgba(72, 123, 43, 0.24);
 
 }
 
 
 .adminAchievementsSaveButton:disabled {
-  
+
   opacity: 0.45;
-  
+
   cursor: not-allowed;
-  
+
   box-shadow: none;
 
 }
 
 
 .adminAchievementsStatus {
-  
+
   margin: 0;
-  
+
   color: #3d6a2c;
-  
+
   font-size: 13px;
-  
+
   font-weight: 700;
 
 }
 
 
 .adminAchievementsToast {
-  
+
   position: fixed;
-  
+
   top: 92px;
-  
+
   right: 24px;
-  
+
   z-index: 10000;
-  
+
   width: min(360px, calc(100vw - 32px));
-  
+
   border: 1px solid #cfe8c3;
-  
+
   border-radius: 12px;
-  
+
   background: #f2fbec;
-  
+
   color: #24591d;
-  
+
   box-shadow: 0 18px 36px rgba(15, 23, 42, 0.16);
-  
+
   padding: 14px 18px;
-  
+
   font-size: 14px;
-  
+
   line-height: 1.4;
-  
+
   font-weight: 700;
 
 }
 
 
 .adminAchievementsToast.isError {
-  
+
   border-color: #fecaca;
-  
+
   background: #fff1f2;
-  
+
   color: #b91c1c;
 
 }
 
 
 .adminAchievementsPickerCard {
-  
+
   border: 1px solid #dfe9d9;
-  
+
   border-radius: 22px;
-  
+
   background: #fcfefb;
-  
+
   padding: 18px;
 
 }
 
 
 .adminAchievementsPickerHead {
-  
+
   display: flex;
-  
+
   align-items: center;
-  
+
   justify-content: space-between;
-  
+
   gap: 10px;
-  
+
   margin-bottom: 14px;
 
 }
 
 
 .adminAchievementsPickerHead h3 {
-  
+
   margin: 0;
-  
+
   color: #24412c;
-  
+
   font-size: 18px;
 
 }
 
 
 .adminAchievementsPickerHead span {
-  
+
   color: #6c816f;
-  
+
   font-size: 12px;
-  
+
   font-weight: 800;
 
 }
 
 
 .adminAchievementsSelectedChips {
-  
+
   display: flex;
-  
+
   flex-wrap: wrap;
-  
+
   gap: 8px;
-  
+
   margin-bottom: 14px;
 
 }
 
 
 .adminAchievementsSelectedChips button {
-  
+
   min-height: 32px;
-  
+
   border: 1px solid #cfe0c4;
-  
+
   border-radius: 999px;
-  
+
   background: #f6fbf2;
-  
+
   color: #29452f;
-  
+
   display: inline-flex;
-  
+
   align-items: center;
-  
+
   gap: 8px;
-  
+
   padding: 0 10px 0 12px;
-  
+
   font-size: 12px;
-  
+
   font-weight: 600;
-  
+
   cursor: pointer;
 
 }
 
 
 .adminAchievementsSelectedChips i {
-  
+
   width: 18px;
-  
+
   height: 18px;
-  
+
   border-radius: 999px;
-  
+
   background: #e3efdc;
-  
+
   color: #55714a;
-  
+
   display: inline-flex;
-  
+
   align-items: center;
-  
+
   justify-content: center;
-  
+
   font-style: normal;
-  
+
   font-size: 12px;
-  
+
   line-height: 1;
 
 }
 
 
 .adminAchievementsSelected {
-  
+
   margin-bottom: 14px;
-  
+
   padding: 14px 16px;
-  
+
   border: 1px solid #cfe0c4;
-  
+
   border-radius: 18px;
-  
+
   background: linear-gradient(180deg, #f6fbf2 0%, #ebf5e4 100%);
 
 }
 
 
 .adminAchievementsSelected strong {
-  
+
   display: block;
-  
+
   color: #1f3f26;
-  
+
   font-size: 15px;
 
 }
 
 
 .adminAchievementsSelected span {
-  
+
   display: block;
-  
+
   margin-top: 4px;
-  
+
   color: #5f7c58;
-  
+
   font-size: 12px;
-  
+
   font-weight: 700;
 
 }
 
 
 .adminAchievementsStudentList {
-  
+
   display: flex;
-  
+
   flex-direction: column;
-  
+
   gap: 10px;
-  
+
   max-height: 300px;
-  
+
   overflow-y: auto;
-  
+
   padding-right: 4px;
 
 }
 
 
 .adminAchievementsStudentItem {
-  
+
   width: 100%;
-  
+
   border: 1px solid #e1eadd;
-  
+
   border-radius: 18px;
-  
+
   background: #ffffff;
-  
+
   padding: 14px 16px;
-  
+
   text-align: left;
-  
+
   cursor: pointer;
-  
+
   transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease,
-    
+
     background-color 180ms ease;
 
 }
 
 
 .adminAchievementsStudentItem:hover {
-  
+
   transform: translateY(-1px);
-  
+
   border-color: #bcd3ae;
 
 }
 
 
 .adminAchievementsStudentItem.isActive {
-  
+
   border-color: #8eb56e;
-  
+
   background: #f4faef;
-  
+
   box-shadow: 0 10px 20px rgba(91, 148, 56, 0.12);
 
 }
 
 
 .adminAchievementsStudentItem strong {
-  
+
   display: block;
-  
+
   color: #223b2a;
-  
+
   font-size: 14px;
 
 }
 
 
 .adminAchievementsStudentItem span {
-  
+
   display: block;
-  
+
   margin-top: 4px;
-  
+
   color: #677d69;
-  
+
   font-size: 12px;
-  
+
   font-weight: 700;
 
 }
 
 
 .adminAchievementsEmpty {
-  
+
   border: 1px dashed #d8e4d1;
-  
+
   border-radius: 18px;
-  
+
   background: #ffffff;
-  
+
   color: #6f8270;
-  
+
   font-size: 13px;
-  
+
   line-height: 1.6;
-  
+
   text-align: center;
-  
+
   padding: 24px 18px;
 
 }
 
 
 .adminAchievementsHistoryTable {
-  
+
   margin-top: 24px;
-  
+
   border: 1px solid #e6ece2;
-  
+
   border-radius: 22px;
-  
+
   overflow: hidden;
 
 }
 
 
 .adminAchievementsHistoryTable table {
-  
+
   width: 100%;
-  
+
   border-collapse: collapse;
 
 }
@@ -867,149 +867,285 @@
 .adminAchievementsHistoryTable th,
 
 .adminAchievementsHistoryTable td {
-  
+
   padding: 18px 20px;
-  
+
   border-bottom: 1px solid #edf2f6;
-  
+
   text-align: left;
-  
+
   vertical-align: top;
 
 }
 
 
 .adminAchievementsHistoryTable th {
-  
+
   background: linear-gradient(180deg, #f8fcf6 0%, #f1f8ed 100%);
-  
+
   color: #57704f;
-  
+
   font-size: 12px;
-  
+
   font-weight: 800;
-  
+
   letter-spacing: 0.06em;
-  
+
   text-transform: uppercase;
 
 }
 
 
 .adminAchievementsHistoryTable tr:last-child td {
-  
+
   border-bottom: 0;
 
 }
 
 
 .adminAchievementsHistoryTitle strong {
-  
+
   display: block;
-  
+
   color: #1f3526;
-  
+
   font-size: 14px;
-  
+
   line-height: 1.55;
 
 }
 
 
 .adminAchievementsHistoryTitle span {
-  
+
   display: block;
-  
+
   margin-top: 6px;
-  
+
   color: #708571;
-  
+
   font-size: 12px;
-  
+
+  font-weight: 700;
+
+}
+
+.adminAchievementsEditWrap {
+
+  display: grid;
+
+  gap: 7px;
+
+}
+
+
+.adminAchievementsEditWrap input {
+
+  width: 100%;
+
+  min-height: 38px;
+
+  border: 1px solid #cfe4c6;
+
+  border-radius: 12px;
+
+  background: #fbfff8;
+
+  color: #1f3526;
+
+  font-size: 13px;
+
+  padding: 0 12px;
+
+}
+
+
+.adminAchievementsEditWrap input:focus {
+
+  border-color: #5b8f45;
+
+  box-shadow: 0 0 0 3px rgba(91, 143, 69, 0.14);
+
+  outline: none;
+
+}
+
+
+.adminAchievementsEditWrap span {
+
+  color: #708571;
+
+  font-size: 12px;
+
   font-weight: 700;
 
 }
 
 
+.adminAchievementsRowActions {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+}
+
+
+.adminAchievementsActionButton {
+
+  min-height: 34px;
+
+  border: 1px solid #cfe4c6;
+
+  border-radius: 999px;
+
+  background: #fbfff8;
+
+  color: #45613d;
+
+  cursor: pointer;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  padding: 0 13px;
+
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+
+}
+
+
+.adminAchievementsActionButton:hover:not(:disabled) {
+
+  background: #f0f7ec;
+
+  border-color: #9bc28c;
+
+  transform: translateY(-1px);
+
+}
+
+
+.adminAchievementsActionButton:disabled {
+
+  cursor: not-allowed;
+
+  opacity: 0.58;
+
+}
+
+
+.adminAchievementsActionButton.isPrimary {
+
+  background: #4d8a36;
+
+  border-color: #4d8a36;
+
+  color: #fff;
+
+}
+
+
+.adminAchievementsActionButton.isDanger {
+
+  border-color: #f1b8b8;
+
+  color: #b13f3f;
+
+}
+
+
+.adminAchievementsActionButton.isDanger:hover:not(:disabled) {
+
+  background: #fff3f3;
+
+  border-color: #df8c8c;
+
+}
+
+
 .adminAchievementsEmptyCell {
-  
+
   color: #6c8170;
-  
+
   font-size: 14px;
-  
+
   text-align: center;
-  
+
   padding: 28px 20px;
 
 }
 
 
 @media (max-width: 980px) {
-  
+
   .adminAchievementsFormGrid {
-    
+
     grid-template-columns: 1fr;
-  
+
   }
 
 }
 
 
 @media (max-width: 700px) {
-  
+
   .adminAchievementsPanel {
-    
+
     padding: 18px;
-    
+
     border-radius: 20px;
-  
+
   }
 
-  
+
   .adminAchievementsBody {
-    
+
     padding: 20px;
-    
+
     border-radius: 20px;
-  
+
   }
 
-  
+
   .adminAchievementsTabs {
-    
+
     flex-wrap: wrap;
-  
+
   }
 
-  
+
   .adminAchievementsHistoryTable {
-    
+
     overflow-x: auto;
-  
+
   }
 
-  
+
   .adminAchievementsHistoryTable table {
-    
+
     min-width: 620px;
-  
+
   }
 
 }
 
 
 @media (prefers-reduced-motion: reduce) {
-  
+
   .adminAchievementsSection,
-  
+
   .adminAchievementsPanel {
-    
+
     opacity: 1;
-    
+
     transform: none;
-    
+
     animation: none;
-  
+
   }
 
 }
@@ -1024,13 +1160,13 @@
 .adminAchievementsPickerCard,
 
 .adminAchievementsHistoryPanel {
-  
+
   border-radius: 8px;
-  
+
   border-color: #dfe8dd;
-  
+
   background: #ffffff;
-  
+
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.045);
 
 }
@@ -1039,9 +1175,9 @@
 .adminAchievementsHead h2,
 
 .adminAchievementsPickerHead h3 {
-  
+
   color: #102033;
-  
+
   font-weight: 750;
 
 }
@@ -1054,7 +1190,7 @@
 .adminAchievementsHistoryTitle span,
 
 .adminAchievementsEmptyCell {
-  
+
   color: #5f6f63;
 
 }
@@ -1069,16 +1205,16 @@
 .adminAchievementsSearch input,
 
 .adminAchievementsInput {
-  
+
   border-radius: 8px;
 
 }
 
 
 .adminAchievementsHistoryTable {
-  
+
   border-radius: 8px;
-  
+
   border-color: #e6ece4;
 
 }
@@ -1087,22 +1223,22 @@
 .adminAchievementsHistoryTable th,
 
 .adminAchievementsHistoryTable td {
-  
+
   padding: 14px;
-  
+
   line-height: 1.45;
 
 }
 
 
 .adminAchievementsHistoryTable th {
-  
+
   background: #f7faf6;
-  
+
   color: #334155;
-  
+
   letter-spacing: 0;
-  
+
   text-transform: none;
 
 }
@@ -1111,69 +1247,69 @@
 /* Reference achievements layout */
 
 .adminAchievementsSection {
-  
+
   margin-top: 8px;
 
 }
 
 
 .adminAchievementsPanel {
-  
+
   border: 1px solid #d8e8d0;
-  
+
   border-radius: 22px;
-  
+
   background: #ffffff;
-  
+
   box-shadow: 0 18px 38px rgba(52, 124, 32, 0.08);
-  
+
   padding: 24px 28px;
 
 }
 
 
 .adminAchievementsTabs {
-  
+
   margin-bottom: 26px;
 
 }
 
 
 .adminAchievementsTabs button {
-  
+
   min-height: 36px;
-  
+
   border-radius: 999px;
 
 }
 
 
 .adminAchievementsTabs button.isActive {
-  
+
   background: #438b2a;
 
 }
 
 
 .adminAchievementsBody {
-  
+
   min-height: 430px;
-  
+
   border: 1px solid #d8e8d0;
-  
+
   border-radius: 18px;
-  
+
   padding: 28px;
 
 }
 
 
 .adminAchievementsHead h2 {
-  
+
   color: #183f28;
-  
+
   font-size: 26px;
-  
+
   font-weight: 800;
 
 }
@@ -1184,55 +1320,55 @@
 .adminAchievementsSearch input,
 
 .adminAchievementsSelectTrigger {
-  
+
   min-height: 48px;
-  
+
   border: 1px solid #cfe4c6;
-  
+
   border-radius: 14px;
-  
+
   background: #fbfff8;
 
 }
 
 
 .adminAchievementsPickerCard {
-  
+
   border: 1px solid #d8e8d0;
-  
+
   border-radius: 20px;
-  
+
   background: #fbfff8;
 
 }
 
 
 .adminAchievementsSubmitBtn {
-  
+
   min-height: 44px;
-  
+
   border-radius: 999px;
 
 }
 
 
 .adminAchievementsHistoryTable {
-  
+
   border: 1px solid #d8e8d0;
-  
+
   border-radius: 20px;
 
 }
 
 
 .adminAchievementsHistoryTable th {
-  
+
   background: #f2f8ee;
-  
+
   color: #526e49;
-  
+
   letter-spacing: 0.04em;
-  
+
   text-transform: uppercase;
 
 }
@@ -1241,7 +1377,7 @@
 /* Moderate font weight tuning to match the reference. */
 
 .adminAchievementsHead h2 {
-  
+
   font-weight: 650;
 
 }
@@ -1256,7 +1392,7 @@
 .adminAchievementsSubmitBtn,
 
 .adminAchievementsPickerHead h3 {
-  
+
   font-weight: 600;
 
 }
@@ -1271,7 +1407,7 @@
 .adminAchievementsSelectTrigger,
 
 .adminAchievementsHistoryTable td {
-  
+
   font-weight: 400;
 
 }
@@ -1280,46 +1416,46 @@
 /* Compact admin scale */
 
 .adminAchievementsPanel {
-  
+
   padding: 20px 24px;
 
 }
 
 
 .adminAchievementsTabs {
-  
+
   margin-bottom: 20px;
 
 }
 
 
 .adminAchievementsTabs button {
-  
+
   min-height: 32px;
-  
+
   font-size: 12px;
 
 }
 
 
 .adminAchievementsBody {
-  
+
   min-height: 380px;
-  
+
   padding: 22px;
 
 }
 
 
 .adminAchievementsHead h2 {
-  
+
   font-size: 23px;
 
 }
 
 
 .adminAchievementsHead p {
-  
+
   font-size: 13px;
 
 }
@@ -1330,16 +1466,16 @@
 .adminAchievementsSearch input,
 
 .adminAchievementsSelectTrigger {
-  
+
   min-height: 42px;
-  
+
   font-size: 13px;
 
 }
 
 
 .adminAchievementsSubmitBtn {
-  
+
   min-height: 40px;
 
 }
@@ -1348,9 +1484,9 @@
 .adminAchievementsHistoryTable th,
 
 .adminAchievementsHistoryTable td {
-  
+
   padding: 13px 14px;
-  
+
   font-size: 13px;
 
 }
@@ -1359,23 +1495,23 @@
 /* Balanced admin scale */
 
 .adminAchievementsPanel {
-  
+
   padding: 22px 26px;
 
 }
 
 
 .adminAchievementsBody {
-  
+
   min-height: 400px;
-  
+
   padding: 24px;
 
 }
 
 
 .adminAchievementsHead h2 {
-  
+
   font-size: 24px;
 
 }
@@ -1386,7 +1522,7 @@
 .adminAchievementsSearch input,
 
 .adminAchievementsSelectTrigger {
-  
+
   min-height: 44px;
 
 }
@@ -1395,7 +1531,7 @@
 .adminAchievementsHistoryTable th,
 
 .adminAchievementsHistoryTable td {
-  
+
   padding: 14px;
 
 }
