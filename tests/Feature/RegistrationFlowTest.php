@@ -66,10 +66,17 @@ class RegistrationFlowTest extends TestCase
             ->assertRedirect('/register/form');
 
         $this->assertAuthenticatedAs($user);
+        $this->assertSame($user->id, session('registration.account.userId'));
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
             'verification_token' => null,
         ]);
+    }
+
+    public function test_registration_form_requires_verified_parent_session(): void
+    {
+        $this->get('/register/form')
+            ->assertRedirect('/register/verify-notice');
     }
 
     public function test_used_verification_link_keeps_verified_parent_on_registration_form(): void
@@ -264,7 +271,7 @@ class RegistrationFlowTest extends TestCase
             ])
             ->assertOk()
             ->assertJsonPath('success', true)
-            ->assertJsonPath('next_url', '/orang-tua/dashboard');
+            ->assertJsonPath('next_url', '/login/orangtua');
 
         $this->assertDatabaseHas('pembayaran', [
             'id_siswa' => $siswa->id_siswa,
@@ -279,7 +286,7 @@ class RegistrationFlowTest extends TestCase
         ]);
     }
 
-    public function test_registration_payment_upload_redirects_to_parent_dashboard(): void
+    public function test_registration_payment_upload_returns_to_payment_page_before_login(): void
     {
         Storage::fake('public');
 
@@ -321,11 +328,11 @@ class RegistrationFlowTest extends TestCase
                 'tanggal_bukti_bayar' => '2026-05-30',
                 'bukti_bayar' => UploadedFile::fake()->create('bukti-modal.pdf', 10, 'application/pdf'),
             ], ['X-Inertia' => 'true'])
-            ->assertRedirect('/orang-tua/dashboard')
-            ->assertSessionHas('id_siswa', $siswa->id_siswa);
+            ->assertRedirect('/register/payment-proof')
+            ->assertSessionHas('registrationPaymentSuccess', true);
 
-        $this->assertAuthenticatedAs($parent);
-        $this->assertTrue((bool) session('show_child_picker_after_login'));
+        $this->assertGuest();
+        $this->assertFalse((bool) session('show_child_picker_after_login'));
     }
 
     public function test_student_registration_is_visible_to_admin_and_parent_child_picker(): void

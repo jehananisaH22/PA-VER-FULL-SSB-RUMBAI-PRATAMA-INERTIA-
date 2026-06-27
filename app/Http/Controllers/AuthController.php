@@ -112,6 +112,7 @@ class AuthController extends Controller
             ]);
 
             $request->session()->put('registration.account', [
+                'userId' => $user->id,
                 'name' => $validated['nama'],
                 'email' => $validated['email'],
                 'phone' => $validated['no_hp'],
@@ -363,6 +364,7 @@ class AuthController extends Controller
                     'show_child_picker_after_login',
                 ]);
                 $request->session()->put('registration.account', [
+                    'userId' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
                     'phone' => optional($parent)->no_hp,
@@ -598,6 +600,7 @@ class AuthController extends Controller
                 } else {
                     $request->session()->forget('show_child_picker_after_login');
                     $request->session()->put('registration.account', [
+                        'userId' => $user->id,
                         'name' => $user->name,
                         'email' => $user->email,
                         'phone' => $ortu->no_hp,

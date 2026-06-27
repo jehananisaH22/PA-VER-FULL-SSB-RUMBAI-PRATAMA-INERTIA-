@@ -48,6 +48,11 @@ class WebPageController extends Controller
         $user = Auth::user();
         $isAddingChildFromRegistration = $request->session()->has('registration.account');
 
+        if (! $user || $user->role !== 'orang_tua') {
+            return redirect('/register/verify-notice')
+                ->with('verificationMessage', 'Silakan verifikasi email terlebih dahulu sebelum mengisi form pendaftaran.');
+        }
+
         if ($user && $user->role === 'orang_tua') {
             $parentIds = DB::table('orang_tua')
                 ->where(function ($query) use ($user) {
@@ -96,9 +101,14 @@ class WebPageController extends Controller
         $form = $request->session()->get('registration.form');
         $studentId = $form['studentId'] ?? null;
 
+        if (! $paymentWasSubmitted && (! Auth::check() || Auth::user()->role !== 'orang_tua')) {
+            return redirect('/register/verify-notice')
+                ->with('verificationMessage', 'Silakan verifikasi email terlebih dahulu sebelum mengunggah bukti pembayaran.');
+        }
+
         if (! $paymentWasSubmitted && Auth::check() && Auth::user()->role === 'orang_tua') {
             if (! $studentId) {
-                return redirect('/orang-tua/dashboard');
+                return redirect('/register/form');
             }
 
             $hasSubmittedProof = DB::table('bukti_pembayaran')
