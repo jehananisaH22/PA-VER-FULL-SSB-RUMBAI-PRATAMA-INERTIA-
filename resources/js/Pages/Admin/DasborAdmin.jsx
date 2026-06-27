@@ -142,19 +142,6 @@ function parseLocalDateInput(value) {
   return Number.isNaN(date.getTime()) ? null : date;
 } 
 
-function isWednesdayOrSundayDate(value) {
-  const date = parseLocalDateInput(value); 
-  if (!date) return false; 
-  return date.getDay() === 0 || date.getDay() === 3;
-} 
-
-function isRoutineTrainingSchedule(schedule) {
-  if (schedule?.isRoutine === true) return true; 
-  const date = parseLocalDateInput(schedule?.date); 
-  if (!date) return false; 
-  return date.getDay() === 0 || date.getDay() === 3;
-} 
-
 function getNextDateForScheduleDay(dayName, fallbackDate) {
   const normalizedDay = String(dayName || "").trim().toLowerCase(); 
   const targetDay = scheduleDayIndexes[normalizedDay]; 
@@ -2076,10 +2063,6 @@ export default function DasborAdmin({
 
     if (payload.id_siswa.length === 0) {
       throw new Error("Pilih target siswa dulu sebelum jadwal disimpan.");
-    } 
-
-    if (!isRoutineTrainingSchedule(schedule) && isWednesdayOrSundayDate(payload.tanggal)) {
-      throw new Error("Latihan tambahan harus di luar hari Rabu dan Minggu.");
     } 
 
     const applySavedScheduleToLocalRows = (rawScheduleId) => {

@@ -93,6 +93,26 @@ function normalizeSelectedStudentNames(item) {
   );
 } 
 
+function normalizeScheduleSelectedStudentNames(item, studentOptions) {
+  const selectedNames = normalizeSelectedStudentNames(item);
+  const optionNames = studentOptions.
+  map((student) => String(student?.name || "").trim()).
+  filter(Boolean);
+
+  if (selectedNames.length === 0 || optionNames.length === 0) {
+    return selectedNames;
+  }
+
+  const optionSet = new Set(optionNames.map((name) => name.toLowerCase()));
+  const selectedSet = new Set(selectedNames.map((name) => name.toLowerCase()));
+  const allOptionsSelected =
+  optionSet.size > 0 &&
+  selectedSet.size === optionSet.size &&
+  [...optionSet].every((name) => selectedSet.has(name));
+
+  return allOptionsSelected ? [] : selectedNames;
+}
+
 function normalizeStudentDirectoryItem(student) {
   return {
     ...student, 
@@ -259,17 +279,22 @@ export default function BagianJadwalLatihanAdmin({
     trainingSchedules.map((item) => {
       const category = normalizeScheduleCategory(item.category); 
 
+      const studentOptions =
+      category === "all" ?
+      normalizedStudentDirectory :
+      normalizedStudentDirectory.filter((student) => student.category === category);
+      const selectedStudentNames = normalizeScheduleSelectedStudentNames(item, studentOptions);
+
       return {
         ...item, 
         category, 
         categoryLabel:
         scheduleCategoryOptions.find((option) => option.value === category)?.label ||
         "Semua Kategori", 
-        selectedStudentNames: normalizeSelectedStudentNames(item), 
-        studentOptions:
-        category === "all" ?
-        normalizedStudentDirectory :
-        normalizedStudentDirectory.filter((student) => student.category === category)
+        selectedStudentNames,
+        studentName: selectedStudentNames.length === 1 ? selectedStudentNames[0] : "all",
+        studentNames: selectedStudentNames,
+        studentOptions
       };
     }),
     [normalizedStudentDirectory, trainingSchedules]

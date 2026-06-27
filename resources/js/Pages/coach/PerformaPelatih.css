@@ -899,55 +899,6 @@
 }
 
 
-.coachPerformanceExtraMatrixTable {
-  
-  min-width: 860px;
-
-}
-
-
-.coachAdditionalRecapBlock {
-  
-  margin-top: 18px;
-
-}
-
-
-.coachAdditionalRecapHead {
-  
-  display: flex;
-  
-  align-items: flex-start;
-  
-  justify-content: space-between;
-  
-  gap: 16px;
-  
-  margin-bottom: 10px;
-
-}
-
-
-.coachAdditionalRecapHead h2 {
-  
-  margin: 0;
-
-}
-
-
-.coachAdditionalRecapHead p {
-  
-  margin: 4px 0 0;
-  
-  color: #64748b;
-  
-  font-size: 13px;
-  
-  font-weight: 600;
-
-}
-
-
 .coachPerformanceMatrixTable th,
 
 .coachPerformanceMatrixTable td {

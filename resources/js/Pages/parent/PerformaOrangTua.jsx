@@ -95,24 +95,24 @@ export default function PerformaOrangTua({
   const openNotes = visitOrCall(onOpenCatatanPelatih, parentRoutes.notes); 
   const openPayments = visitOrCall(onOpenPayments, parentRoutes.payments); 
 
-  const routinePerformanceHistory = useMemo(
-    () => performanceHistory.filter((item) => item?.isRoutine !== false),
+  const visiblePerformanceHistory = useMemo(
+    () => performanceHistory,
     [performanceHistory]
   ); 
 
   const availableYears = useMemo(() => {
-    const years = Array.from(new Set(routinePerformanceHistory.map((item) => String(item.year)))).sort(
+    const years = Array.from(new Set(visiblePerformanceHistory.map((item) => String(item.year)))).sort(
       (leftItem, rightItem) => Number(rightItem) - Number(leftItem)
     ); 
     return years.length > 0 ? years : [String(new Date().getFullYear())];
-  }, [routinePerformanceHistory]); 
+  }, [visiblePerformanceHistory]);
   const effectiveSelectedYear = availableYears.includes(selectedYear) ?
   selectedYear :
   availableYears[0]; 
 
   const performanceMap = useMemo(() => {
     const nextMap = new Map(); 
-    routinePerformanceHistory.forEach((item) => {
+    visiblePerformanceHistory.forEach((item) => {
       const normalizedMonth = coachMonthMap[item.month] || item.month || "01"; 
       const key = `${item.year}-${normalizedMonth}`; 
       const bucket = nextMap.get(key) || { 
@@ -129,7 +129,7 @@ export default function PerformaOrangTua({
       nextMap.set(key, bucket);
     }); 
     return nextMap;
-  }, [routinePerformanceHistory]); 
+  }, [visiblePerformanceHistory]);
 
   const chartData = useMemo(
     () =>
@@ -146,7 +146,7 @@ export default function PerformaOrangTua({
 
   const scoreRows = useMemo(
     () => {
-      if (routinePerformanceHistory.length === 0) {
+      if (visiblePerformanceHistory.length === 0) {
         return [];
       } 
 
@@ -172,7 +172,7 @@ export default function PerformaOrangTua({
         };
       });
     },
-    [effectiveSelectedYear, routinePerformanceHistory.length, performanceMap]
+    [effectiveSelectedYear, visiblePerformanceHistory.length, performanceMap]
   ); 
 
   const daftarAnak = () => {

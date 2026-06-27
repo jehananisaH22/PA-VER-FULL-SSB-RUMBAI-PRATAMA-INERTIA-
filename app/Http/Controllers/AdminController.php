@@ -1507,16 +1507,6 @@ public function Tambah_Jadwal(Request $request)
         ? $this->normalizeScheduleCategoryValue($request->input('kategori_umur'))
         : null;
 
-    if ($this->isWednesdayOrSundayScheduleDate($request->tanggal)) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Latihan tambahan harus dibuat di luar hari Rabu dan Minggu.',
-            'errors' => [
-                'tanggal' => ['Latihan tambahan harus dibuat di luar hari Rabu dan Minggu.'],
-            ],
-        ], 422);
-    }
-
     $categoryMismatchResponse = $this->scheduleStudentCategoryMismatchResponse(
         $request->input('id_siswa', []),
         $kategoriUmur
@@ -1575,16 +1565,6 @@ public function Update_Jadwal(Request $request, $id)
     }
 
     $jadwal = \App\Models\Jadwal_Latihan::findOrFail($id);
-
-    if (! $this->isRoutineTrainingSchedule($jadwal) && $this->isWednesdayOrSundayScheduleDate($request->tanggal)) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Latihan tambahan harus dibuat di luar hari Rabu dan Minggu.',
-            'errors' => [
-                'tanggal' => ['Latihan tambahan harus dibuat di luar hari Rabu dan Minggu.'],
-            ],
-        ], 422);
-    }
 
     $jadwal->update([
         'tanggal' => $request->tanggal,
@@ -2504,19 +2484,6 @@ private function normalizeScheduleCategoryValue(?string $category): string
     return 'all';
 }
 
-private function isWednesdayOrSundayScheduleDate($date): bool
-{
-    $dayOfWeek = Carbon::parse($date)->dayOfWeek;
-
-    return in_array($dayOfWeek, [Carbon::WEDNESDAY, Carbon::SUNDAY], true);
-}
-
-private function isRoutineTrainingSchedule(Jadwal_Latihan $jadwal): bool
-{
-    $scheduleDate = Carbon::parse($jadwal->tanggal);
-    return in_array($scheduleDate->dayOfWeek, [Carbon::WEDNESDAY, Carbon::SUNDAY], true);
-}
-
 private function scheduleStudentCategoryMismatchResponse(array $studentIds, ?string $category)
 {
     $normalizedCategory = $this->normalizeScheduleCategoryValue($category);
@@ -2558,7 +2525,6 @@ private function syncActiveStudentToCategorySchedules(?Siswa $siswa): void
     $schedules = Jadwal_Latihan::with('siswa:id_siswa,tanggal_lahir,umur')
         ->orderBy('id_jadwal')
         ->get()
-        ->filter(fn (Jadwal_Latihan $jadwal) => $this->isRoutineTrainingSchedule($jadwal))
         ->values();
 
     if ($schedules->isEmpty()) {

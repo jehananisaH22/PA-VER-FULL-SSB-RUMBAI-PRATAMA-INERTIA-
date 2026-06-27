@@ -55,11 +55,6 @@ const getPerformanceAverage = (item) => {
 }; 
 
 const formatCurrency = (amount) => `Rp${Number(amount || 0).toLocaleString("id-ID")},00`; 
-const routineTrainingDays = new Set(["rabu", "minggu"]); 
-
-function isRoutineTrainingDay(day) {
-  return routineTrainingDays.has(String(day || "").trim().toLowerCase());
-} 
 
 function InfoIcon() {
   return (
@@ -177,38 +172,31 @@ export default function DasborOrangTua({
       time: item.time, 
       place: item.place, 
       categoryLabel: item.categoryLabel || item.targetLabel || "Semua Siswa", 
-      targetLabel: item.targetLabel || "Semua Siswa", 
-      isRoutine: item.isRoutine === true, 
-      isAdditional: item.isRoutine === false || !isRoutineTrainingDay(item.day)
+      targetLabel: item.targetLabel || "Semua Siswa"
     })),
     [trainingSchedules]
   ); 
 
-  const routineScheduleItems = useMemo(
-    () => scheduleItems.filter((item) => item.isRoutine),
-    [scheduleItems]
-  ); 
-
-  const routinePaymentSchedules = useMemo(
+  const paymentSchedules = useMemo(
     () =>
-    routineScheduleItems.length > 0 ?
-    routineScheduleItems :
+    scheduleItems.length > 0 ?
+    scheduleItems :
     [
     { id: "fallback-minggu", day: "Minggu", time: "07.30-09.30 WIB" },
     { id: "fallback-rabu", day: "Rabu", time: "16.30-17.30 WIB" }],
 
-    [routineScheduleItems]
+    [scheduleItems]
   ); 
 
-  const routinePerformanceHistory = useMemo(
-    () => performanceHistory.filter((item) => item?.isRoutine !== false),
+  const visiblePerformanceHistory = useMemo(
+    () => performanceHistory,
     [performanceHistory]
   ); 
 
   const performanceYears = useMemo(() => {
     const years = Array.from(
       new Set(
-        routinePerformanceHistory.
+        visiblePerformanceHistory.
         map((item) => Number(item.year)).
         filter((year) => Number.isFinite(year) && year > 0)
       )
@@ -216,7 +204,7 @@ export default function DasborOrangTua({
       (leftItem, rightItem) => rightItem - leftItem
     ); 
     return years.length > 0 ? years : [new Date().getFullYear()];
-  }, [routinePerformanceHistory]); 
+  }, [visiblePerformanceHistory]);
 
   useEffect(() => {
     const defaultYear = String(performanceYears[0] || new Date().getFullYear()); 
@@ -229,7 +217,7 @@ export default function DasborOrangTua({
 
   const perfMonths = useMemo(() => {
     const performanceMap = new Map(); 
-    routinePerformanceHistory.forEach((item) => {
+    visiblePerformanceHistory.forEach((item) => {
       const monthKey = normalizePerformanceMonth(item.month); 
       const yearKey = String(item.year || ""); 
       const average = getPerformanceAverage(item); 
@@ -253,7 +241,7 @@ export default function DasborOrangTua({
         hasData: Boolean(bucket)
       };
     });
-  }, [activePerformanceYear, routinePerformanceHistory]); 
+  }, [activePerformanceYear, visiblePerformanceHistory]);
 
   const daftarAnak = () => {
     router.visit('/orang-tua/daftar-anak');
@@ -428,7 +416,7 @@ export default function DasborOrangTua({
                <div className="parentPaymentSchedule" aria-label="Jadwal pembayaran langsung">
                  <span>Jadwal latihan</span>
                  <ul>
-                  {routinePaymentSchedules.map((item) => (
+                  {paymentSchedules.map((item) => (
                 <li key={item.id || `${item.day}-${item.time}`}>
                        <b>{item.day}</b>
                        <small>{item.time}</small>
@@ -518,9 +506,6 @@ export default function DasborOrangTua({
                              <span>
                                <strong>{item.day}</strong> ({item.time})
                             </span>
-                            {item.isAdditional ? (
-                      <span className="parentScheduleBadge">Latihan Tambahan</span>) :
-                      null}
                           </p>
                            <span>{item.place}</span>
                            <small>{item.categoryLabel}</small>
@@ -549,7 +534,7 @@ export default function DasborOrangTua({
               
             </div>
             {isActive ?
-            routinePerformanceHistory.length > 0 ? (
+            visiblePerformanceHistory.length > 0 ? (
             <div className="parentBars">
                   {perfMonths.map((month, idx) => (
               <div className="barWrap" key={month.label}>

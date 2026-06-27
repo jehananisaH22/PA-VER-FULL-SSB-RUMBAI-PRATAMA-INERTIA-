@@ -83,8 +83,6 @@ const dayNameToIndex = {
   sab: 6,
   saturday: 6
 };
-const routineScheduleWeekdays = new Set([0, 3]);
-
 const recapCategoryOptions = [
 { value: "all", label: "Kategori" },
 ...Array.from({ length: 11 }, (_, index) => {
@@ -300,19 +298,6 @@ function getScheduleWeekday(schedule) {
   return dayNameToIndex[normalizeText(schedule?.day)] ?? null;
 }
 
-function isRoutineSchedule(schedule) {
-  if (schedule?.isRoutine === true) return true;
-  if (schedule?.isRoutine === false) return false;
-
-  const weekday = getScheduleWeekday(schedule);
-  return routineScheduleWeekdays.has(weekday);
-}
-
-function isRoutineAttendanceDate(value) {
-  const date = parseIsoDate(value);
-  return date ? routineScheduleWeekdays.has(date.getDay()) : false;
-}
-
 function scheduleMatchesRecapFilter(schedule, category, scheduleId) {
   if (!schedule) return false;
   const categoryMatch = category === "all" || schedule.category === "all" || schedule.category === category;
@@ -326,8 +311,7 @@ yearValue,
 monthValue,
 schedules = [],
 category = "all",
-scheduleId = "all",
-mode = "all")
+scheduleId = "all")
 {
   const year = Number(yearValue) || new Date().getFullYear();
   const monthIndex = getMonthIndexFromValue(monthValue);
@@ -767,11 +751,6 @@ export default function KehadiranPelatih(props) {
     () => filteredSchedules.find((item) => item.id === selectedScheduleId) || null,
     [filteredSchedules, selectedScheduleId]
   );
-  const selectedScheduleAllowedDates = useMemo(() => {
-    if (!selectedSchedule?.date) return null;
-    return [selectedSchedule.date];
-  }, [selectedSchedule]);
-
   useEffect(() => {
     if (!selectedSchedule) {
       setAttendanceDate("");
@@ -1211,8 +1190,7 @@ export default function KehadiranPelatih(props) {
                  <CoachDatePicker
                 value={attendanceDate}
                 onChange={setAttendanceDate}
-                disabled={!selectedSchedule}
-                allowedDates={selectedScheduleAllowedDates} />
+                disabled={!selectedSchedule} />
 
               </div>
                <p className="coachFieldHint">

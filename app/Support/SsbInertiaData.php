@@ -184,34 +184,13 @@ class SsbInertiaData
                 ->groupBy('id_jadwal');
         }
 
-        $routineStudents = DB::table('siswa')
-            ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), self::activeStatusValues())
-            ->select('id_siswa', 'nama_siswa', 'tanggal_lahir', 'umur')
-            ->orderBy('nama_siswa')
-            ->get();
-
-        return $rows->map(function ($schedule) use ($studentIds, $activeOnly, $assignedStudents, $routineStudents) {
+        return $rows->map(function ($schedule) use ($studentIds, $activeOnly, $assignedStudents) {
             $students = $assignedStudents->get($schedule->id_jadwal, collect())->values();
 
             $storedCategory = $schedule->kategori_umur !== null
                 ? self::categoryValue((string) $schedule->kategori_umur)
                 : null;
             $date = Carbon::parse($schedule->tanggal)->locale('id');
-            $isRoutineSchedule = in_array($date->dayOfWeek, [Carbon::WEDNESDAY, Carbon::SUNDAY], true);
-
-            if ($isRoutineSchedule && $students->isEmpty()) {
-                $students = $routineStudents;
-
-                if ($storedCategory && $storedCategory !== 'all') {
-                    $students = $students
-                        ->filter(fn ($student) => self::categoryValue(self::categoryFromStudent($student)) === $storedCategory)
-                        ->values();
-                }
-
-                if ($activeOnly && $students->isEmpty()) {
-                    return null;
-                }
-            }
 
             if ($activeOnly && $students->isEmpty()) {
                 return null;
@@ -256,7 +235,6 @@ class SsbInertiaData
                 'studentIds' => $selectedStudentIds,
                 'coachId' => $schedule->id_pelatih ? (int) $schedule->id_pelatih : null,
                 'coachName' => $schedule->nama_pelatih ?: '-',
-                'isRoutine' => $isRoutineSchedule,
             ];
         })->filter()->values()->all();
     }
@@ -394,10 +372,6 @@ class SsbInertiaData
             ->map(function ($row) {
                 $date = Carbon::parse($row->tanggal_penilaian);
                 $average = round(((float) $row->dribbling + (float) $row->passing + (float) $row->shooting) / 3, 2);
-                $isRoutineSchedule = $row->jadwal_tanggal
-                    ? in_array(Carbon::parse($row->jadwal_tanggal)->dayOfWeek, [Carbon::WEDNESDAY, Carbon::SUNDAY], true)
-                    : true;
-
                 return [
                     'id' => $row->id_performa,
                     'studentId' => $row->id_siswa,
@@ -417,7 +391,6 @@ class SsbInertiaData
                         ? Carbon::parse($row->jam_mulai)->format('H.i') . '-' . Carbon::parse($row->jam_selesai)->format('H.i') . ' WIB'
                         : null,
                     'scheduleLocation' => $row->lokasi ?: null,
-                    'isRoutine' => $isRoutineSchedule,
                     'coach' => $row->nama_pelatih ?: 'Pelatih',
                     'coachName' => $row->nama_pelatih ?: 'Pelatih',
                     'month' => self::monthKey($date),

@@ -112,18 +112,7 @@ class PelatihController extends Controller
         ->values()
         ->all();
 
-    $routineStudentIds = DB::table('jadwal_latihan')
-        ->where(function ($query) use ($pelatih) {
-            $query->where('id_pelatih', $pelatih->id_pelatih)
-                ->orWhereNull('id_pelatih');
-        })
-        ->get()
-        ->flatMap(fn ($schedule) => $this->activeStudentIdsForSchedule($schedule))
-        ->map(fn ($id) => (int) $id)
-        ->all();
-
     return collect($explicitStudentIds)
-        ->merge($routineStudentIds)
         ->unique()
         ->values()
         ->all();
@@ -139,34 +128,7 @@ class PelatihController extends Controller
         })
         ->pluck('jadwal_siswa.id_siswa');
 
-    $routineIds = DB::table('jadwal_latihan')
-        ->where(function ($query) use ($pelatih) {
-            $query->where('id_pelatih', $pelatih->id_pelatih)
-                ->orWhereNull('id_pelatih');
-        })
-        ->get()
-        ->flatMap(function ($schedule) {
-            if (! $this->isRoutineSchedule($schedule)) return [];
-
-            $category = $schedule->kategori_umur !== null
-                ? SsbInertiaData::categoryValue((string) $schedule->kategori_umur)
-                : null;
-
-            return DB::table('siswa')
-                ->select('id_siswa', 'tanggal_lahir', 'umur')
-                ->get()
-                ->filter(fn ($student) => ! $category || $category === 'all'
-                    || SsbInertiaData::categoryValue(SsbInertiaData::categoryFromStudent($student)) === $category)
-                ->pluck('id_siswa');
-        });
-
-    return $explicitIds->merge($routineIds)->map(fn ($id) => (int) $id)->unique()->values()->all();
-  }
-
-  private function isRoutineSchedule(object $jadwal): bool
-  {
-    $scheduleDate = Carbon::parse($jadwal->tanggal);
-    return in_array($scheduleDate->dayOfWeek, [Carbon::WEDNESDAY, Carbon::SUNDAY], true);
+    return $explicitIds->map(fn ($id) => (int) $id)->unique()->values()->all();
   }
 
   private function activeStudentIdsForSchedule(object $jadwal): array
@@ -189,29 +151,7 @@ class PelatihController extends Controller
             ->all();
     }
 
-    if (! empty($explicitStudentIds) || ! $this->isRoutineSchedule($jadwal)) {
-        return $explicitStudentIds;
-    }
-
-    $storedCategory = $jadwal->kategori_umur !== null
-        ? SsbInertiaData::categoryValue((string) $jadwal->kategori_umur)
-        : null;
-
-    return DB::table('siswa')
-        ->whereIn(DB::raw('LOWER(COALESCE(status, ""))'), $this->activeStatusValues())
-        ->select('id_siswa', 'tanggal_lahir', 'umur')
-        ->get()
-        ->filter(function ($student) use ($storedCategory) {
-            if (! $storedCategory || $storedCategory === 'all') {
-                return true;
-            }
-
-            return SsbInertiaData::categoryValue(SsbInertiaData::categoryFromStudent($student)) === $storedCategory;
-        })
-        ->pluck('id_siswa')
-        ->map(fn ($id) => (int) $id)
-        ->values()
-        ->all();
+    return $explicitStudentIds;
   }
 
   public function Kehadiran(Request $request)

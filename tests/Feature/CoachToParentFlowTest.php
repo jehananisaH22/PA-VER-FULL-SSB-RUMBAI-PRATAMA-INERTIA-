@@ -288,7 +288,7 @@ class CoachToParentFlowTest extends TestCase
         $this->assertDatabaseMissing('performa_siswa', ['id_jadwal' => $jadwal->id_jadwal]);
     }
 
-    public function test_additional_schedule_requires_exact_date_for_attendance_and_performance(): void
+    public function test_schedule_requires_exact_admin_date_for_attendance_and_performance(): void
     {
         [
             'coachUser' => $coachUser,

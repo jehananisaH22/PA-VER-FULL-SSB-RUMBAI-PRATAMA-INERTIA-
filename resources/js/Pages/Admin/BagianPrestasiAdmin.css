@@ -356,7 +356,7 @@
 
   right: 0;
 
-  z-index: 25;
+  z-index: 90;
 
   padding: 7px;
 
@@ -367,6 +367,35 @@
   background: #ffffff;
 
   box-shadow: 0 16px 30px rgba(42, 84, 31, 0.13);
+
+  max-height: min(300px, calc(100vh - 220px));
+
+  overflow-y: auto;
+
+  overscroll-behavior: contain;
+
+}
+
+
+.adminAchievementsSelectMenu::-webkit-scrollbar {
+
+  width: 6px;
+
+}
+
+
+.adminAchievementsSelectMenu::-webkit-scrollbar-track {
+
+  background: transparent;
+
+}
+
+
+.adminAchievementsSelectMenu::-webkit-scrollbar-thumb {
+
+  background: #bdd9b1;
+
+  border-radius: 999px;
 
 }
 

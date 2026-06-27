@@ -68,7 +68,6 @@ const dayNameToIndex = {
   sab: 6,
   saturday: 6
 };
-const routineScheduleWeekdays = new Set([0, 3]);
 const performanceToastElementId = "ssb-coach-performance-toast";
 
 function normalizeText(value) {
@@ -328,20 +327,12 @@ function getScheduleWeekday(schedule) {
   return dayNameToIndex[normalizeText(schedule?.day)] ?? null;
 }
 
-function isRoutineSchedule(schedule) {
-  if (schedule?.isRoutine === true) return true;
-  if (schedule?.isRoutine === false) return false;
-
-  const weekday = getScheduleWeekday(schedule);
-  return routineScheduleWeekdays.has(weekday);
-}
-
 function scheduleMatchesHistoryFilter(schedule, category) {
   if (!schedule) return false;
   return category === "all" || schedule.category === "all" || schedule.category === category;
 }
 
-function buildMonthlyMeetingSlots(yearValue, monthValue, schedules = [], category = "all", mode = "routine") {
+function buildMonthlyMeetingSlots(yearValue, monthValue, schedules = [], category = "all") {
   const year = Number(yearValue) || new Date().getFullYear();
   const monthIndex = getMonthIndexFromValue(monthValue);
   const selectedSchedules = schedules.
@@ -739,11 +730,6 @@ export default function PerformaPelatih(props) {
     () => filteredSchedules.find((item) => item.id === selectedScheduleId) || null,
     [filteredSchedules, selectedScheduleId]
   );
-  const selectedScheduleAllowedDates = useMemo(() => {
-    if (!selectedSchedule?.date) return null;
-    return [selectedSchedule.date];
-  }, [selectedSchedule]);
-
   const visiblePlayers = useMemo(
     () => getSchedulePlayersForCategory(selectedSchedule, selectedCategory, studentDirectory),
     [selectedCategory, selectedSchedule, studentDirectory]
@@ -1081,8 +1067,7 @@ export default function PerformaPelatih(props) {
                <CoachPerformanceDatePicker
                 value={selectedDate}
                 onChange={setSelectedDate}
-                ariaLabel="Pilih tanggal input performa latihan"
-                allowedDates={selectedScheduleAllowedDates} />
+                ariaLabel="Pilih tanggal input performa latihan" />
 
             </div>
           </div>

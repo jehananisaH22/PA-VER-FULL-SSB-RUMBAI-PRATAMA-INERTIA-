@@ -543,23 +543,23 @@ class RegistrationFlowTest extends TestCase
             'umur' => 10,
             'status' => 'Active',
         ]);
-        $routineSchedule = Jadwal_Latihan::create([
+        $firstSchedule = Jadwal_Latihan::create([
             'id_pelatih' => $coachA->id_pelatih,
             'tanggal' => '2026-06-03',
             'jam_mulai' => '08:00:00',
             'jam_selesai' => '10:00:00',
-            'lokasi' => 'Lapangan Rutin',
+            'lokasi' => 'Lapangan Utama',
         ]);
-        $extraSchedule = Jadwal_Latihan::create([
+        $otherSchedule = Jadwal_Latihan::create([
             'id_pelatih' => $coachB->id_pelatih,
             'tanggal' => '2026-06-02',
             'jam_mulai' => '08:00:00',
             'jam_selesai' => '10:00:00',
-            'lokasi' => 'Lapangan Tambahan',
+            'lokasi' => 'Lapangan Kedua',
         ]);
         DB::table('jadwal_siswa')->insert([
-            ['id_jadwal' => $routineSchedule->id_jadwal, 'id_siswa' => $existingActiveStudent->id_siswa],
-            ['id_jadwal' => $extraSchedule->id_jadwal, 'id_siswa' => $existingActiveStudent->id_siswa],
+            ['id_jadwal' => $firstSchedule->id_jadwal, 'id_siswa' => $existingActiveStudent->id_siswa],
+            ['id_jadwal' => $otherSchedule->id_jadwal, 'id_siswa' => $existingActiveStudent->id_siswa],
         ]);
         $parent = User::factory()->create(['role' => 'orang_tua']);
         $ortu = OrangTua::create([
@@ -619,11 +619,11 @@ class RegistrationFlowTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('jadwal_siswa', [
-            'id_jadwal' => $routineSchedule->id_jadwal,
+            'id_jadwal' => $firstSchedule->id_jadwal,
             'id_siswa' => $siswa->id_siswa,
         ]);
-        $this->assertDatabaseMissing('jadwal_siswa', [
-            'id_jadwal' => $extraSchedule->id_jadwal,
+        $this->assertDatabaseHas('jadwal_siswa', [
+            'id_jadwal' => $otherSchedule->id_jadwal,
             'id_siswa' => $siswa->id_siswa,
         ]);
     }

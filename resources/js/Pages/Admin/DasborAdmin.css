@@ -1623,6 +1623,31 @@
   gap: 4px;
   
   z-index: 24;
+  max-height: 220px;
+
+  overflow-y: auto;
+
+  overscroll-behavior: contain;
+
+}
+
+
+.adminStatAgeMenu::-webkit-scrollbar {
+  width: 6px;
+
+}
+
+
+.adminStatAgeMenu::-webkit-scrollbar-track {
+  background: transparent;
+
+}
+
+
+.adminStatAgeMenu::-webkit-scrollbar-thumb {
+  background: #bdd9b1;
+
+  border-radius: 999px;
 
 }
 
@@ -1744,6 +1769,11 @@
   flex-direction: column;
   
   justify-content: flex-start;
+  position: relative;
+
+  z-index: 30;
+
+  overflow: visible;
 
 }
 
@@ -1775,6 +1805,7 @@
 .adminPerformanceAverageHead .adminFilterDropdown {
   
   min-width: 180px;
+  z-index: 40;
 
 }
 
@@ -3498,7 +3529,32 @@
   
   gap: 4px;
   
-  z-index: 18;
+  z-index: 80;
+  max-height: min(260px, calc(100vh - 180px));
+
+  overflow-y: auto;
+
+  overscroll-behavior: contain;
+
+}
+
+
+.adminFilterDropdownMenu::-webkit-scrollbar {
+  width: 6px;
+
+}
+
+
+.adminFilterDropdownMenu::-webkit-scrollbar-track {
+  background: transparent;
+
+}
+
+
+.adminFilterDropdownMenu::-webkit-scrollbar-thumb {
+  background: #bdd9b1;
+
+  border-radius: 999px;
 
 }
 
