@@ -104,13 +104,15 @@ function getScheduleStudentIds(schedule) {
 }
 
 function getSchedulePlayersForCategory(schedule, selectedCategory, studentDirectory = []) {
-  if (!schedule || !selectedCategory) return [];
+  if (!schedule) return [];
+  const shouldFilterCategory = selectedCategory && selectedCategory !== "all";
 
   const selectedStudentIds = getScheduleStudentIds(schedule);
 
   if (selectedStudentIds.length > 0) {
-    return studentDirectory.filter(
-      (item) => selectedStudentIds.includes(String(item.id)) && item.category === selectedCategory
+    return studentDirectory.filter((item) =>
+      selectedStudentIds.includes(String(item.id)) &&
+      (!shouldFilterCategory || item.category === selectedCategory)
     );
   }
 
@@ -119,13 +121,18 @@ function getSchedulePlayersForCategory(schedule, selectedCategory, studentDirect
   if (selectedStudentNames.length > 0) {
     const selectedNameSet = new Set(selectedStudentNames.map((name) => normalizeText(name)));
 
-    return studentDirectory.filter(
-      (item) => item.category === selectedCategory && selectedNameSet.has(normalizeText(item.name))
+    return studentDirectory.filter((item) =>
+      (!shouldFilterCategory || item.category === selectedCategory) &&
+      selectedNameSet.has(normalizeText(item.name))
     );
   }
 
   if (schedule.category && schedule.category !== "all") {
     return studentDirectory.filter((item) => item.category === schedule.category);
+  }
+
+  if (!shouldFilterCategory) {
+    return studentDirectory;
   }
 
   return studentDirectory.filter((item) => item.category === selectedCategory);
@@ -644,7 +651,7 @@ export default function PerformaPelatih(props) {
   } = props;
   const currentCoach = currentCoachName || userName || "Pelatih";
   const [activeSection, setActiveSection] = useState("input");
-  const [selectedCategory, setSelectedCategory] = useState("u10");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedHistoryCategory, setSelectedHistoryCategory] = useState("all");
   const [selectedHistoryMonth, setSelectedHistoryMonth] = useState(getCurrentMonthOptionValue);
   const [selectedHistoryYear, setSelectedHistoryYear] = useState(() => String(new Date().getFullYear()));
@@ -662,8 +669,6 @@ export default function PerformaPelatih(props) {
   }, [incomingHistory]);
 
   const completedPerformanceScheduleIds = useMemo(() => {
-    if (!selectedCategory) return new Set();
-
     const completedIds = new Set();
 
     trainingSchedules.forEach((schedule) => {
@@ -691,7 +696,7 @@ export default function PerformaPelatih(props) {
   }, [localHistory, selectedCategory, studentDirectory, trainingSchedules]);
 
   const filteredSchedules = useMemo(() => {
-    if (!selectedCategory || !Array.isArray(trainingSchedules)) return [];
+    if (!Array.isArray(trainingSchedules)) return [];
 
     return trainingSchedules.
     filter((item) => {
@@ -709,10 +714,6 @@ export default function PerformaPelatih(props) {
   }, [completedPerformanceScheduleIds, selectedCategory, trainingSchedules]);
 
   const scheduleOptions = useMemo(() => {
-    if (!selectedCategory) {
-      return [{ value: "", label: "Pilih kategori dulu" }];
-    }
-
     if (filteredSchedules.length === 0) {
       return [{ value: "", label: "Belum ada jadwal latihan" }];
     }

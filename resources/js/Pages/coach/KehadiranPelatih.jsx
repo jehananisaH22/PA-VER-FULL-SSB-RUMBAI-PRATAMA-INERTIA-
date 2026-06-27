@@ -11,7 +11,7 @@ const statusOptions = [
 const meetingsPerMonth = 8;
 
 const baseCategoryOptions = [
-{ value: "", label: "Pilih Kategori" },
+{ value: "all", label: "Semua Kategori" },
 ...Array.from({ length: 11 }, (_, index) => {
   const age = index + 6;
   return { value: `u${age}`, label: `U-${age}` };
@@ -207,28 +207,35 @@ function formatScheduleTargetLabel(schedule) {
 }
 
 function getSchedulePlayersForCategory(schedule, selectedCategory, studentDirectory = []) {
-  if (!schedule || !selectedCategory) return [];
+  if (!schedule) return [];
+  const shouldFilterCategory = selectedCategory && selectedCategory !== "all";
 
   const selectedStudentIds = Array.isArray(schedule?.studentIds) ?
   schedule.studentIds.map((id) => String(id)).filter(Boolean) :
   [];
 
   if (selectedStudentIds.length > 0) {
-    return studentDirectory.filter(
-      (item) => selectedStudentIds.includes(String(item.id)) && item.category === selectedCategory
+    return studentDirectory.filter((item) =>
+      selectedStudentIds.includes(String(item.id)) &&
+      (!shouldFilterCategory || item.category === selectedCategory)
     );
   }
 
   const selectedStudentNames = getScheduleStudentNames(schedule);
   if (selectedStudentNames.length > 0) {
     const nameSet = new Set(selectedStudentNames.map((name) => normalizeText(name)));
-    return studentDirectory.filter(
-      (item) => item.category === selectedCategory && nameSet.has(normalizeText(item.name))
+    return studentDirectory.filter((item) =>
+      (!shouldFilterCategory || item.category === selectedCategory) &&
+      nameSet.has(normalizeText(item.name))
     );
   }
 
   if (schedule.category && schedule.category !== "all") {
     return studentDirectory.filter((item) => item.category === schedule.category);
+  }
+
+  if (!shouldFilterCategory) {
+    return studentDirectory;
   }
 
   return studentDirectory.filter((item) => item.category === selectedCategory);
@@ -634,7 +641,7 @@ export default function KehadiranPelatih(props) {
   } = props;
 
   const [activeSection, setActiveSection] = useState("input");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedScheduleId, setSelectedScheduleId] = useState("");
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthOptionValue);
   const [selectedYear, setSelectedYear] = useState(() => String(new Date().getFullYear()));
@@ -676,7 +683,7 @@ export default function KehadiranPelatih(props) {
 
   const categoryOptions = useMemo(() => {
     const availableValues = new Set([
-    "",
+    "all",
     ...trainingSchedules.map((item) => item.category || ""),
     ...studentDirectory.map((item) => item.category || "")]
     );
@@ -684,8 +691,6 @@ export default function KehadiranPelatih(props) {
   }, [studentDirectory, trainingSchedules]);
 
   const completedAttendanceScheduleIds = useMemo(() => {
-    if (!selectedCategory) return new Set();
-
     const completedIds = new Set();
 
     trainingSchedules.forEach((schedule) => {
@@ -715,13 +720,17 @@ export default function KehadiranPelatih(props) {
   }, [localAttendanceRecaps, selectedCategory, studentDirectory, trainingSchedules]);
 
   const filteredSchedules = useMemo(() => {
-    if (!selectedCategory || !Array.isArray(trainingSchedules)) return [];
+    if (!Array.isArray(trainingSchedules)) return [];
 
     return trainingSchedules.
-    filter((item) =>
-      (item.category === "all" || item.category === selectedCategory) &&
-      !completedAttendanceScheduleIds.has(item.id)
-    ).
+    filter((item) => {
+      const categoryMatch =
+      selectedCategory === "all" ||
+      item.category === "all" ||
+      item.category === selectedCategory;
+
+      return categoryMatch && !completedAttendanceScheduleIds.has(item.id);
+    }).
     sort((leftItem, rightItem) => {
       const leftPriority = leftItem.category === selectedCategory ? 0 : 1;
       const rightPriority = rightItem.category === selectedCategory ? 0 : 1;
@@ -730,10 +739,6 @@ export default function KehadiranPelatih(props) {
   }, [completedAttendanceScheduleIds, selectedCategory, trainingSchedules]);
 
   const scheduleOptions = useMemo(() => {
-    if (!selectedCategory) {
-      return [{ value: "", label: "Pilih kategori dulu" }];
-    }
-
     if (filteredSchedules.length === 0) {
       return [{ value: "", label: "Belum ada jadwal latihan" }];
     }
@@ -1106,7 +1111,7 @@ export default function KehadiranPelatih(props) {
       await new Promise((resolve) => window.setTimeout(resolve, 900));
 
       setActiveSection("recap");
-      setSelectedCategory("");
+      setSelectedCategory("all");
       setSelectedScheduleId("");
       setAttendanceDate("");
       setStatuses({});
@@ -1163,17 +1168,15 @@ export default function KehadiranPelatih(props) {
                 setStatuses({});
               }}
               options={scheduleOptions}
-              disabled={!selectedCategory || filteredSchedules.length === 0} />
+              disabled={filteredSchedules.length === 0} />
 
 
                <p className="coachFieldHint">
                 {selectedSchedule ?
               `${selectedScheduleSummary} | ${visiblePlayers.length} siswa` :
-              selectedCategory ?
               filteredSchedules.length > 0 ?
               "Pilih jadwal dari data yang sudah dibuat admin." :
-              "Belum ada jadwal dari admin untuk kategori ini." :
-              "Pilih kategori dulu, lalu pilih jadwal yang tersedia."}
+              "Belum ada jadwal dari admin untuk filter ini."}
               </p>
 
               {selectedSchedulePlace ? (
