@@ -206,8 +206,12 @@ public function Admin_validasi_Pendaftaran_siswa($id)
         $displayStudent->setAttribute('nama_siswa', $pendaftaran->pending_nama_siswa ?: $pendaftaran->siswa->nama_siswa);
         $displayStudent->setAttribute('nama_ayah', $pendaftaran->pending_nama_ayah ?: $pendaftaran->siswa->nama_ayah);
         $displayStudent->setAttribute('nama_ibu', $pendaftaran->pending_nama_ibu ?: $pendaftaran->siswa->nama_ibu);
-        $displayStudent->setAttribute('umur', $pendaftaran->pending_umur ?: $pendaftaran->siswa->umur);
-        $displayStudent->setAttribute('tanggal_lahir', ($pendaftaran->pending_tanggal_lahir ?? null) ?: $pendaftaran->siswa->tanggal_lahir);
+        $displayBirthDate = ($pendaftaran->pending_tanggal_lahir ?? null) ?: $pendaftaran->siswa->tanggal_lahir;
+        $displayAge = $displayBirthDate
+            ? Carbon::parse($displayBirthDate)->age
+            : ($pendaftaran->pending_umur ?: $pendaftaran->siswa->umur);
+        $displayStudent->setAttribute('umur', $displayAge);
+        $displayStudent->setAttribute('tanggal_lahir', $displayBirthDate);
         $displayStudent->setAttribute('akta_kelahiran', $pendaftaran->pending_akta_kelahiran ?: $pendaftaran->siswa->akta_kelahiran);
         $displayStudent->setAttribute('kartu_keluarga', $pendaftaran->pending_kartu_keluarga ?: $pendaftaran->siswa->kartu_keluarga);
         $displayStudent->setAttribute('rapor', $pendaftaran->pending_rapor ?: $pendaftaran->siswa->rapor);
@@ -446,12 +450,18 @@ private function applyPendingRegistrationRevision(Pendaftaran_Siswa $pendaftaran
     }
 
     $studentUpdates = [];
+
+    if ($pendaftaran->pending_tanggal_lahir) {
+        $studentUpdates['tanggal_lahir'] = $pendaftaran->pending_tanggal_lahir;
+        $studentUpdates['umur'] = Carbon::parse($pendaftaran->pending_tanggal_lahir)->age;
+    } elseif ($pendaftaran->pending_umur !== null && $pendaftaran->pending_umur !== '') {
+        $studentUpdates['umur'] = $pendaftaran->pending_umur;
+    }
+
     $pendingMap = [
         'pending_nama_siswa' => 'nama_siswa',
         'pending_nama_ayah' => 'nama_ayah',
         'pending_nama_ibu' => 'nama_ibu',
-        'pending_umur' => 'umur',
-        'pending_tanggal_lahir' => 'tanggal_lahir',
         'pending_akta_kelahiran' => 'akta_kelahiran',
         'pending_kartu_keluarga' => 'kartu_keluarga',
         'pending_rapor' => 'rapor',
@@ -467,6 +477,9 @@ private function applyPendingRegistrationRevision(Pendaftaran_Siswa $pendaftaran
 
         $pendaftaran->{$pendingColumn} = null;
     }
+
+    $pendaftaran->pending_tanggal_lahir = null;
+    $pendaftaran->pending_umur = null;
 
     if (! empty($studentUpdates)) {
         $siswa->update($studentUpdates);

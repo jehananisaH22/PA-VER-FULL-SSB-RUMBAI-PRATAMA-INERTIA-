@@ -429,6 +429,9 @@ class SsbInertiaData
             ->get()
             ->map(fn ($row) => [
                 'id' => $row->id_catatan,
+                'studentId' => $row->id_siswa,
+                'id_siswa' => $row->id_siswa,
+                'id_pelatih' => $row->id_pelatih,
                 'coachName' => $row->nama_pelatih ?: 'Pelatih',
                 'coach' => $row->nama_pelatih ?: 'Pelatih',
                 'studentName' => $row->nama_siswa,
@@ -544,7 +547,7 @@ class SsbInertiaData
                 $displayFatherName = $row->pending_nama_ayah ?: $row->nama_ayah;
                 $displayMotherName = $row->pending_nama_ibu ?: $row->nama_ibu;
                 $displayBirthDate = ($row->pending_tanggal_lahir ?? null) ?: $row->tanggal_lahir;
-                $displayAge = self::displayAge($displayBirthDate, $row->pending_umur ?: $row->umur);
+                $displayAge = self::displayAge($displayBirthDate, $displayBirthDate ? null : ($row->pending_umur ?: $row->umur));
                 $displayBirthCert = $row->pending_akta_kelahiran ?: $row->akta_kelahiran;
                 $displayReportCard = $row->pending_rapor ?: $row->rapor;
                 $displayFamilyCard = $row->pending_kartu_keluarga ?: $row->kartu_keluarga;

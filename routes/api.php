@@ -121,7 +121,7 @@ Route::middleware('web')->group(function () {
 
             Route::get('/catatan-pelatih', [PelatihController::class, 'Catatan_Pelatih']); // tidak dipakai di frontend React; data dikirim lewat route web
             Route::post('/catatan-pelatih/tambah', [PelatihController::class, 'Tambah_Catatan_Pelatih']);
-            Route::put('/catatan-pelatih/update/{id}', [PelatihController::class, 'Update_Catatan_Pelatih']); // tidak dipakai di frontend React; tampilan sekarang tidak ada edit catatan
+            Route::put('/catatan-pelatih/update/{id}', [PelatihController::class, 'Update_Catatan_Pelatih']);
             Route::delete('/catatan-pelatih/hapus/{id}', [PelatihController::class, 'Hapus_Catatan_Pelatih']);
 
             Route::get('/bukti-pembayaran/form', [PelatihController::class, 'FormUploadBuktiPembayaran']); // tidak dipakai di frontend React; data form dikirim lewat route web

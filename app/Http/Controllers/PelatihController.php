@@ -760,16 +760,29 @@ public function Update_Catatan_Pelatih(Request $request, $id)
         'status' => true,
         'message' => 'Catatan berhasil diupdate',
         'data' => [
+            'id' => $catatan->id_catatan,
             'id_catatan' => $catatan->id_catatan,
+            'studentId' => $catatan->id_siswa,
             'id_siswa' => $catatan->id_siswa,
             'nama_siswa' => $catatan->siswa->nama_siswa ?? null,
+            'studentName' => $catatan->siswa->nama_siswa ?? null,
+            'player' => $catatan->siswa->nama_siswa ?? null,
             'umur' => $this->studentCategoryLabel($catatan->siswa),
+            'category' => $catatan->siswa?->kategori_umur
+                ? strtolower(str_replace('-', '', $catatan->siswa->kategori_umur))
+                : null,
 
             'id_pelatih' => $catatan->id_pelatih,
             'nama_pelatih' => $catatan->pelatih->nama_pelatih ?? null,
+            'coach' => $catatan->pelatih->nama_pelatih ?? 'Pelatih',
+            'coachName' => $catatan->pelatih->nama_pelatih ?? 'Pelatih',
 
             'catatan' => $catatan->catatan,
+            'note' => $catatan->catatan,
+            'title' => $catatan->catatan,
             'tanggal_catatan' => $catatan->tanggal_catatan,
+            'date' => $catatan->tanggal_catatan ? Carbon::parse($catatan->tanggal_catatan)->format('d/m/Y') : null,
+            'createdAt' => $catatan->tanggal_catatan ? Carbon::parse($catatan->tanggal_catatan)->timestamp * 1000 : null,
             'updated_at' => $catatan->updated_at
         ]
     ]);

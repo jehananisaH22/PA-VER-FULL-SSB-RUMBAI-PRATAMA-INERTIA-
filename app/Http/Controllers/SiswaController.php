@@ -648,8 +648,8 @@ public function update_pendaftaran(Request $request, $id_siswa)
         }
 
         if ($pendaftaran->val_umur === 'tidak_valid' && $revisionAge !== null) {
-            $pendaftaran->pending_umur = $revisionAge;
             $pendaftaran->pending_tanggal_lahir = $validated['tanggal_lahir'] ?? null;
+            $pendaftaran->pending_umur = empty($validated['tanggal_lahir']) ? $revisionAge : null;
         }
 
         // =========================

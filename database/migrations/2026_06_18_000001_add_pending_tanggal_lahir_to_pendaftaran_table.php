@@ -12,8 +12,12 @@ return new class extends Migration
             return;
         }
 
-        Schema::table('pendaftaran', function (Blueprint $table) {
-            $table->date('pending_tanggal_lahir')->nullable()->after('pending_umur');
+        $afterColumn = Schema::hasColumn('pendaftaran', 'pending_umur')
+            ? 'pending_umur'
+            : 'pending_nama_ibu';
+
+        Schema::table('pendaftaran', function (Blueprint $table) use ($afterColumn) {
+            $table->date('pending_tanggal_lahir')->nullable()->after($afterColumn);
         });
     }
 

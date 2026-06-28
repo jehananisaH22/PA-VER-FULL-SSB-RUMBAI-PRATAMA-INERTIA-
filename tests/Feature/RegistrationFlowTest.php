@@ -960,4 +960,120 @@ class RegistrationFlowTest extends TestCase
             'nama_siswa' => 'Anak B',
         ]);
     }
+
+    public function test_expired_unrevised_registration_cleanup_deletes_student_registration_and_payment_data(): void
+    {
+        Storage::fake('local');
+        Storage::fake('public');
+
+        Storage::disk('local')->put('akta/expired.pdf', 'akta');
+        Storage::disk('local')->put('kk/expired.pdf', 'kk');
+        Storage::disk('local')->put('rapor/expired.pdf', 'rapor');
+        Storage::disk('local')->put('foto/expired.pdf', 'foto');
+        Storage::disk('public')->put('bukti_pembayaran/expired.pdf', 'bukti');
+
+        $parentUser = User::factory()->create([
+            'role' => 'orang_tua',
+            'email' => 'expired-parent@example.com',
+        ]);
+        $parent = OrangTua::create([
+            'user_id' => $parentUser->id,
+            'nama_ortu' => 'Expired Parent',
+            'email' => $parentUser->email,
+            'password' => $parentUser->password,
+            'no_hp' => '081234567896',
+        ]);
+        $expiredStudent = Siswa::create([
+            'user_id' => $parentUser->id,
+            'id_ortu' => $parent->id_ortu,
+            'nama_siswa' => 'Expired Student',
+            'nama_ayah' => 'Ayah',
+            'nama_ibu' => 'Ibu',
+            'umur' => 10,
+            'akta_kelahiran' => 'akta/expired.pdf',
+            'kartu_keluarga' => 'kk/expired.pdf',
+            'rapor' => 'rapor/expired.pdf',
+            'pas_photo_3x4' => 'foto/expired.pdf',
+            'status' => 'Inactive',
+        ]);
+        $expiredRegistration = Pendaftaran_Siswa::create([
+            'id_siswa' => $expiredStudent->id_siswa,
+            'tanggal_daftar' => now()->subDays(31)->toDateString(),
+            'status_approval' => 'Revisi',
+        ]);
+        $expiredPayment = Pembayaran::create([
+            'id_siswa' => $expiredStudent->id_siswa,
+            'periode' => now()->format('Y'),
+            'jumlah' => 280000,
+            'tanggal_bayar' => now()->subDays(31)->toDateString(),
+            'status' => 'Belum',
+            'jenis' => 'Pendaftaran',
+        ]);
+        $expiredProof = BuktiPembayaran::create([
+            'id_pembayaran' => $expiredPayment->id_pembayaran,
+            'id_siswa' => $expiredStudent->id_siswa,
+            'periode' => now()->format('Y-m'),
+            'tanggal_bukti_bayar' => now()->subDays(31)->toDateString(),
+            'status' => 'ditolak',
+            'bukti_bayar' => 'bukti_pembayaran/expired.pdf',
+        ]);
+
+        $this->artisan('registrations:purge-expired')
+            ->expectsOutput('Berhasil menghapus 1 pendaftaran kedaluwarsa.')
+            ->assertExitCode(0);
+
+        $this->assertDatabaseMissing('siswa', ['id_siswa' => $expiredStudent->id_siswa]);
+        $this->assertDatabaseMissing('pendaftaran', ['id_pendaftaran' => $expiredRegistration->id_pendaftaran]);
+        $this->assertDatabaseMissing('pembayaran', ['id_pembayaran' => $expiredPayment->id_pembayaran]);
+        $this->assertDatabaseMissing('bukti_pembayaran', ['id_bukti_pembayaran' => $expiredProof->id_bukti_pembayaran]);
+        Storage::disk('local')->assertMissing('akta/expired.pdf');
+        Storage::disk('local')->assertMissing('kk/expired.pdf');
+        Storage::disk('local')->assertMissing('rapor/expired.pdf');
+        Storage::disk('local')->assertMissing('foto/expired.pdf');
+        Storage::disk('public')->assertMissing('bukti_pembayaran/expired.pdf');
+    }
+
+    public function test_expired_registration_cleanup_keeps_recent_and_approved_registrations(): void
+    {
+        $recentStudent = Siswa::create([
+            'nama_siswa' => 'Recent Student',
+            'nama_ayah' => 'Ayah',
+            'nama_ibu' => 'Ibu',
+            'umur' => 10,
+            'status' => 'Inactive',
+        ]);
+        $approvedStudent = Siswa::create([
+            'nama_siswa' => 'Approved Student',
+            'nama_ayah' => 'Ayah',
+            'nama_ibu' => 'Ibu',
+            'umur' => 11,
+            'status' => 'Active',
+        ]);
+
+        Pendaftaran_Siswa::create([
+            'id_siswa' => $recentStudent->id_siswa,
+            'tanggal_daftar' => now()->subDays(10)->toDateString(),
+            'status_approval' => 'Revisi',
+        ]);
+        Pendaftaran_Siswa::create([
+            'id_siswa' => $approvedStudent->id_siswa,
+            'tanggal_daftar' => now()->subDays(45)->toDateString(),
+            'status_approval' => 'Disetujui',
+        ]);
+
+        $this->artisan('registrations:purge-expired')
+            ->expectsOutput('Tidak ada pendaftaran kedaluwarsa lebih dari 30 hari.')
+            ->assertExitCode(0);
+
+        $this->assertDatabaseHas('siswa', ['id_siswa' => $recentStudent->id_siswa]);
+        $this->assertDatabaseHas('siswa', ['id_siswa' => $approvedStudent->id_siswa]);
+        $this->assertDatabaseHas('pendaftaran', [
+            'id_siswa' => $recentStudent->id_siswa,
+            'status_approval' => 'Revisi',
+        ]);
+        $this->assertDatabaseHas('pendaftaran', [
+            'id_siswa' => $approvedStudent->id_siswa,
+            'status_approval' => 'Disetujui',
+        ]);
+    }
 }

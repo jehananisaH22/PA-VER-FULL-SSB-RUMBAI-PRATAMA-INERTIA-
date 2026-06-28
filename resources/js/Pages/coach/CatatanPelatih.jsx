@@ -220,6 +220,8 @@ export default function CatatanPelatih(props) {
   const [noteText, setNoteText] = useState(""); 
   const [localNotes, setLocalNotes] = useState(incomingNotes); 
   const [isSaving, setIsSaving] = useState(false); 
+  const [editingNote, setEditingNote] = useState(null); 
+  const [updatingNoteIds, setUpdatingNoteIds] = useState([]); 
   const [deletingNoteIds, setDeletingNoteIds] = useState([]); 
   const [deleteTarget, setDeleteTarget] = useState(null); 
 
@@ -299,6 +301,56 @@ export default function CatatanPelatih(props) {
     };
   }; 
 
+  const updateNoteToServer = async (note) => {
+    if (!window.axios) return false; 
+    if (!note.id || !note.studentId) return false; 
+
+    const response = await window.axios.put(
+      `/api/pelatih/catatan-pelatih/update/${note.id}`,
+      { 
+        id_siswa: note.studentId, 
+        catatan: note.note
+      },
+      { timeout: 15000 }
+    ); 
+
+    if (response.data?.status === false) {
+      throw new Error(response.data?.message || "Catatan gagal diupdate.");
+    } 
+
+    const updatedNote = response.data?.data; 
+    if (!updatedNote?.id_catatan && !updatedNote?.id) return true; 
+
+    return {
+      ...note, 
+      id: updatedNote.id || updatedNote.id_catatan || note.id, 
+      studentId: updatedNote.studentId || updatedNote.id_siswa || note.studentId, 
+      category: updatedNote.category || note.category, 
+      player: updatedNote.player || updatedNote.nama_siswa || note.player, 
+      coach: updatedNote.coach || updatedNote.nama_pelatih || note.coach, 
+      date: updatedNote.date || note.date
+    };
+  }; 
+
+  const handleStartEdit = (note) => {
+    const nextStudentId = note.studentId || note.id_siswa || studentDirectory.find(
+      (item) => item.category === note.category && item.name === note.player
+    )?.id; 
+
+    setEditingNote({ ...note, studentId: nextStudentId }); 
+    setSelectedCategory(note.category || ""); 
+    setSelectedPlayer(nextStudentId ? String(nextStudentId) : ""); 
+    setNoteText(note.note || ""); 
+    setActiveSection("input"); 
+  }; 
+
+  const handleCancelEdit = () => {
+    setEditingNote(null); 
+    setSelectedCategory(""); 
+    setSelectedPlayer(""); 
+    setNoteText(""); 
+  }; 
+
   const handleSave = async () => {
     if (!canSave || isSaving) return; 
     if (!selectedPlayerData) return; 
@@ -314,10 +366,18 @@ export default function CatatanPelatih(props) {
     }; 
 
     setIsSaving(true); 
+    if (editingNote?.id) {
+      setUpdatingNoteIds((prev) => [...prev, editingNote.id]); 
+    } 
     let saved = false; 
 
     try {
-      const saveResult = onSaveNote ? await onSaveNote(newNote) : await saveNoteToServer(newNote); 
+      const notePayload = editingNote?.id
+        ? { ...newNote, id: editingNote.id, date: editingNote.date || newNote.date }
+        : newNote; 
+      const saveResult = editingNote?.id
+        ? await updateNoteToServer(notePayload)
+        : (onSaveNote ? await onSaveNote(newNote) : await saveNoteToServer(newNote)); 
       if (saveResult === false) {
         notifyCoachNotes("error", "Catatan gagal disimpan. Data siswa tidak valid."); 
         return;
@@ -325,9 +385,18 @@ export default function CatatanPelatih(props) {
 
       saved = true; 
       setNoteText(""); 
+      setEditingNote(null); 
       setActiveSection("recap"); 
-      notifyCoachNotes("success", "Catatan pelatih berhasil dikirim."); 
-      setLocalNotes((prev) => [saveResult && saveResult !== true ? saveResult : newNote, ...prev]); 
+      notifyCoachNotes("success", editingNote?.id ? "Catatan berhasil diupdate." : "Catatan pelatih berhasil dikirim."); 
+      setLocalNotes((prev) => {
+        const nextNote = saveResult && saveResult !== true ? saveResult : notePayload; 
+
+        if (editingNote?.id) {
+          return prev.map((item) => item.id === editingNote.id ? nextNote : item);
+        }
+
+        return [nextNote, ...prev];
+      }); 
       router.reload({ preserveScroll: true, preserveState: true, only: ["notes"] });
     } catch (error) {
       notifyCoachNotes(
@@ -338,6 +407,9 @@ export default function CatatanPelatih(props) {
       );
     } finally {
       setIsSaving(false);
+      if (editingNote?.id) {
+        setUpdatingNoteIds((prev) => prev.filter((id) => id !== editingNote.id));
+      }
     } 
 
     if (!saved) return;
@@ -396,7 +468,13 @@ export default function CatatanPelatih(props) {
 
       {activeSection === "input" ? (
       <section className="coachCard coachNotesInputCard coachSectionSwap">
-           <h2>Input Catatan Pelatih</h2>
+           <div className="coachNotesInputHead">
+             <h2>{editingNote ? "Edit Catatan Pelatih" : "Input Catatan Pelatih"}</h2>
+             {editingNote ? (
+             <button type="button" className="coachNoteCancelEditBtn" onClick={handleCancelEdit}>
+              Batal Edit
+            </button>) : null}
+          </div>
 
            <div className="coachNotesFilters">
              <div className="coachNotesField">
@@ -446,7 +524,7 @@ export default function CatatanPelatih(props) {
             disabled={!canSave || isSaving}
             onClick={handleSave}>
             
-              {isSaving ? "Menyimpan..." : "Simpan"}
+              {isSaving ? "Menyimpan..." : editingNote ? "Update" : "Simpan"}
             </button>
           </div>
         </section>) : (
@@ -499,14 +577,24 @@ export default function CatatanPelatih(props) {
                        <td>{item.coach}</td>
                        <td>
                         {item.coach === currentCoachName ? (
+                    <div className="coachNoteActionGroup">
+                      <button
+                        type="button"
+                        className="coachNoteEditBtn"
+                        disabled={updatingNoteIds.includes(item.id) || deletingNoteIds.includes(item.id)}
+                        onClick={() => handleStartEdit(item)}>
+                        
+                        Edit
+                      </button>
                     <button
                       type="button"
                       className="coachNoteDeleteBtn"
-                      disabled={deletingNoteIds.includes(item.id)}
+                      disabled={updatingNoteIds.includes(item.id) || deletingNoteIds.includes(item.id)}
                       onClick={() => setDeleteTarget(item)}>
                       
                             {deletingNoteIds.includes(item.id) ? "Menghapus..." : "Hapus"}
-                          </button>) : (
+                          </button>
+                    </div>) : (
 
                     <span className="coachNoteDeleteLocked">Terkunci</span>)
                     }
