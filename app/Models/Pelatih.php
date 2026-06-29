@@ -18,6 +18,9 @@ class Pelatih extends Model
         'nama_pelatih',
         'email',
         'no_hp',
+        'account_status',
+        'invitation_sent_at',
+        'accepted_at',
     ];
 
     public $timestamps = False;
@@ -43,6 +46,8 @@ class Pelatih extends Model
                 'nama_pelatih' => $user->name ?: 'Pelatih',
                 'email' => $user->email,
                 'no_hp' => '-',
+                'account_status' => 'accepted',
+                'accepted_at' => now(),
             ]);
         }
 
@@ -91,6 +96,9 @@ public function toInertiaDirectory(): array
         'name' => $this->nama_pelatih,
         'email' => $this->email ?: '-',
         'phone' => $this->no_hp ?: '-',
+        'accountStatus' => $this->account_status ?: 'pending',
+        'invitationSentAt' => $this->invitation_sent_at,
+        'acceptedAt' => $this->accepted_at,
     ];
 }
 
