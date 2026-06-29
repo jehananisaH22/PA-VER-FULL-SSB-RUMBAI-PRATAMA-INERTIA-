@@ -165,18 +165,22 @@ export default function HalamanPelatihAdmin({
           throw new Error(response.data?.message || "Pelatih gagal ditambahkan.");
         } 
 
-        const savedCoach = response.data?.data?.pelatih; 
+       const savedCoach = response.data?.data?.pelatih; 
         setLocalCoaches((prev) => [
         ...prev,
         { 
           id: savedCoach?.id_pelatih || Date.now(), 
           name: savedCoach?.nama_pelatih || name, 
           email: savedCoach?.email || email, 
-          phone: savedCoach?.no_hp || phone
+          phone: savedCoach?.no_hp || phone,
+          accountStatus: savedCoach?.account_status || "pending",
+          invitationSentAt: savedCoach?.invitation_sent_at || null,
+          acceptedAt: savedCoach?.accepted_at || null
         }]
         ); 
         router.reload({ preserveScroll: true, preserveState: true, only: ["adminCoaches"] });
       } 
+
 
       closeAddModal(); 
       onRecordAdminActivity?.({ 
@@ -233,6 +237,7 @@ export default function HalamanPelatihAdmin({
                <tr>
                  <th>Nama</th>
                  <th>Email</th>
+                 <th>Status Akun</th>
                  <th>Aksi</th>
               </tr>
             </thead>
@@ -242,6 +247,13 @@ export default function HalamanPelatihAdmin({
               <tr key={coach.id}>
                      <td>{coach.name}</td>
                      <td>{coach.email}</td>
+                      <td>
+                       <span className={`adminCoachStatusBadge ${
+                       coach.accountStatus === "accepted" ? "isAccepted" : "isPending"
+                       }`}>
+                        {coach.accountStatus === "accepted" ? "Diterima" : "Pending"}
+                      </span>
+                    </td>
                      <td>
                        <button
                     type="button"
