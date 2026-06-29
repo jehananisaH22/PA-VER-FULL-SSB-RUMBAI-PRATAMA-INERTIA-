@@ -138,16 +138,29 @@ export default function BagianPrestasiAdmin({
     [selectedStudentIds, students]
   );
 
+  const selectedStudentNamesLabel = useMemo(
+    () => selectedStudents.map((student) => student.name).join(", "),
+    [selectedStudents]
+  );
+
   const filteredStudents = useMemo(() => {
     if (!selectedCategory) return [];
 
     const normalizedQuery = studentQuery.trim().toLowerCase();
+    const normalizedSelectedStudentNames = selectedStudentNamesLabel.toLowerCase();
+    const isShowingSelectedStudents =
+      normalizedQuery && normalizedQuery === normalizedSelectedStudentNames;
+
     return students.filter((student) => {
       const categoryMatch = student.category === selectedCategory;
-      const queryMatch = !normalizedQuery || student.name.toLowerCase().includes(normalizedQuery);
+
+      const queryMatch =
+        !normalizedQuery ||
+        isShowingSelectedStudents ||
+        student.name.toLowerCase().includes(normalizedQuery);
       return categoryMatch && queryMatch;
     });
-  }, [selectedCategory, studentQuery, students]);
+  }, [selectedCategory, selectedStudentNamesLabel, studentQuery, students]);
 
   const achievementRows = localAchievements;
 
@@ -449,7 +462,20 @@ export default function BagianPrestasiAdmin({
                   type="button"
                   onClick={() =>
                   setSelectedStudentIds((current) =>
-                  current.filter((studentId) => Number(studentId) !== Number(student.id))
+                  {
+                    const nextSelectedIds = current.filter(
+                      (studentId) => Number(studentId) !== Number(student.id)
+                    );
+                
+                    const remainingStudentNames = students
+                      .filter((item) =>
+                        nextSelectedIds.some((studentId) => Number(studentId) === Number(item.id))
+                      )
+                      .map((item) => item.name)
+                      .join(", ");
+                    setStudentQuery(remainingStudentNames);
+                    return nextSelectedIds;
+                  }
                   )
                   }>
 
@@ -477,13 +503,31 @@ export default function BagianPrestasiAdmin({
                         (studentId) => Number(studentId) === Number(student.id)
                       );
                       if (isSelected) {
-                        return current.filter(
+                        const nextSelectedIds = current.filter(
                           (studentId) => Number(studentId) !== Number(student.id)
                         );
+                       
+
+                        const remainingStudentNames = students
+                          .filter((item) =>
+                            nextSelectedIds.some((studentId) => Number(studentId) === Number(item.id))
+                          )
+                          .map((item) => item.name)
+                          .join(", ");
+                        setStudentQuery(remainingStudentNames);
+                        return nextSelectedIds;
                       }
-                      return [...current, student.id];
+      
+                      const nextSelectedIds = [...current, student.id];
+                      const selectedStudentNames = students
+                        .filter((item) =>
+                          nextSelectedIds.some((studentId) => Number(studentId) === Number(item.id))
+                        )
+                        .map((item) => item.name)
+                        .join(", ");
+                      setStudentQuery(selectedStudentNames);
+                      return nextSelectedIds;
                     });
-                    setStudentQuery("");
                   }}>
 
                          <strong>{student.name}</strong>
