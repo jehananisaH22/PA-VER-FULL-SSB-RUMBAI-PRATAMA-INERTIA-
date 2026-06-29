@@ -118,6 +118,9 @@ class SsbInertiaData
                     'nama_pelatih' => $user->name,
                     'email' => $user->email,
                     'no_hp' => null,
+                    'account_status' => 'accepted',
+                    'invitation_sent_at' => null,
+                    'accepted_at' => $user->email_verified_at,
                 ]);
         }
 
@@ -127,6 +130,9 @@ class SsbInertiaData
                 'name' => $coach->nama_pelatih,
                 'email' => $coach->email ?: '-',
                 'phone' => $coach->no_hp ?: '-',
+                'accountStatus' => $coach->account_status ?? 'pending',
+                'invitationSentAt' => $coach->invitation_sent_at ?? null,
+                'acceptedAt' => $coach->accepted_at ?? null,
             ])
             ->values()
             ->all();

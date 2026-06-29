@@ -499,6 +499,15 @@ class AuthController extends Controller
         }
 
         if ($user->role === 'pelatih') {
+            $pelatih = \App\Models\Pelatih::resolveForUser($user);
+
+            if ($pelatih && $pelatih->account_status !== 'accepted') {
+                $pelatih->update([
+                    'account_status' => 'accepted',
+                    'accepted_at' => $pelatih->accepted_at ?: now(),
+                ]);
+            }
+
             if ($request->header('X-Inertia')) {
                 return redirect('/pelatih/dashboard');
             }

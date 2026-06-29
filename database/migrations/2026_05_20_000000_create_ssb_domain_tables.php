@@ -48,6 +48,9 @@ return new class extends Migration
                 $table->string('nama_pelatih', 100);
                 $table->string('email')->nullable();
                 $table->string('no_hp', 20)->nullable();
+                $table->string('account_status', 30)->default('pending');
+                $table->timestamp('invitation_sent_at')->nullable();
+                $table->timestamp('accepted_at')->nullable();
             });
         }
 

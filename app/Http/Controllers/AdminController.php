@@ -1154,6 +1154,14 @@ public function Data_Pelatih(Request $request)
         ->paginate(10)
         ->withQueryString();
 
+    $result->getCollection()->transform(function ($item) {
+        $item->accountStatus = $item->account_status ?: 'pending';
+        $item->invitationSentAt = $item->invitation_sent_at;
+        $item->acceptedAt = $item->accepted_at;
+
+        return $item;
+    });
+
     return response()->json([
         'success' => true,
         'message' => 'Data pelatih berhasil diambil',
@@ -1217,9 +1225,11 @@ public function Tambah_Pelatih(Request $request)
             'nama_pelatih' => $request->nama,
             'email' => $request->email,
             'no_hp' => $no_hp,
+            'account_status' => 'pending',
         ]);
 
         Mail::to($user->email)->send(new SendPasswordMail($request->nama, $user->email, $request->password));
+        $pelatih->update(['invitation_sent_at' => now()]);
 
         DB::commit();
 
