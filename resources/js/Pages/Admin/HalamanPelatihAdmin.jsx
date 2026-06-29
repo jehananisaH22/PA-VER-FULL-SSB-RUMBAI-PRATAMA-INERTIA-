@@ -215,19 +215,24 @@ export default function HalamanPelatihAdmin({
 
        <article className="adminCard adminCoachesCard">
          <div className="adminCoachesToolbar">
-           <button
-            type="button"
-            className="adminCoachesAddBtn"
-            onClick={() => setIsAddModalOpen(true)}>
-            
-            Tambah Akun +
-          </button>
-           <input
-            type="search"
-            placeholder="Cari Pelatih"
-            value={searchText}
-            onChange={(event) => setSearchText(event.target.value)}
-            aria-label="Cari pelatih" />
+           <div className="adminCoachesToolbarLeft">
+             <button
+              type="button"
+              className="adminCoachesAddBtn"
+              onClick={() => setIsAddModalOpen(true)}>
+              
+              Tambah Akun +
+            </button>
+             <input
+              type="search"
+              placeholder="Cari Pelatih"
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
+              aria-label="Cari pelatih" />
+            </div>
+           <p className="adminCoachesSummary">
+            {totalCoaches} pelatih
+          </p>
           
         </div>
 
@@ -267,7 +272,7 @@ export default function HalamanPelatihAdmin({
               ) : (
 
               <tr>
-                   <td colSpan={3} className="adminCoachesEmpty">
+                   <td colSpan={4} className="adminCoachesEmpty">
                     Data pelatih tidak ditemukan.
                   </td>
                 </tr>)

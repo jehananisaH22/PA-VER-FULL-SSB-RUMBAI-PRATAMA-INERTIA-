@@ -2391,7 +2391,14 @@ private function sendStudentNotification(?Siswa $siswa, string $judul, string $i
         'tanggal_kirim' => now(),
     ]);
 
-    $userId = $siswa->user_id ?: $siswa->orangtua?->user_id;
+    $userId = $this->parentUserIdForStudent($siswa);
+
+    if (! $userId) {
+        Log::warning('Notifikasi siswa tidak memiliki penerima orang tua.', [
+            'id_siswa' => $siswa->id_siswa,
+            'judul' => $judul,
+        ]);
+    }
 
     DB::table('notifikasi_terkirim')->insert([
         'id_notifikasi' => $notif->id_notifikasi,
@@ -2404,6 +2411,31 @@ private function sendStudentNotification(?Siswa $siswa, string $judul, string $i
         'created_at' => now(),
         'updated_at' => now(),
     ]);
+}
+
+private function parentUserIdForStudent(Siswa $siswa): ?int
+{
+    if ($siswa->user_id) {
+        return (int) $siswa->user_id;
+    }
+
+    $siswa->loadMissing('orangtua');
+
+    if ($siswa->orangtua?->user_id) {
+        return (int) $siswa->orangtua->user_id;
+    }
+
+    $parentEmail = $siswa->orangtua?->email;
+
+    if ($parentEmail) {
+        $userId = User::whereRaw('LOWER(email) = ?', [strtolower($parentEmail)])
+            ->whereRaw('LOWER(TRIM(role)) = ?', ['orang_tua'])
+            ->value('id');
+
+        return $userId ? (int) $userId : null;
+    }
+
+    return null;
 }
 
 private function studentCategoryValue(?int $age): string

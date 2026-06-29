@@ -44,11 +44,15 @@ public function getNotifikasi(Request $request)
 if ($role === 'orang_tua') {
 
     $userId = auth()->id();
+    $userEmail = strtolower((string) $user->email);
 
-    $idSiswaList = \App\Models\Siswa::where(function ($q) use ($userId) {
+    $idSiswaList = \App\Models\Siswa::where(function ($q) use ($userId, $userEmail) {
         $q->where('user_id', $userId)
             ->orWhereHas('orangtua', function ($ortu) use ($userId) {
                 $ortu->where('user_id', $userId);
+            })
+            ->orWhereHas('orangtua', function ($ortu) use ($userEmail) {
+                $ortu->whereRaw('LOWER(email) = ?', [$userEmail]);
             });
     })->pluck('id_siswa');
 
@@ -285,7 +289,7 @@ elseif ($target === 'pelatih') {
     // ===================== ORANG TUA =====================
     elseif ($target === 'orang_tua') {
 
-        $siswaQuery = \App\Models\Siswa::with('orangtua:id_ortu,user_id,nama_ortu');
+        $siswaQuery = \App\Models\Siswa::with('orangtua:id_ortu,user_id,nama_ortu,email');
 
         if ($request->filled('id_siswa')) {
             $siswaQuery->whereIn('id_siswa', (array) $request->id_siswa);
@@ -309,7 +313,7 @@ elseif ($target === 'pelatih') {
         $siswaList = $siswaQuery->get();
 
         foreach ($siswaList as $siswa) {
-            $parentUserId = $siswa->user_id ?: $siswa->orangtua?->user_id;
+            $parentUserId = $this->parentUserIdForStudent($siswa);
 
             if (!$parentUserId) {
                 continue;
@@ -340,8 +344,8 @@ elseif ($target === 'pelatih') {
     elseif ($target === 'semua') {
 
         // SISWA
-        foreach (\App\Models\Siswa::with('orangtua:id_ortu,user_id,nama_ortu')->get() as $siswa) {
-        $parentUserId = $siswa->user_id ?: $siswa->orangtua?->user_id;
+        foreach (\App\Models\Siswa::with('orangtua:id_ortu,user_id,nama_ortu,email')->get() as $siswa) {
+        $parentUserId = $this->parentUserIdForStudent($siswa);
 
         if (!$parentUserId) {
             continue;
@@ -445,6 +449,29 @@ public function tandaiBaca($id)
         'status' => true,
         'message' => 'Berhasil ditandai dibaca'
     ]);
+}
+
+private function parentUserIdForStudent(Siswa $siswa): ?int
+{
+    if ($siswa->user_id) {
+        return (int) $siswa->user_id;
+    }
+
+    $siswa->loadMissing('orangtua');
+
+    if ($siswa->orangtua?->user_id) {
+        return (int) $siswa->orangtua->user_id;
+    }
+
+    if ($siswa->orangtua?->email) {
+        $userId = User::whereRaw('LOWER(email) = ?', [strtolower($siswa->orangtua->email)])
+            ->whereRaw('LOWER(TRIM(role)) = ?', ['orang_tua'])
+            ->value('id');
+
+        return $userId ? (int) $userId : null;
+    }
+
+    return null;
 }
 
 private function recordAdminNotificationActivity(?User $user, string $title, ?string $description = null): void

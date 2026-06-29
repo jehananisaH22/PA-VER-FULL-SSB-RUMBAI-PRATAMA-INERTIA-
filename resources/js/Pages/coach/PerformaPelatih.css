@@ -150,6 +150,20 @@
 }
 
 
+.coachPerformanceCustomSelect.isDisabled .coachPerformanceSelectTrigger,
+.coachPerformanceCustomSelect.isDisabled .coachPerformanceSelectTrigger:hover {
+  
+  border-color: #e2e8f0;
+  
+  background: #f8fafc;
+  
+  color: #94a3b8;
+  
+  cursor: not-allowed;
+
+}
+
+
 .coachPerformanceCustomSelect.isOpen .coachPerformanceSelectTrigger,
 
 .coachPerformanceDatePicker.isOpen .coachPerformanceDateTrigger,

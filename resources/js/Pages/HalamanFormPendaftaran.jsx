@@ -56,6 +56,8 @@ export default function HalamanFormPendaftaran({
   onBackToDaftar, 
   registrationAccount, 
   registrationFormDraft, 
+  returnToDashboard = false,
+  dashboardUrl = "/orang-tua/dashboard",
   onRegistrationFormDraftChange, 
   onSubmitRegistration, 
   onOpenPaymentProof
@@ -76,8 +78,22 @@ export default function HalamanFormPendaftaran({
     rapor: registrationFormDraft?.uploadedFiles?.rapor || null, 
     pasfoto: registrationFormDraft?.uploadedFiles?.pasfoto || null
   }); 
-  const openHome = () => onOpenHome ? onOpenHome() : router.visit("/"); 
-  const backToDaftar = () => onBackToDaftar ? onBackToDaftar() : router.visit("/register"); 
+  const openHome = () => {
+    if (returnToDashboard) {
+      router.visit(dashboardUrl);
+      return;
+    }
+
+    onOpenHome ? onOpenHome() : router.visit("/");
+  };
+  const backToDaftar = () => {
+    if (returnToDashboard) {
+      router.visit("/orang-tua/daftar-anak");
+      return;
+    }
+
+    onBackToDaftar ? onBackToDaftar() : router.visit("/register");
+  }; 
 
 
   const page = usePage(); 
@@ -206,7 +222,9 @@ export default function HalamanFormPendaftaran({
           </button>
 
            <nav className="enrollNavLinks">
-             <button type="button" onClick={openHome}>Beranda</button>
+             <button type="button" onClick={openHome}>
+              {returnToDashboard ? "Kembali" : "Beranda"}
+            </button>
              <button type="button" className="is-active" onClick={backToDaftar}>
               Daftar
             </button>

@@ -55,6 +55,11 @@ export default function VerifikasiEmail({ email = "", verificationLink = "" }) {
       return;
     } 
 
+    if (["mahasiswa.pcr.ac.id", "pcr.ac.id"].includes(domain)) {
+      goToInbox("https://mail.google.com/mail/u/0/#search/Verifikasi%20Email%20SSB%20System");
+      return;
+    }
+
     if (["outlook.com", "hotmail.com", "live.com"].includes(domain)) {
       goToInbox("https://outlook.live.com/mail/0/inbox"); 
       return;
@@ -75,12 +80,7 @@ export default function VerifikasiEmail({ email = "", verificationLink = "" }) {
       return;
     } 
 
-    if (domain) {
-      goToInbox(`https://mail.${domain}`); 
-      return;
-    } 
-
-    goToInbox("https://mail.google.com/");
+    window.alert("Domain email ini tidak punya alamat inbox otomatis di sistem. Buka inbox email dari website/aplikasi email yang biasa digunakan, lalu cari email Verifikasi Email SSB System.");
   }; 
 
   return (

@@ -79,6 +79,27 @@ class RegistrationFlowTest extends TestCase
             ->assertRedirect('/register/verify-notice');
     }
 
+    public function test_verify_notice_clears_registration_session_when_parent_user_was_deleted(): void
+    {
+        $this->withSession([
+            'registration.account' => [
+                'userId' => 999999,
+                'name' => 'Siti',
+                'email' => 'deleted-parent@example.test',
+                'phone' => '081234567890',
+                'verificationLink' => 'http://localhost/api/verify-email?token=deleted',
+            ],
+            'registration.form' => [
+                'childName' => 'Anak Siti',
+            ],
+            'id_siswa' => 999999,
+        ])->get('/register/verify-notice')
+            ->assertRedirect('/register')
+            ->assertSessionMissing('registration.account')
+            ->assertSessionMissing('registration.form')
+            ->assertSessionMissing('id_siswa');
+    }
+
     public function test_used_verification_link_keeps_verified_parent_on_registration_form(): void
     {
         $user = User::factory()->unverified()->create([
@@ -632,6 +653,113 @@ class RegistrationFlowTest extends TestCase
         $this->assertDatabaseHas('jadwal_siswa', [
             'id_jadwal' => $otherSchedule->id_jadwal,
             'id_siswa' => $siswa->id_siswa,
+        ]);
+    }
+
+    public function test_payment_validation_sends_parent_notification_when_student_uses_parent_email_link(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $parent = User::factory()->create([
+            'role' => 'orang_tua',
+            'email' => 'parent-payment-link@example.com',
+        ]);
+        $ortu = OrangTua::create([
+            'user_id' => null,
+            'nama_ortu' => 'Parent Email Link',
+            'email' => $parent->email,
+            'password' => $parent->password,
+            'no_hp' => '081234567897',
+        ]);
+        $siswa = Siswa::create([
+            'user_id' => null,
+            'id_ortu' => $ortu->id_ortu,
+            'nama_siswa' => 'Anak Email Link',
+            'nama_ayah' => 'Ayah',
+            'nama_ibu' => 'Ibu',
+            'umur' => 10,
+            'status' => 'Inactive',
+        ]);
+        $pembayaran = Pembayaran::create([
+            'id_siswa' => $siswa->id_siswa,
+            'periode' => '2026-06',
+            'jumlah' => 100000,
+            'tanggal_bayar' => '2026-06-20',
+            'status' => 'Belum',
+            'jenis' => 'Harian',
+        ]);
+        $bukti = BuktiPembayaran::create([
+            'id_pembayaran' => $pembayaran->id_pembayaran,
+            'id_siswa' => $siswa->id_siswa,
+            'periode' => '2026-06',
+            'tanggal_bukti_bayar' => '2026-06-20',
+            'status' => 'Menunggu validasi',
+            'bukti_bayar' => 'bukti_pembayaran/email-link.pdf',
+        ]);
+
+        $this->actingAs($admin)
+            ->postJson("/api/admin/bukti/diterima/{$bukti->id_bukti_pembayaran}")
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->assertDatabaseHas('notifikasi', [
+            'judul' => 'Pembayaran Diterima',
+            'target_role' => 'orang_tua',
+        ]);
+        $this->assertDatabaseHas('notifikasi_terkirim', [
+            'user_id' => $parent->id,
+            'id_siswa' => $siswa->id_siswa,
+            'status_baca' => 'Belum Dibaca',
+        ]);
+
+        $this->actingAs($parent)
+            ->getJson('/api/notifikasi')
+            ->assertOk()
+            ->assertJsonPath('count', 1)
+            ->assertJsonPath('data.0.judul', 'Pembayaran Diterima');
+    }
+
+    public function test_payment_menu_manual_notification_sends_to_parent_by_email_link(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $parent = User::factory()->create([
+            'role' => 'orang_tua',
+            'email' => 'parent-manual-payment@example.com',
+        ]);
+        $ortu = OrangTua::create([
+            'user_id' => null,
+            'nama_ortu' => 'Parent Manual',
+            'email' => $parent->email,
+            'password' => $parent->password,
+            'no_hp' => '081234567898',
+        ]);
+        $siswa = Siswa::create([
+            'user_id' => null,
+            'id_ortu' => $ortu->id_ortu,
+            'nama_siswa' => 'Anak Manual',
+            'nama_ayah' => 'Ayah',
+            'nama_ibu' => 'Ibu',
+            'umur' => 11,
+            'status' => 'Active',
+        ]);
+
+        $this->actingAs($admin)
+            ->postJson('/api/notifikasi/kirim', [
+                'judul' => 'Pengingat Bukti Pembayaran',
+                'isi' => 'Mohon upload bukti pembayaran bulan ini.',
+                'target_role' => 'orang_tua',
+                'id_siswa' => [$siswa->id_siswa],
+            ])
+            ->assertOk()
+            ->assertJsonPath('jumlah_penerima', 1);
+
+        $this->assertDatabaseHas('notifikasi', [
+            'judul' => 'Pengingat Bukti Pembayaran',
+            'target_role' => 'orang_tua',
+        ]);
+        $this->assertDatabaseHas('notifikasi_terkirim', [
+            'user_id' => $parent->id,
+            'id_siswa' => $siswa->id_siswa,
+            'status_baca' => 'Belum Dibaca',
         ]);
     }
 

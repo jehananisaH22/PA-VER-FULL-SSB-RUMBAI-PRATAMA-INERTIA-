@@ -62,8 +62,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/parent-payments', fn () => redirect('/orang-tua/pembayaran'));
         Route::get('/parent-reupload', fn () => redirect('/orang-tua/upload-ulang'));
         Route::get('/orang-tua/daftar-anak', function () {
-      return inertia('HalamanFormPendaftaran');
-    });
+            return inertia('HalamanFormPendaftaran', [
+                'returnToDashboard' => true,
+                'dashboardUrl' => '/orang-tua/dashboard',
+            ]);
+        });
         Route::get('/orang-tua/{section?}', [DashboardController::class, 'parentSection']);
 
         

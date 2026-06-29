@@ -3,6 +3,7 @@ import TataLetakPelatih from "./TataLetakPelatih";
 import "./PerformaPelatih.css";
 
 const categoryOptions = [
+{ value: "all", label: "Semua Kategori" },
 ...Array.from({ length: 11 }, (_, index) => {
   const age = index + 6;
   return { value: `u${age}`, label: `U-${age}` };
@@ -446,7 +447,7 @@ function ArrowRightIcon() {
 
 }
 
-function CoachPerformanceSelect({ value, onChange, options, ariaLabel, className = "" }) {
+function CoachPerformanceSelect({ value, onChange, options, ariaLabel, className = "", disabled = false }) {
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef(null);
   const selectedOption = options.find((option) => option.value === value) || options[0];
@@ -464,18 +465,21 @@ function CoachPerformanceSelect({ value, onChange, options, ariaLabel, className
 
   return (
     <div
-      className={`coachPerformanceCustomSelect ${className} ${isOpen ? "isOpen" : ""}`.trim()}
+      className={`coachPerformanceCustomSelect ${className} ${isOpen ? "isOpen" : ""} ${disabled ? "isDisabled" : ""}`.trim()}
       ref={rootRef}>
 
        <button
         type="button"
         className="coachPerformanceSelectTrigger"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={() => {
+          if (!disabled) setIsOpen((prev) => !prev);
+        }}
         onKeyDown={(event) => {
           if (event.key === "Escape") {
             setIsOpen(false);
           }
         }}
+        disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label={ariaLabel}>
@@ -674,7 +678,7 @@ export default function PerformaPelatih(props) {
     trainingSchedules.forEach((schedule) => {
       if (!schedule?.id || !schedule?.date) return;
 
-      const schedulePlayers = getSchedulePlayersForCategory(schedule, selectedCategory, studentDirectory);
+      const schedulePlayers = getSchedulePlayersForCategory(schedule, "all", studentDirectory);
       if (schedulePlayers.length === 0) return;
 
       const scheduleDateSlash = formatInputDateToSlash(schedule.date);
@@ -693,25 +697,19 @@ export default function PerformaPelatih(props) {
     });
 
     return completedIds;
-  }, [localHistory, selectedCategory, studentDirectory, trainingSchedules]);
+  }, [localHistory, studentDirectory, trainingSchedules]);
 
   const filteredSchedules = useMemo(() => {
     if (!Array.isArray(trainingSchedules)) return [];
 
     return trainingSchedules.
-    filter((item) => {
-      if (selectedCategory === "all") {
-        return !completedPerformanceScheduleIds.has(item.id);
-      }
-      return (item.category === "all" || item.category === selectedCategory) &&
-        !completedPerformanceScheduleIds.has(item.id);
-    }).
+    filter((item) => !completedPerformanceScheduleIds.has(item.id)).
     sort((leftItem, rightItem) => {
-      const leftPriority = leftItem.category === selectedCategory ? 0 : 1;
-      const rightPriority = rightItem.category === selectedCategory ? 0 : 1;
-      return leftPriority - rightPriority;
+      const leftDate = `${leftItem.date || ""} ${leftItem.time || ""}`;
+      const rightDate = `${rightItem.date || ""} ${rightItem.time || ""}`;
+      return leftDate.localeCompare(rightDate);
     });
-  }, [completedPerformanceScheduleIds, selectedCategory, trainingSchedules]);
+  }, [completedPerformanceScheduleIds, trainingSchedules]);
 
   const scheduleOptions = useMemo(() => {
     if (filteredSchedules.length === 0) {
@@ -728,8 +726,8 @@ export default function PerformaPelatih(props) {
   }, [filteredSchedules, selectedCategory, studentDirectory]);
 
   const selectedSchedule = useMemo(
-    () => filteredSchedules.find((item) => item.id === selectedScheduleId) || null,
-    [filteredSchedules, selectedScheduleId]
+    () => trainingSchedules.find((item) => item.id === selectedScheduleId) || null,
+    [selectedScheduleId, trainingSchedules]
   );
   const visiblePlayers = useMemo(
     () => getSchedulePlayersForCategory(selectedSchedule, selectedCategory, studentDirectory),
@@ -1041,25 +1039,23 @@ export default function PerformaPelatih(props) {
 
            <div className="coachPerformanceFilters">
              <div className="coachPerformanceField">
-               <span>Kategori Usia</span>
-               <CoachPerformanceSelect
-                value={selectedCategory}
-                onChange={(nextCategory) => {
-                  setSelectedCategory(nextCategory);
-                  setSelectedScheduleId("");
-                }}
-                options={categoryOptions}
-                ariaLabel="Pilih kategori usia performa latihan" />
-
-            </div>
-
-             <div className="coachPerformanceField">
                <span>Jadwal</span>
                <CoachPerformanceSelect
                 value={selectedSchedule ? selectedScheduleId : ""}
                 onChange={setSelectedScheduleId}
                 options={scheduleOptions}
                 ariaLabel="Pilih jadwal performa latihan" />
+
+            </div>
+
+             <div className="coachPerformanceField">
+               <span>Kategori Usia</span>
+               <CoachPerformanceSelect
+                value={selectedCategory}
+                onChange={setSelectedCategory}
+                options={categoryOptions}
+                ariaLabel="Pilih kategori usia performa latihan"
+                disabled={!selectedSchedule} />
 
             </div>
 

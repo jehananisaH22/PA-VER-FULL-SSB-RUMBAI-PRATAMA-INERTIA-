@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\OrangTua;
 use App\Models\Pelatih;
 use App\Models\Siswa;
+use Inertia\Testing\AssertableInertia as Assert;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -39,6 +40,20 @@ class RoleAccessTest extends TestCase
         $this->actingAs($user)
             ->get('/orang-tua/dashboard')
             ->assertOk();
+    }
+
+    public function test_parent_child_registration_page_returns_to_parent_dashboard(): void
+    {
+        $user = User::factory()->create(['role' => 'orang_tua']);
+
+        $this->actingAs($user)
+            ->get('/orang-tua/daftar-anak')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('HalamanFormPendaftaran')
+                ->where('returnToDashboard', true)
+                ->where('dashboardUrl', '/orang-tua/dashboard')
+            );
     }
 
     public function test_parent_login_without_child_redirects_to_registration_form(): void

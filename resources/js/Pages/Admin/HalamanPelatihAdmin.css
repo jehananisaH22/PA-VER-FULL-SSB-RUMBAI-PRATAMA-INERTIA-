@@ -661,6 +661,335 @@
 }
 
 
+/* Final compact layout for Data Pelatih */
+
+.adminCoachesCard {
+  min-height: 0 !important;
+  padding: 16px 18px 18px !important;
+}
+
+.adminCoachesToolbar {
+  justify-content: flex-start !important;
+  gap: 14px !important;
+  margin-bottom: 18px !important;
+}
+
+.adminCoachesToolbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.adminCoachesSummary {
+  margin: 0 0 0 4px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.adminCoachesAddBtn {
+  height: 40px !important;
+  min-width: 150px !important;
+  padding: 0 18px !important;
+  font-size: 14px !important;
+}
+
+.adminCoachesToolbar input {
+  width: 330px !important;
+  min-width: 260px !important;
+  height: 44px !important;
+  font-size: 14px !important;
+}
+
+.adminCoachesTableWrap {
+  width: 100%;
+  max-width: 1080px;
+  overflow: visible !important;
+}
+
+.adminCoachesTableWrap table {
+  width: 100% !important;
+  min-width: 0 !important;
+  table-layout: fixed !important;
+}
+
+.adminCoachesTableWrap th,
+.adminCoachesTableWrap td {
+  text-align: left;
+}
+
+.adminCoachesTableWrap th {
+  padding: 14px 10px 12px !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+}
+
+.adminCoachesTableWrap td {
+  height: 58px !important;
+  padding: 0 10px !important;
+  font-size: 14px !important;
+}
+
+.adminCoachesTableWrap th:nth-child(1),
+.adminCoachesTableWrap td:nth-child(1) {
+  width: 25% !important;
+}
+
+.adminCoachesTableWrap th:nth-child(2),
+.adminCoachesTableWrap td:nth-child(2) {
+  width: 38% !important;
+}
+
+.adminCoachesTableWrap th:nth-child(3),
+.adminCoachesTableWrap td:nth-child(3) {
+  width: 22% !important;
+}
+
+.adminCoachesTableWrap th:nth-child(4),
+.adminCoachesTableWrap td:nth-child(4) {
+  width: 15% !important;
+  text-align: right !important;
+}
+
+.adminCoachStatusBadge {
+  min-height: 32px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.adminCoachesDeleteBtn {
+  height: 36px !important;
+  min-width: 96px !important;
+  padding: 0 16px !important;
+  font-size: 13px !important;
+}
+
+@media (max-width: 900px) {
+  .adminCoachesToolbar {
+    align-items: flex-start !important;
+    flex-direction: column;
+  }
+
+  .adminCoachesToolbarLeft {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .adminCoachesTableWrap {
+    max-width: 100%;
+    overflow-x: auto !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .adminCoachesToolbarLeft {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .adminCoachesAddBtn,
+  .adminCoachesToolbar input {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .adminCoachesTableWrap table {
+    min-width: 640px !important;
+  }
+}
+
+
+/* Polished coach account table */
+
+.adminCoachesCard {
+  min-height: 0;
+  padding: 18px;
+  border-color: #e4ebf2;
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+}
+
+.adminCoachesToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.adminCoachesToolbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.adminCoachesSummary {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.adminCoachesAddBtn {
+  height: 42px;
+  min-width: 156px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: #27791e;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 8px 16px rgba(39, 121, 30, 0.18);
+}
+
+.adminCoachesAddBtn:hover {
+  background: #216819;
+}
+
+.adminCoachesToolbar input {
+  width: 342px;
+  min-width: 260px;
+  max-width: 100%;
+  height: 46px;
+  border: 1px solid #cfe0c9;
+  border-radius: 12px;
+  padding: 0 18px;
+  color: #334155;
+  font-size: 14px;
+}
+
+.adminCoachesToolbar input:focus {
+  outline: none;
+  border-color: #7ead70;
+  box-shadow: 0 0 0 4px rgba(91, 151, 68, 0.12);
+}
+
+.adminCoachesTableWrap {
+  overflow: visible;
+}
+
+.adminCoachesTableWrap table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.adminCoachesTableWrap th,
+.adminCoachesTableWrap td {
+  border-bottom: 1px solid #e9eef4;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.adminCoachesTableWrap th {
+  padding: 16px 12px;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.adminCoachesTableWrap td {
+  height: 66px;
+  padding: 0 12px;
+  color: #475569;
+  font-size: 14px;
+}
+
+.adminCoachesTableWrap th:nth-child(1),
+.adminCoachesTableWrap td:nth-child(1) {
+  width: 26%;
+}
+
+.adminCoachesTableWrap th:nth-child(2),
+.adminCoachesTableWrap td:nth-child(2) {
+  width: 41%;
+}
+
+.adminCoachesTableWrap th:nth-child(3),
+.adminCoachesTableWrap td:nth-child(3) {
+  width: 20%;
+}
+
+.adminCoachesTableWrap th:nth-child(4),
+.adminCoachesTableWrap td:nth-child(4) {
+  width: 13%;
+  text-align: right;
+}
+
+.adminCoachesTableWrap td:nth-child(1),
+.adminCoachesTableWrap td:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adminCoachStatusBadge {
+  min-height: 34px;
+  padding: 0 13px;
+  font-size: 13px;
+}
+
+.adminCoachesDeleteBtn {
+  height: 38px;
+  min-width: 98px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.adminCoachesEmpty {
+  height: 92px;
+  color: #64748b;
+  font-size: 14px;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .adminCoachesToolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .adminCoachesToolbarLeft {
+    flex-wrap: wrap;
+  }
+
+  .adminCoachesSummary {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .adminCoachesCard {
+    padding: 14px;
+  }
+
+  .adminCoachesToolbarLeft {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .adminCoachesAddBtn,
+  .adminCoachesToolbar input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .adminCoachesTableWrap {
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .adminCoachesTableWrap table {
+    min-width: 680px;
+  }
+}
+
+
 /* Clean admin coaches view: visual polish only. */
 
 .adminCoachesPage,
@@ -1249,3 +1578,142 @@
 
 }
 
+
+/* Final compact layout for Data Pelatih - keep at file end */
+
+.adminCoachesCard {
+  min-height: 0 !important;
+  padding: 16px 18px 18px !important;
+}
+
+.adminCoachesToolbar {
+  justify-content: flex-start !important;
+  gap: 14px !important;
+  margin-bottom: 18px !important;
+}
+
+.adminCoachesToolbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.adminCoachesSummary {
+  margin: 0 0 0 4px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.adminCoachesAddBtn {
+  height: 40px !important;
+  min-width: 150px !important;
+  padding: 0 18px !important;
+  font-size: 14px !important;
+}
+
+.adminCoachesToolbar input {
+  width: 330px !important;
+  min-width: 260px !important;
+  height: 44px !important;
+  font-size: 14px !important;
+}
+
+.adminCoachesTableWrap {
+  width: 100%;
+  max-width: 1080px;
+  overflow: visible !important;
+}
+
+.adminCoachesTableWrap table {
+  width: 100% !important;
+  min-width: 0 !important;
+  table-layout: fixed !important;
+}
+
+.adminCoachesTableWrap th,
+.adminCoachesTableWrap td {
+  text-align: left;
+}
+
+.adminCoachesTableWrap th {
+  padding: 14px 10px 12px !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+}
+
+.adminCoachesTableWrap td {
+  height: 58px !important;
+  padding: 0 10px !important;
+  font-size: 14px !important;
+}
+
+.adminCoachesTableWrap th:nth-child(1),
+.adminCoachesTableWrap td:nth-child(1) {
+  width: 25% !important;
+}
+
+.adminCoachesTableWrap th:nth-child(2),
+.adminCoachesTableWrap td:nth-child(2) {
+  width: 38% !important;
+}
+
+.adminCoachesTableWrap th:nth-child(3),
+.adminCoachesTableWrap td:nth-child(3) {
+  width: 22% !important;
+}
+
+.adminCoachesTableWrap th:nth-child(4),
+.adminCoachesTableWrap td:nth-child(4) {
+  width: 15% !important;
+  text-align: right !important;
+}
+
+.adminCoachStatusBadge {
+  min-height: 32px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.adminCoachesDeleteBtn {
+  height: 36px !important;
+  min-width: 96px !important;
+  padding: 0 16px !important;
+  font-size: 13px !important;
+}
+
+@media (max-width: 900px) {
+  .adminCoachesToolbar {
+    align-items: flex-start !important;
+    flex-direction: column;
+  }
+
+  .adminCoachesToolbarLeft {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .adminCoachesTableWrap {
+    max-width: 100%;
+    overflow-x: auto !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .adminCoachesToolbarLeft {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .adminCoachesAddBtn,
+  .adminCoachesToolbar input {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .adminCoachesTableWrap table {
+    min-width: 640px !important;
+  }
+}

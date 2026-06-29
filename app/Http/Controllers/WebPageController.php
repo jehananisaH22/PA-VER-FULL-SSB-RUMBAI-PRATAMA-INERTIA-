@@ -23,6 +23,26 @@ class WebPageController extends Controller
         $email = strtolower(trim((string) ($account['email'] ?? '')));
         $verificationLink = $account['verificationLink'] ?? '';
 
+        if ($email !== '' || $userId) {
+            $accountExists = User::query()
+                ->where('role', 'orang_tua')
+                ->when($userId, fn ($query) => $query->where('id', $userId))
+                ->when(! $userId && $email !== '', fn ($query) => $query->whereRaw('LOWER(email) = ?', [$email]))
+                ->exists();
+
+            if (! $accountExists) {
+                $request->session()->forget([
+                    'registration.account',
+                    'registration.form',
+                    'id_siswa',
+                    'show_child_picker_after_login',
+                ]);
+
+                return redirect('/register')
+                    ->with('verificationMessage', 'Data registrasi sebelumnya sudah tidak tersedia. Silakan daftar ulang.');
+            }
+        }
+
         if (! $verificationLink && $email !== '') {
             $user = User::query()
                 ->when($userId, fn ($query) => $query->where('id', $userId))
