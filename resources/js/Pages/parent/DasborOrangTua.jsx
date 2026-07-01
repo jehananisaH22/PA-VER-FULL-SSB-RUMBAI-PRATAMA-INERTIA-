@@ -103,6 +103,7 @@ export default function DasborOrangTua({
   hasSelectedChild = false
 }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false); 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); 
   const [activeDonutItem, setActiveDonutItem] = useState(null); 
   const [selectedPerformanceYear, setSelectedPerformanceYear] = useState(""); 
   const { activeChildName, openChildPicker, childPickerModal } = useParentChildSwitcher(
@@ -136,6 +137,18 @@ export default function DasborOrangTua({
   const openNotes = visitOrCall(onOpenCatatanPelatih, parentRoutes.notes); 
   const openPayments = visitOrCall(onOpenPayments, parentRoutes.payments); 
   const openReupload = visitOrCall(onOpenReupload, parentRoutes.reupload); 
+  const parentMenuItems = [
+    { key: "dashboard", label: "Dashboard", handler: () => {} },
+    { key: "attendance", label: "Kehadiran", handler: openAttendance },
+    { key: "performance", label: "Performa Latihan", handler: openPerformance },
+    { key: "achievements", label: "Prestasi", handler: openAchievements },
+    { key: "notes", label: "Catatan Pelatih", handler: openNotes },
+    { key: "payments", label: "Pembayaran", handler: openPayments }
+  ]; 
+  const handleMobileMenuClick = (handler) => {
+    setIsMobileMenuOpen(false); 
+    handler();
+  }; 
 
   const donutData = useMemo(
     () => [
@@ -278,6 +291,21 @@ export default function DasborOrangTua({
               Pembayaran
             </button>
           </nav>
+           <button
+            type="button"
+            className={`parentMobileMenuBtn ${isMobileMenuOpen ? "is-open" : ""}`}
+            aria-label="Buka menu"
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="parent-mobile-menu"
+            onClick={() => {
+              setIsProfileOpen(false); 
+              setIsMobileMenuOpen((prev) => !prev);
+            }}>
+            
+             <span />
+             <span />
+             <span />
+          </button>
            <div className="parentNavRight">
              <LoncengNotifikasiOrangTua
               notifications={notifications}
@@ -321,6 +349,20 @@ export default function DasborOrangTua({
             </div>
           </div>
         </div>
+        {isMobileMenuOpen && (
+        <nav className="parentMobileMenu" id="parent-mobile-menu">
+            {parentMenuItems.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            className={item.key === "dashboard" ? "is-active" : ""}
+            onClick={() => handleMobileMenuClick(item.handler)}>
+            
+              {item.label}
+            </button>)
+          )}
+          </nav>)
+        }
       </header>
 
        <main className="parentMain">

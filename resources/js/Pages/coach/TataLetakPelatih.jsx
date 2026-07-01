@@ -28,6 +28,7 @@ export default function TataLetakPelatih({
   ...navHandlers
 }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false); 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); 
   const openHome = visitOrCall(onOpenHome, coachRoutes.home); 
   const openProfile = visitOrCall(undefined, coachRoutes.profile); 
   const logout = visitOrCall(onLogout, coachRoutes.logout); 
@@ -37,6 +38,10 @@ export default function TataLetakPelatih({
     onOpenPerformance: visitOrCall(navHandlers.onOpenPerformance, coachRoutes.performance), 
     onOpenCatatanPelatih: visitOrCall(navHandlers.onOpenCatatanPelatih, coachRoutes.notes), 
     onOpenPayments: visitOrCall(navHandlers.onOpenPayments, coachRoutes.payments)
+  }; 
+  const handleNavClick = (handler) => {
+    setIsMobileMenuOpen(false); 
+    handler();
   }; 
 
   return (
@@ -58,6 +63,21 @@ export default function TataLetakPelatih({
               </button>)
             )}
           </nav>
+           <button
+            type="button"
+            className={`coachMobileMenuBtn ${isMobileMenuOpen ? "is-open" : ""}`}
+            aria-label="Buka menu"
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="coach-mobile-menu"
+            onClick={() => {
+              setIsProfileOpen(false); 
+              setIsMobileMenuOpen((prev) => !prev);
+            }}>
+            
+             <span />
+             <span />
+             <span />
+          </button>
            <div className="coachNavRight">
              <LoncengNotifikasiOrangTua notifications={notifications} onClearNotifications={onClearNotifications} />
              <div className="coachProfileWrap">
@@ -78,6 +98,20 @@ export default function TataLetakPelatih({
             </div>
           </div>
         </div>
+        {isMobileMenuOpen && (
+        <nav className="coachMobileMenu" id="coach-mobile-menu">
+            {navItems.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            className={activeTab === item.key ? "is-active" : ""}
+            onClick={() => handleNavClick(resolvedNavHandlers[item.prop])}>
+            
+              {item.label}
+            </button>)
+          )}
+          </nav>)
+        }
       </header>
 
        <main className="coachMain">
