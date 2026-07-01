@@ -18,6 +18,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | SMTP Scheme Compatibility
+    |--------------------------------------------------------------------------
+    |
+    | Older Laravel mail configs commonly used MAIL_ENCRYPTION=tls/ssl.
+    | Symfony Mailer expects smtp/smtps instead: smtp on port 587 starts TLS
+    | automatically, while smtps is used for implicit TLS on port 465.
+    |
+    */
+
+    'smtp_scheme' => match (env('MAIL_SCHEME', env('MAIL_ENCRYPTION'))) {
+        'ssl', 'smtps' => 'smtps',
+        default => 'smtp',
+    },
+
+    /*
+    |--------------------------------------------------------------------------
     | Mailer Configurations
     |--------------------------------------------------------------------------
     |
@@ -39,7 +55,11 @@ return [
 
         'smtp' => [
             'transport' => 'smtp',
-            'scheme' => env('MAIL_SCHEME'),
+            'scheme' => env('MAIL_SCHEME')
+                ?: match (env('MAIL_ENCRYPTION')) {
+                    'ssl', 'smtps' => 'smtps',
+                    default => 'smtp',
+                },
             'url' => env('MAIL_URL'),
             'host' => env('MAIL_HOST', '127.0.0.1'),
             'port' => env('MAIL_PORT', 2525),

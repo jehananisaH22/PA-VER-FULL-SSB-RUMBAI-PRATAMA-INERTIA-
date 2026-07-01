@@ -150,6 +150,8 @@ export default function HalamanPelatihAdmin({
     setAddCoachError(""); 
 
     try {
+      let successMessage = "Akun pelatih berhasil ditambahkan."; 
+
       if (onAddCoach) {
         await onAddCoach({ name, email, phone, password });
       } else {
@@ -164,6 +166,8 @@ export default function HalamanPelatihAdmin({
         if (response.data?.success === false) {
           throw new Error(response.data?.message || "Pelatih gagal ditambahkan.");
         } 
+
+        successMessage = response.data?.message || successMessage; 
 
        const savedCoach = response.data?.data?.pelatih; 
         setLocalCoaches((prev) => [
@@ -187,15 +191,17 @@ export default function HalamanPelatihAdmin({
         title: "Menambah pelatih", 
         description: `${name} (${email})`
       }); 
-      setToast({ type: "success", message: "Akun pelatih berhasil ditambahkan." });
+      setToast({ type: "success", message: successMessage });
     } catch (error) {
-      setAddCoachError(
+      const errorMessage =
         Object.values(error?.response?.data?.errors || {})?.[0]?.[0] ||
         error?.response?.data?.message ||
         error?.message ||
-        "Pelatih gagal ditambahkan. Coba lagi."
+        "Pelatih gagal ditambahkan. Coba lagi."; 
+      setAddCoachError(
+        errorMessage
       ); 
-      setToast({ type: "error", message: "Pelatih gagal ditambahkan." });
+      setToast({ type: "error", message: errorMessage });
     } finally {
       setIsSavingCoach(false);
     }

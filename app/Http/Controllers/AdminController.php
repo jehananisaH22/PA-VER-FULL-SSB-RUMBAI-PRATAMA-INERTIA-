@@ -1254,13 +1254,20 @@ public function Data_Pelatih(Request $request)
 
 public function Tambah_Pelatih(Request $request)
 {
-    Log::info('REGISTER REQUEST', $request->all());
+    $request->merge([
+        'nama' => trim((string) $request->nama),
+        'email' => strtolower(trim((string) $request->email)),
+        'no_hp' => trim((string) $request->no_hp),
+        'password_confirmation' => $request->input('password_confirmation', $request->input('password')),
+    ]);
+
+    Log::info('REGISTER REQUEST', $request->except('password', 'password_confirmation'));
 
   $request->validate([
     'nama' => 'required|string|max:100|unique:pelatih,nama_pelatih',
     'email' => [
         'required',
-        'email:rfc,dns',
+        'email',
         Rule::unique('users', 'email')->where(fn ($query) => $query->where('role', 'pelatih')),
     ],
     'password' => 'required|min:6|confirmed',
@@ -1270,7 +1277,7 @@ public function Tambah_Pelatih(Request $request)
     'nama.unique' => 'Nama pelatih sudah digunakan',
 
     'email.required' => 'Email wajib diisi',
-    'email.email' => 'Email harus aktif dan domain email harus valid',
+    'email.email' => 'Format email tidak valid',
     'email.unique' => 'Email sudah digunakan',
 
     'password.required' => 'Password wajib diisi',
@@ -1279,6 +1286,8 @@ public function Tambah_Pelatih(Request $request)
 
     'no_hp.required' => 'No HP wajib diisi',
 ]);
+
+    $emailSent = false;
 
     DB::beginTransaction();
 
@@ -1311,9 +1320,6 @@ public function Tambah_Pelatih(Request $request)
             'account_status' => 'pending',
         ]);
 
-        Mail::to($user->email)->send(new SendPasswordMail($request->nama, $user->email, $request->password));
-        $pelatih->update(['invitation_sent_at' => now()]);
-
         DB::commit();
 
         $this->recordAdminActivity(
@@ -1321,23 +1327,74 @@ public function Tambah_Pelatih(Request $request)
             $pelatih->nama_pelatih . ' - ' . $pelatih->email
         );
 
+        $emailSent = $this->sendCoachPasswordEmail($pelatih, $user, (string) $request->password);
+
         return response()->json([
             'success' => true,
-            'message' => 'Pelatih berhasil ditambahkan',
+            'message' => $emailSent
+                ? 'Pelatih berhasil ditambahkan'
+                : 'Pelatih berhasil ditambahkan, tetapi email password gagal dikirim. Password yang diinput tetap dapat digunakan untuk login.',
             'data' => [
                 'user' => $user,
-                'pelatih' => $pelatih
+                'pelatih' => $pelatih,
+                'emailSent' => $emailSent,
             ]
         ]);
 
+    } catch (\Illuminate\Database\QueryException $e) {
+        DB::rollBack();
+
+        Log::error('Gagal menambahkan pelatih karena database', [
+            'email' => $request->email,
+            'error' => $e->getMessage(),
+        ]);
+
+        $message = str_contains(strtolower($e->getMessage()), 'duplicate')
+            ? 'Email atau nama pelatih sudah digunakan.'
+            : 'Gagal menambahkan pelatih karena masalah database.';
+
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+            'error' => $e->getMessage()
+        ], 500);
     } catch (\Exception $e) {
         DB::rollBack();
+
+        Log::error('Gagal menambahkan pelatih', [
+            'email' => $request->email,
+            'error' => $e->getMessage(),
+        ]);
 
         return response()->json([
             'success' => false,
             'message' => 'Gagal menambahkan pelatih',
             'error' => $e->getMessage()
         ], 500);
+    }
+}
+
+private function sendCoachPasswordEmail(Pelatih $pelatih, User $user, string $plainPassword): bool
+{
+    try {
+        Mail::to($user->email)->send(new SendPasswordMail($user->name, $user->email, $plainPassword));
+
+        $pelatih->update(['invitation_sent_at' => now()]);
+        $pelatih->refresh();
+
+        return true;
+    } catch (\Throwable $mailError) {
+        Log::error('Gagal mengirim email password pelatih', [
+            'pelatih_id' => $pelatih->id_pelatih,
+            'email' => $user->email,
+            'mailer' => config('mail.default'),
+            'smtp_host' => config('mail.mailers.smtp.host'),
+            'smtp_port' => config('mail.mailers.smtp.port'),
+            'smtp_scheme' => config('mail.mailers.smtp.scheme'),
+            'error' => $mailError->getMessage(),
+        ]);
+
+        return false;
     }
 }
 
