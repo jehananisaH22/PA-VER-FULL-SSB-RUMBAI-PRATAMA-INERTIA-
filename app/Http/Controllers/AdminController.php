@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\Pendaftaran_Siswa;
 use App\Services\SiswaPaymentStatusService;
+use App\Services\Payment\PaymentValidationService;
 use App\Mail\SendPasswordMail;
 use Carbon\Carbon;
 use Inertia\Inertia;
@@ -637,68 +638,13 @@ public function lihatBukti_pembayaran_admin($folder, $file)
 }
 
 
-public function Bukti_Diterima($id)
+public function Bukti_Diterima($id, PaymentValidationService $paymentValidationService)
 {
-    DB::beginTransaction();
-
     try {
-        $bukti = BuktiPembayaran::with(['siswa.orangtua', 'pembayaran'])->findOrFail($id);
-        $pembayaran = $bukti->pembayaran ?: Pembayaran::find($bukti->id_pembayaran);
-        $isRegistrationPayment = strtolower((string) ($pembayaran?->jenis ?? '')) === 'pendaftaran';
-
-        $bukti->update([
-            'status' => 'diterima'
-        ]);
-
-        if ($pembayaran) {
-            $pembayaran->update([
-                'status' => 'Lunas',
-                'tanggal_bayar' => $pembayaran->tanggal_bayar ?: ($bukti->tanggal_bukti_bayar ?: now()->toDateString()),
-            ]);
-        }
-
-        $studentActivated = false;
-        if ($isRegistrationPayment && $bukti->siswa?->pendaftaran) {
-            $pendaftaran = $bukti->siswa->pendaftaran;
-            $documentValues = collect([
-                $pendaftaran->val_nama_siswa,
-                $pendaftaran->val_nama_ibu,
-                $pendaftaran->val_nama_ayah,
-                $pendaftaran->val_umur,
-                $pendaftaran->val_akta,
-                $pendaftaran->val_kk,
-                $pendaftaran->val_rapor,
-                $pendaftaran->val_foto,
-            ])->map(fn ($value) => strtolower(trim($value ?? 'valid')));
-
-            $documentsAreExplicitlyValid = $documentValues->every(fn ($value) => $value === 'valid')
-                && $documentValues->count() === 8
-                && collect([
-                    $pendaftaran->val_nama_siswa,
-                    $pendaftaran->val_nama_ibu,
-                    $pendaftaran->val_nama_ayah,
-                    $pendaftaran->val_umur,
-                    $pendaftaran->val_akta,
-                    $pendaftaran->val_kk,
-                    $pendaftaran->val_rapor,
-                    $pendaftaran->val_foto,
-                ])->every(fn ($value) => ! is_null($value));
-
-            if ($documentsAreExplicitlyValid) {
-                $pendaftaran->update([
-                    'status_approval' => 'Disetujui',
-                ]);
-                $this->activateStudentAccount($bukti->siswa);
-                $studentActivated = true;
-            } elseif ($bukti->siswa) {
-                $bukti->siswa->update(['status' => 'Inactive']);
-            }
-        } elseif (! $isRegistrationPayment) {
-            app(SiswaPaymentStatusService::class)->syncAfterPaymentValidation($bukti->siswa);
-            $studentActivated = strtolower((string) $bukti->siswa?->fresh()?->status) === 'active';
-        }
-
-        DB::commit();
+        $result = $paymentValidationService->accept((int) $id);
+        $bukti = $result['proof'];
+        $pembayaran = $result['payment'];
+        $studentActivated = $result['studentActivated'];
 
         $this->sendStudentNotification(
             $bukti->siswa,
@@ -717,15 +663,13 @@ public function Bukti_Diterima($id)
                 ? 'Bukti diterima, akun siswa sudah aktif dan pembayaran lunas'
                 : 'Bukti diterima dan pembayaran lunas. Akun siswa menunggu validasi dokumen pendaftaran.',
             'data' => [
-                'bukti' => $bukti->fresh(['siswa', 'pembayaran']),
+                'bukti' => $bukti,
                 'siswa_status' => $bukti->siswa?->fresh()?->status,
-                'pembayaran_status' => $pembayaran->status ?? null
+                'pembayaran_status' => $pembayaran?->status
             ]
         ]);
 
     } catch (\Throwable $e) {
-        DB::rollBack();
-
         return response()->json([
             'success' => false,
             'message' => 'Gagal approve bukti',
@@ -735,37 +679,12 @@ public function Bukti_Diterima($id)
 }
 
 
-public function Bukti_Ditolak($id)
+public function Bukti_Ditolak($id, PaymentValidationService $paymentValidationService)
 {
-    $bukti = BuktiPembayaran::with(['siswa.orangtua', 'pembayaran'])->findOrFail($id);
-
-    DB::beginTransaction();
-
     try {
-        $pembayaran = $bukti->pembayaran ?: Pembayaran::find($bukti->id_pembayaran);
-        $isRegistrationPayment = strtolower((string) ($pembayaran?->jenis ?? '')) === 'pendaftaran';
-
-        $bukti->status = 'ditolak';
-        $bukti->save();
-
-        if ($isRegistrationPayment && $bukti->siswa) {
-            $bukti->siswa->status = 'Inactive';
-            $bukti->siswa->save();
-        }
-
-        if ($pembayaran) {
-            $pembayaran->update([
-                'status' => 'Belum',
-            ]);
-        }
-
-        if ($isRegistrationPayment && $bukti->siswa?->pendaftaran) {
-            $bukti->siswa->pendaftaran->update([
-                'status_approval' => 'Revisi',
-            ]);
-        }
-
-        DB::commit();
+        $result = $paymentValidationService->reject((int) $id);
+        $bukti = $result['proof'];
+        $pembayaran = $result['payment'];
 
         $this->sendStudentNotification(
             $bukti->siswa,
@@ -782,16 +701,14 @@ public function Bukti_Ditolak($id)
             'success' => true,
             'message' => 'Bukti ditolak, siswa tetap inactive dan bukti pembayaran perlu diupload ulang',
             'data' => [
-                'bukti' => $bukti->fresh(),
+                'bukti' => $bukti,
                 'siswa_status' => $bukti->siswa?->fresh()?->status,
-                'pembayaran_status' => $pembayaran->status ?? null,
+                'pembayaran_status' => $pembayaran?->status,
                 'status_approval' => $bukti->siswa?->pendaftaran?->status_approval,
             ],
         ]);
 
     } catch (\Throwable $e) {
-        DB::rollBack();
-
         return response()->json([
             'success' => false,
             'message' => 'Gagal reject bukti',
