@@ -9,6 +9,7 @@ use App\Models\Pelatih;
 use App\Models\Siswa;
 use App\Models\User;
 use App\Support\SsbInertiaData;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -16,6 +17,13 @@ use Tests\TestCase;
 
 class CoachToParentFlowTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+
+        parent::tearDown();
+    }
+
     private function createCoachParentFlowData(): array
     {
         $coachUser = User::factory()->create([
@@ -69,6 +77,7 @@ class CoachToParentFlowTest extends TestCase
 
     public function test_coach_inputs_are_saved_and_visible_to_parent_payload(): void
     {
+        Carbon::setTestNow('2026-06-22 10:00:00');
         Storage::fake('public');
 
         [

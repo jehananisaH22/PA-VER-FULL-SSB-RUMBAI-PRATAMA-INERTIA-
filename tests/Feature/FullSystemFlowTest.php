@@ -10,6 +10,7 @@ use App\Models\Siswa;
 use App\Models\User;
 use App\Models\Pelatih;
 use App\Support\SsbInertiaData;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -17,8 +18,16 @@ use Tests\TestCase;
 
 class FullSystemFlowTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+
+        parent::tearDown();
+    }
+
     public function test_complete_public_registration_admin_revision_activation_coach_parent_flow(): void
     {
+        Carbon::setTestNow('2026-06-22 10:00:00');
         Mail::fake();
         Storage::fake('local');
         Storage::fake('public');
